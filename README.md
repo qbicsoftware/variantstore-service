@@ -1,7 +1,7 @@
 THIS SERVICE IS WORK IN PROGRESS.
 
 # OncoStore Service
-Service that implements a sample tracking interface.
+Service that implements the oncostore interface.
 
 ## Micronaut app
 This service is build with [micronaut](https://micronaut.io):
