@@ -5,103 +5,78 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
-import life.qbic.oncostore.DataBase
 import life.qbic.oncostore.model.Sample
 import life.qbic.oncostore.util.IdValidator
+import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
-import java.sql.PreparedStatement
-import java.sql.ResultSet
-import java.sql.SQLException
-
+import javax.validation.Valid
 
 @Controller("/samples")
 class SampleController {
 
-    private final DataBase dataBase
+    private final SampleReader sampleReader
+    //private final VariantReader variantReader
 
-    @Inject SampleController(DataBase database) {
-        this.dataBase = dataBase
+    /*
+    @Inject SampleController(SampleReader sampleReader, VariantReader variantReader) {
+        this.sampleReader = sampleReader
+        this.variantReader = variantReader
+    }
+    */
+
+    @Inject SampleController(SampleReader sampleReader) {
+        this.sampleReader = sampleReader
     }
 
-    @Get(uri = "/{sampleId}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getSample(@Parameter('sampleId') String identifier){
+    /**
+     *
+     * @param identifier The sample identifier
+     * @return The found sample
+     */
+    @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
+    HttpResponse getSample(@Parameter('id') String identifier){
         if(!IdValidator.isValidSampleCode(identifier))
         {
-            return HttpResponse.badRequest("No valid sample identifier provided.")
+            return HttpResponse.badRequest("Invalid sample identifier supplied.")
         } else {
-            Sample s = searchSample(identifier)
+            Sample s = sampleReader.searchSample(identifier)
             if(s!=null) {
                 return HttpResponse.ok(s)
             } else {
-                return HttpResponse.notFound("Sample was not found in the store.")
+                return HttpResponse.notFound("Sample not found.")
             }
         }
     }
 
-    @Get(uri = "/", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getSamples(){
-        List<Sample> s = searchSamples()
-        if(s!=null) {
+    /**
+     *
+     * @param args The filter arguments
+     * @return The found samples
+     */
+    @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
+    HttpResponse getSamples(@Valid ListingArguments args){
+        List<Sample> s = sampleReader.searchSamples(args)
+        if(!s.empty) {
             return HttpResponse.ok(s)
         } else {
-            return HttpResponse.notFound("No samples were found in the store.")
+            return HttpResponse.notFound("No samples found.")
         }
     }
 
-    /**
-     * Search in store for sample with specific identifier
-     * @param identifier
-     * @return Sample
-     */
-    private Sample searchSample(identifier) {
-        Sample res = null
-        String searchStatement = "SELECT * from Sample WHERE UPPER(samples.id) = UPPER(?)"
-
-        try {
-            dataBase.connection.prepareStatement(searchStatement).withCloseable { PreparedStatement statement ->
-                statement.setString(1, identifier)
-                statement.executeQuery().withCloseable { ResultSet rs ->
-                    while(rs.next()) {
-                        String cancerEntity = rs.getString("cancerEntity")
-                        res = new Sample(identifier, cancerEntity)
-                    }
-                }
+    /*
+    @Get(uri = "{id}/variants", produces = MediaType.APPLICATION_JSON)
+    HttpResponse getVariantsOfSamples(@Parameter('id') List<String> identifiers) {
+        if (identifiers.any { id -> !IdValidator.isValidSampleCode(identifier) }) {
+            return HttpResponse.badRequest("Invalid sample identifier supplied.")
+        } else {
+            Sample s = sampleReader.searchSample(identifier)
+            if (!s.empty) {
+                return HttpResponse.ok(s)
+            } else {
+                return HttpResponse.notFound("No variants found for supplied sample identifiers.")
             }
         }
-
-        catch (SQLException e) {
-            e.printStackTrace()
-        }
-
-        return res
     }
-
-    /**
-     * Retrieve all samples in store
-     * @return List<Sample>
-     */
-    private List<Sample> searchSamples() {
-        List<Sample> samples = null
-        String searchStatement = "SELECT * from Sample"
-
-        try {
-            dataBase.connection.prepareStatement(searchStatement).withCloseable { PreparedStatement statement ->
-                statement.executeQuery().withCloseable { ResultSet rs ->
-                    while(rs.next()) {
-                        String identifier = rs.getString("qbicID")
-                        String cancerEntity = rs.getString("cancerEntity")
-                        samples.add(new Sample(identifier, cancerEntity))
-                    }
-                }
-
-            }
-        }
-
-        catch (SQLException e) {
-            e.printStackTrace()
-        }
-
-        return samples
-    }
+    */
 }

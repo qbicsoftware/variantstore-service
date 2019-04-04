@@ -48,7 +48,7 @@ class MysqlLoader implements Loader{
     String insertVariantCaller = "INSERT INTO VariantCaller (name, version, doi) VALUE(?, ?, ?)"
     String insertVariantAnnotation = "INSERT INTO AnnotationSoftware (name, version, doi) VALUE(?, ?, ?)"
     String insertReferenceGenome = "INSERT INTO ReferenceGenome (source, build, version) VALUE(?, ?, ?)"
-    String insertVariant = "INSERT INTO Variant (id, chr, start, end, ref, obs, isSomatic) VALUE(?, ?, ?, ?, ?, ?, ?)"
+    String insertVariant = "INSERT INTO Variant (id, chr, start, end, ref, obs, getIsSomatic) VALUE(?, ?, ?, ?, ?, ?, ?)"
     String insertSample = "INSERT INTO Sample (qbicID) VALUE(?)"
 
     /* Predefined queries for inserting db entries in junction tables */
@@ -119,7 +119,7 @@ class MysqlLoader implements Loader{
     }
 
     @Override
-    List<Integer> insertJunction(Object id, List ids, String searchStatement, String insertStatement, DataBase db) throws SQLException {
+    List<Integer> insertJunction(Object id, List ids, String searchStatement, String insertStatement, DataBase db){
         def conn = db.getConnection()
         def insert = conn.prepareStatement(insertStatement, Statement.RETURN_GENERATED_KEYS)
         def indices = []

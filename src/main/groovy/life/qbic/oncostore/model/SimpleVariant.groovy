@@ -55,7 +55,7 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    Boolean isSomatic() {
+    Boolean getIsSomatic() {
         return null
     }
 

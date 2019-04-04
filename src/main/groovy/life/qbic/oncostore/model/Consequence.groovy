@@ -1,5 +1,7 @@
 package life.qbic.oncostore.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 class Consequence {
 
     String codingChange
@@ -14,60 +16,73 @@ class Consequence {
     Integer aaEnd
     String impact
     Integer strand
-    Gene gene
+    String geneID
 
     Consequence() {
 
     }
 
+    @JsonProperty("codingChange")
     String getCodingChange() {
         return codingChange
     }
 
+    @JsonProperty("transcriptID")
     String getTranscriptID() {
         return transcriptID
     }
 
+    @JsonProperty("transcriptVersion")
     Integer getTranscriptVersion() {
         return transcriptVersion
     }
 
+    @JsonProperty("bioType")
     String getBioType() {
         return bioType
     }
 
+    @JsonProperty("refseqID")
     String getRefSeqID() {
         return refSeqID
     }
 
+    @JsonProperty("consequenceType")
     String getConsequenceType() {
         return consequenceType
     }
 
+    @JsonProperty("canonical")
     Boolean getCanonical() {
         return canonical
     }
 
+    @JsonProperty("aaChange")
     String getAaChange() {
         return aaChange
     }
 
+    @JsonProperty("aaStart")
     Integer getAaStart() {
         return aaStart
     }
 
+    @JsonProperty("aaEnd")
     Integer getAaEnd() {
         return aaEnd
     }
 
+    @JsonProperty("impact")
     String getImpact() {
         return impact
     }
 
-    Gene getGene() {
-        return gene
+    @JsonProperty("geneID")
+    String getGeneID() {
+        return geneID
     }
 
+    @JsonProperty("strand")
     Integer getStrand() {
         return strand
     }
@@ -116,8 +131,8 @@ class Consequence {
         this.impact = impact
     }
 
-    void setGene(Gene gene) {
-        this.gene = gene
+    void setGeneID(String geneID) {
+        this.geneID = geneID
     }
 
     void setStrand(Integer strand) {

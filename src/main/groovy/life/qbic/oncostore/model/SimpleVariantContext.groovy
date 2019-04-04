@@ -19,7 +19,7 @@ interface SimpleVariantContext {
 
     ReferenceGenome getReferenceGenome()
 
-    Boolean isSomatic()
+    Boolean getIsSomatic()
 
     String getAttribute(String key)
 
