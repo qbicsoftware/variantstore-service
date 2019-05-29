@@ -93,7 +93,8 @@ public class AnnotationHandler {
                     cons.setAaEnd(protPos)
                 }
                 cons.setImpact(parsedAnnotation[vep[version].get("impact")])
-                cons.setGene(new Gene(parsedAnnotation[vep[version].get("gene")]))
+                //cons.setGene(new Gene(parsedAnnotation[vep[version].get("gene")]))
+                cons.setGeneID(parsedAnnotation[vep[version].get("gene")])
                 cons.setStrand(parsedAnnotation[vep[version].get("strand")])
                 break
 
@@ -111,7 +112,7 @@ public class AnnotationHandler {
                 //cons.setCanonical(false) //how to determine?
                 cons.setAaChange(parsedAnnotation[snpEff[version].get("protCoding")])
                 cons.setImpact(parsedAnnotation[snpEff[version].get("impact")])
-                cons.setGene(new Gene(parsedAnnotation[snpEff[version].get("gene")]))
+                cons.setGeneID(parsedAnnotation[snpEff[version].get("gene")])
                 break
 
             default:

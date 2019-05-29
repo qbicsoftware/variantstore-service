@@ -1,4 +1,4 @@
-package life.qbic.oncostore.oncoloader
+package life.qbic.oncostore.parser
 
 import life.qbic.oncostore.model.Annotation
 import life.qbic.oncostore.model.ReferenceGenome

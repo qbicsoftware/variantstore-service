@@ -6,6 +6,8 @@ import htsjdk.variant.variantcontext.VariantContext
 class SimpleVariant implements SimpleVariantContext{
 
     final VariantContext context
+    String id
+    Boolean isSomatic
     List<Consequence> consequences = []
 
     SimpleVariant(VariantContext context) {
@@ -33,7 +35,7 @@ class SimpleVariant implements SimpleVariantContext{
     @JsonProperty("referenceAllele")
     @Override
     String getReferenceAllele() {
-        context.reference
+        context.reference.toString().replace("*", "")
     }
 
     @JsonProperty("observedAllele")
@@ -56,11 +58,26 @@ class SimpleVariant implements SimpleVariantContext{
 
     @Override
     Boolean getIsSomatic() {
-        return null
+        return isSomatic
     }
 
     @Override
     String getAttribute(String key) {
         this.context.getAttribute(key) ?: ""
+    }
+
+    @Override
+    String getId() {
+        return id
+    }
+
+    @Override
+    void setId(String id) {
+        this.id = id
+    }
+
+    @Override
+    void setIsSomatic(Boolean isSomatic) {
+        this.isSomatic = isSomatic
     }
 }

@@ -1,4 +1,4 @@
-package life.qbic.oncostore.oncoloader
+package life.qbic.oncostore.parser
 
 import groovy.json.JsonSlurper
 import life.qbic.oncostore.model.Annotation

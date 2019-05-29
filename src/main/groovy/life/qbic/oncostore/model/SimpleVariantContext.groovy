@@ -23,4 +23,9 @@ interface SimpleVariantContext {
 
     String getAttribute(String key)
 
+    String getId()
+
+    void setId(String id)
+
+    void setIsSomatic(Boolean somatic)
 }

@@ -1,0 +1,11 @@
+micronaut:
+    application:
+        name: oncostore
+database:
+    schema-uri: "src/test/resources/oncostore-model.sql"
+datasources:
+        default:
+            url: jdbc:h2:mem:default;MODE=MySQL;DB_CLOSE_DELAY=-1;DB_CLOSE_ON_EXIT=FALSE
+            username: testuser
+            password: ""
+            driverClassName: org.h2.Driver

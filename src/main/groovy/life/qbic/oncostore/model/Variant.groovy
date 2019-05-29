@@ -109,4 +109,14 @@ class Variant implements SimpleVariantContext, Comparable{
     String getAttribute(String key) {
         return null
     }
+
+    @Override
+    String getId() {
+        return identifier
+    }
+
+    @Override
+    void setId(String identifier) {
+        this.identifier = identifier
+    }
 }

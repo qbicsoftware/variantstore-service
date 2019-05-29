@@ -1,4 +1,4 @@
-package life.qbic.oncostore.oncoloader
+package life.qbic.oncostore.parser
 
 import htsjdk.samtools.util.CloseableIterator
 import life.qbic.oncostore.model.SimpleVariantContext

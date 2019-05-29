@@ -4,7 +4,7 @@ THIS SERVICE IS WORK IN PROGRESS.
 Service that implements the oncostore interface.
 
 ## Micronaut app
-This service is build with [micronaut](https://micronaut.io):
+This service has been built with [micronaut](https://micronaut.io):
 
 ```
 mn create-app life.qbic.oncostore --features=groovy --build maven
@@ -24,9 +24,8 @@ mn create-app life.qbic.oncostore --features=groovy --build maven
 ```
 
 ## Data model
-The data model that holds sample tracking information is denfined by attributes and relations shown in the following ER diagram.
-
-![er-diagram](models/oncostore-model-diagram.svg)
+The data base model of the OncoStore is shown in the following diagram.
+![diagram](models/oncostore-model-diagram.svg)
 
 ## API design
 The remote RESTful API documentation will be provided on [SwaggerHub](https://swagger.io/tools/swaggerhub/).
