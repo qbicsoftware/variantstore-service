@@ -13,7 +13,7 @@
       <swagger.version>2.0.3</swagger.version>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <exec.mainClass>life.qbic.oncostore.Application</exec.mainClass>
-    <groovy.version>2.5.4</groovy.version>
+    <groovy.version>2.5.7</groovy.version>
   </properties>
     <repositories>
         <repository>

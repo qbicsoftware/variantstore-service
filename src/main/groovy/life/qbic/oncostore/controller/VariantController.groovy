@@ -4,7 +4,6 @@ import groovy.util.logging.Log4j2
 import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.annotation.Body
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
@@ -13,7 +12,6 @@ import life.qbic.oncostore.model.Variant
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
 
-import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
@@ -49,8 +47,8 @@ class VariantController {
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getVariants(@Valid ListingArguments args) {
         try {
-            List<Variant> variants = service.getVariantForVariantId(identifier)
-            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No variants found matching provided attributes..")
+            List<Variant> variants = service.getVariantsForSpecifiedProperties(args)
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided attributes..")
         }
         catch (Exception e) {
             log.error(e)

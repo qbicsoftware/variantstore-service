@@ -17,11 +17,22 @@ class ListingArguments {
     private BigInteger startPosition
 
     @Nullable
+    @Positive
+    private BigInteger endPosition
+
+    @Nullable
     private String cancerEntity
 
     @Nullable
     @Pattern(regexp = '(Q[A-Z0-9]{4}[0-9]{3}[A-Z][A-Z0-9]$)|(Q[A-Z0-9]{4}ENTITY-[0-9]*$)')
     private String sampleId
+
+    @Nullable
+    //TODO pattern?
+    private String geneId
+
+    @Nullable
+    private String consequenceType
 
     public ListingArguments() {
 
@@ -41,6 +52,13 @@ class ListingArguments {
         return Optional.of(startPosition)
     }
 
+    public Optional<BigInteger> getEndPosition() {
+        if (endPosition == null) {
+            return Optional.empty()
+        }
+        return Optional.of(endPosition)
+    }
+
     public Optional<String> getCancerEntity() {
         if (cancerEntity == null) {
             return Optional.empty()
@@ -55,6 +73,20 @@ class ListingArguments {
         return Optional.of(sampleId)
     }
 
+    public Optional<String> getGeneId() {
+        if (geneId == null) {
+            return Optional.empty()
+        }
+        return Optional.of(geneId)
+    }
+
+    public Optional<String> getConsequenceType() {
+        if (consequenceType == null) {
+            return Optional.empty()
+        }
+        return Optional.of(consequenceType)
+    }
+
     public void setChromosome(@Nullable String chromosome) {
         this.chromosome = chromosome
     }
@@ -63,12 +95,24 @@ class ListingArguments {
         this.startPosition = startPosition
     }
 
+    public void setEndPosition(@Nullable BigInteger endPosition) {
+        this.endPosition = endPosition
+    }
+
     public void setCancerEntity(@Nullable String cancerEntity) {
         this.cancerEntity = cancerEntity
     }
 
     public void setSampleId(@Nullable String sampleId) {
         this.sampleId = sampleId
+    }
+
+    public void setGeneId(@Nullable String geneId) {
+        this.geneId = geneId
+    }
+
+    public void setConsequenceType(@Nullable String consequenceType) {
+        this.consequenceType = consequenceType
     }
 
     public static Builder builder() {
@@ -84,12 +128,24 @@ class ListingArguments {
             uriBuilder.queryParam("startPosition", startPosition)
         }
 
+        if (endPosition != null) {
+            uriBuilder.queryParam("endPosition", startPosition)
+        }
+
         if (cancerEntity != null) {
             uriBuilder.queryParam("cancerEntity", cancerEntity)
         }
 
         if (sampleId != null) {
             uriBuilder.queryParam("sampleId", sampleId)
+        }
+
+        if (geneId != null) {
+            uriBuilder.queryParam("geneId", geneId)
+        }
+
+        if (consequenceType != null) {
+            uriBuilder.queryParam("consequenceType", consequenceType)
         }
 
         return uriBuilder.build();
@@ -112,6 +168,11 @@ class ListingArguments {
             return this
         }
 
+        public Builder endPosition(BigInteger endPosition) {
+            args.setEndPosition(endPosition)
+            return this
+        }
+
         public Builder cancerEntity(String cancerEntity) {
             args.setCancerEntity(cancerEntity)
             return this
@@ -119,6 +180,16 @@ class ListingArguments {
 
         public Builder sampleId(String sampleId) {
             args.setSampleId(sampleId)
+            return this
+        }
+
+        public Builder geneId(String geneId) {
+            args.setGeneId(geneId)
+            return this
+        }
+
+        public Builder consequenceType(String consequenceType) {
+            args.setConsequenceType(consequenceType)
             return this
         }
 

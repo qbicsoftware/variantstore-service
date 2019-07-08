@@ -2,8 +2,11 @@ package life.qbic.oncostore.parser
 
 import groovy.json.JsonSlurper
 import life.qbic.oncostore.model.Annotation
+import life.qbic.oncostore.model.Case
 import life.qbic.oncostore.model.ReferenceGenome
 import life.qbic.oncostore.model.VariantCaller
+import life.qbic.oncostore.model.Sample
+
 
 class MetadataReader {
 
@@ -12,11 +15,15 @@ class MetadataReader {
     MetadataReader(File file) {
         def slurper = new JsonSlurper()
         def jsonContent = slurper.parse(file)
-        this.metadataContext = new MetadataContext(jsonContent.is_somatic, parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), jsonContent.sample_id, jsonContent.vcf_files)
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent), parseVcfFiles(jsonContent))
     }
 
     MetadataContext getMetadataContext() {
         return metadataContext
+    }
+
+    static boolean parseIsSomatic(jsonContent) {
+        return jsonContent.is_somatic
     }
 
     static Annotation parseAnnotationSoftware(jsonContent) {
@@ -29,5 +36,17 @@ class MetadataReader {
 
     static ReferenceGenome parseReferenceGenome(jsonContent) {
         return new ReferenceGenome(jsonContent.reference_genome.source, jsonContent.reference_genome.build, jsonContent.reference_genome.version)
+    }
+
+    static Case parseCase(jsonContent) {
+        return new Case(jsonContent.case.identifier)
+    }
+
+    static Sample parseSample(jsonContent) {
+        return new Sample(jsonContent.sample.identifier, jsonContent.sample.cancerEntity)
+    }
+
+    static List<String> parseVcfFiles(jsonContent) {
+        return jsonContent.vcf_files
     }
 }

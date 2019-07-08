@@ -15,8 +15,11 @@ class Sample {
         this.cancerEntity = cancerEntity
     }
 
-    Sample() {
+    Sample(String identifier) {
+        this.identifier = identifier
+    }
 
+    Sample() {
     }
 
     @JsonProperty("sampleIdentifier")

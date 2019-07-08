@@ -52,14 +52,14 @@ public class AnnotationHandler {
         snpEff.put("4.3t", snpeff1)
     }
 
-    static SimpleVariantContext addAnnotationsToVariant(SimpleVariantContext simpleVariant, Annotation annotationSofware) {
+    static SimpleVariantContext addAnnotationsToVariant(SimpleVariantContext simpleVariant, Annotation annotationSoftware) {
         def variantConsequences = []
-        def key = (annotationSofware.getName() == "vep") ? "CSQ": "ANN"
+        def key = (annotationSoftware.getName() == "vep") ? "CSQ": "ANN"
         def consequences = simpleVariant.getAttribute(key).split(',', -1)
 
         consequences.each { annotation ->
             def cons = new Consequence()
-            def consequence = populateConsequence(cons, annotation, annotationSofware)
+            def consequence = populateConsequence(cons, annotation, annotationSoftware)
             variantConsequences.add(consequence)
         }
 

@@ -1,13 +1,12 @@
 package life.qbic.oncostore.service
 
+import htsjdk.samtools.util.CloseableIterator
 import htsjdk.variant.vcf.VCFFileReader
 import life.qbic.oncostore.database.OncostoreStorage
-import life.qbic.oncostore.model.BeaconAlleleRequest
-import life.qbic.oncostore.model.BeaconAlleleResponse
-import life.qbic.oncostore.model.Sample
-import life.qbic.oncostore.model.Variant
+import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.MetadataReader
 import life.qbic.oncostore.parser.SimpleVCFReader
+import life.qbic.oncostore.util.AnnotationHandler
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
@@ -24,8 +23,18 @@ class OncostoreInformationCenter implements OncostoreService{
     }
 
     @Override
+    List<Case> getCaseForCaseId(String caseId) {
+        return storage.findCaseById(caseId)
+    }
+
+    @Override
     List<Variant> getVariantForVariantId(String variantId) {
         return storage.findVariantById(variantId)
+    }
+
+    @Override
+    List<Gene> getGeneForGeneId(String geneId) {
+        return storage.findGeneById(geneId)
     }
 
     @Override
@@ -54,13 +63,23 @@ class OncostoreInformationCenter implements OncostoreService{
     }
 
     @Override
+    List<Case> getCasesForSpecifiedProperties(@NotNull ListingArguments args) {
+        return storage.findCases(args)
+    }
+
+    @Override
     List<Sample> getSamplesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findSamples(args)
     }
 
     @Override
-    List<Sample> getVariantsForSpecifiedProperties(@NotNull ListingArguments args) {
+    List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findVariants(args)
+    }
+
+    @Override
+    List<Gene> getGenesForSpecifiedProperties(@NotNull ListingArguments args) {
+        return storage.findGenes(args)
     }
 
     @Override
@@ -68,25 +87,23 @@ class OncostoreInformationCenter implements OncostoreService{
         MetadataReader meta = new MetadataReader(new File(url))
 
         def vcfFiles = meta.getMetadataContext().getVcfFiles()
+        def variantsToInsert = []
 
-        storage.storeVariantCallerInStore(meta.getMetadataContext().getVariantCalling())
-        println(meta.getMetadataContext().getVariantCalling().getName())
-
-        //this.isSomatic = isSomatic
-        //this.variantCalling = variantCalling
-        //this.variantAnnotation = variantAnnotation
-        //this.referenceGenome = referenceGenome
-        //this.sampleID = sampleID
-        //this.vcfFiles = vcfFiles
-
-        //TODO
-        // write metadata information to store
-
-        // write variant information to store for each vcf file
         vcfFiles.each { filePath ->
             SimpleVCFReader reader = new SimpleVCFReader((new VCFFileReader(new File(filePath), false)))
-            println(filePath)
+            CloseableIterator variants = reader.iterator()
+
+            variants.each {SimpleVariantContext variant ->
+                AnnotationHandler.addAnnotationsToVariant(variant, meta.getMetadataContext().getVariantAnnotation())
+                variant.setIsSomatic(meta.getMetadataContext().getIsSomatic())
+                variantsToInsert.add(variant)
+            }
         }
+        def start = new Date()
+        storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), variantsToInsert)
+
+        def end = new Date()
+        println(groovy.time.TimeCategory.minus(end, start))
     }
 
 }
