@@ -15,16 +15,23 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
+import java.util.concurrent.ExecutorService
+import java.util.concurrent.Executors
+import java.util.concurrent.ThreadPoolExecutor
+
 
 @Log4j2
 @Controller("/variants")
 class VariantController {
 
     private final OncostoreService service
+    private final ExecutorService executor
+    private final List<Thread> threads = new ArrayList<Thread>();
 
     @Inject
     VariantController(OncostoreService service) {
         this.service = service
+        this.executor = Executors.newFixedThreadPool(1);
     }
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
@@ -60,11 +67,42 @@ class VariantController {
     HttpResponse storeVariants(@QueryValue("url") @NotNull String url) {
         println(url)
         try {
-            service.storeVariantsInStore(url)
-            return HttpResponse.ok()
+
+            executor.submit(new MyRunnable(service, url));
+
+            //Runnable task = new MyRunnable(service, url);
+            //Thread worker = new Thread(task);
+            //worker.start()
+            //threads.add(worker);
+            //println(threads.size().toString())
+
+
+            if (executor instanceof ThreadPoolExecutor) {
+                System.out.println(
+                        "Pool size is now " +
+                                ((ThreadPoolExecutor) executor).getActiveCount()
+                );
+            }
+
+            return HttpResponse.accepted()
         }
         catch (Exception e) {
             log.error(e)
         }
+    }
+}
+
+public class MyRunnable implements Runnable {
+    private final String url;
+    private final OncostoreService service
+
+    MyRunnable(OncostoreService service, String url) {
+        this.service = service;
+        this.url = url;
+    }
+
+    @Override
+    public void run() {
+        service.storeVariantsInStore(url)
     }
 }

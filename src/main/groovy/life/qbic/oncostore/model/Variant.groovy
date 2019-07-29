@@ -5,7 +5,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 class Variant implements SimpleVariantContext, Comparable{
 
     String identifier
-    Integer chromosome
+    String chromosome
     BigInteger startPosition
     BigInteger endPosition
     String referenceAllele
@@ -25,7 +25,7 @@ class Variant implements SimpleVariantContext, Comparable{
         this.identifier = identifier
     }
 
-    void setChromosome(Integer chromosome) {
+    void setChromosome(String chromosome) {
         this.chromosome = chromosome
     }
 
@@ -111,6 +111,7 @@ class Variant implements SimpleVariantContext, Comparable{
     }
 
     @Override
+    @JsonProperty("id")
     String getId() {
         return identifier
     }

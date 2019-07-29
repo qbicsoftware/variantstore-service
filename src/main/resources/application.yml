@@ -1,3 +1,19 @@
 micronaut:
+    router:
+        static-resources:
+            swagger:
+                paths: classpath:META-INF/swagger
+                mapping: /swagger/**
     application:
         name: oncostore
+datasources:
+    default:
+      url: jdbc:mariadb://${db-host}/${db-name}
+      username: ${db-user}
+      password: ${db-pwd}
+      driverClassName: org.mariadb.jdbc.Driver
+endpoints:
+    health:
+        enabled: true
+        sensitive: false
+        details-visible: ANONYMOUS

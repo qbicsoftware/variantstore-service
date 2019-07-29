@@ -165,6 +165,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchVariants()
         }
         catch (Exception e) {
+            println(e)
             throw new OncostoreStorageException("Could not fetch variants.", e)
         }
     }
@@ -225,7 +226,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<Variant> fetchVariants() {
-        def result = sql.rows("""SELECT * FROM Variant;""")
+        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id;""")
         return parseVariantQueryResult(result)
     }
 
@@ -254,34 +255,36 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<Variant> fetchVariantsByChromosome(String chromosome) {
-        def result = sql.rows(""""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.chr=$chromosome;""")
+        println(chromosome)
+        println(chromosome.getClass())
+        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.chr=$chromosome;""")
         //List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
         //return variants
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsByStartPosition(BigInteger start) {
-        def result = sql.rows(""""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.start=$start;""")
+        def result = sql.rows("""SELECT * FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id WHERE Variant.start=$start;""")
         //List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
         //return variants
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsBySample(String sampleId) {
-        def result = sql.rows(""""select * from Variant INNER JOIN Sample_has_Variant ON Variant.id = Sample_has_Variant.Variant_id INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id where Sample_qbicID=$sampleId;""")
+        def result = sql.rows("""select * from Variant INNER JOIN Sample_has_Variant ON Variant.id = Sample_has_Variant.Variant_id INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id where Sample_qbicID=$sampleId;""")
         //List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
         //return variants
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId) {
-        def result = sql.rows(""""select distinct * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id INNER JOIN Consequence ON Variant_has_Consequence.Consequence_id = Consequence.id where Sample_qbicID = $sampleId AND Gene_id=$geneId;""")
+        def result = sql.rows("""select distinct * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id INNER JOIN Consequence ON Variant_has_Consequence.Consequence_id = Consequence.id where Sample_qbicID = $sampleId AND Gene_id=$geneId;""")
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsForBeaconResponse(String chromosome, BigInteger start,
                                                          String reference, String observed, String assemblyId, ListingArguments args) {
-        def result = sql.rows(""""select * from Variant INNER JOIN Variant_has_ReferenceGenome ON Variant.id = Variant_has_ReferenceGenome.Variant_id INNER JOIN ReferenceGenome on Variant_has_ReferenceGenome.ReferenceGenome_id = ReferenceGenome.id where ReferenceGenome.build=$assemblyId and Variant.chr=$chromosome and Variant.start=$start and Variant.ref=$reference and Variant.obs=$observed;""")
+        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_ReferenceGenome ON Variant.id = Variant_has_ReferenceGenome.Variant_id INNER JOIN ReferenceGenome on Variant_has_ReferenceGenome.ReferenceGenome_id = ReferenceGenome.id where ReferenceGenome.build=$assemblyId and Variant.chr=$chromosome and Variant.start=$start and Variant.ref=$reference and Variant.obs=$observed;""")
         List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
         return variants
     }
@@ -361,6 +364,8 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             def sId = tryToStoreSampleWithCase(metadata.getSample(), cId)
             def vcId = tryToStoreVariantCaller(metadata.getVariantCalling())
             def asId = tryToStoreAnnotationSoftware(metadata.getVariantAnnotation())
+            println("Connection")
+            println(this.sql.connection)
             def rgId = tryToStoreReferenceGenome(metadata.getReferenceGenome())
 
             def variantsToInsert = []
@@ -410,21 +415,23 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     void tryToStoreJunctionBatch(Object id, List ids, String insertStatement){
-            def result = sql.withBatch(500, insertStatement)
-                    { BatchingPreparedStatementWrapper ps ->
-                        [[id], ids].combinations().each { key1, key2 ->
-                            if (key1 instanceof String)
-                                key1 = (String) key1
-                            else
-                                key1 = (Integer) key1
+            def result =
+                            sql.withBatch(500, insertStatement)
+                                {  ps ->
+                                    [[id], ids].combinations().each { key1, key2 ->
+                                        if (key1 instanceof String)
+                                            key1 = (String) key1
+                                        else
+                                            key1 = (Integer) key1
 
-                            if (key2 instanceof String)
-                                key2 = (String) key2
-                            else
-                                key2 = (Integer) key2
-                            ps.addBatch([key1, key2] as List<Object>)
+                                        if (key2 instanceof String)
+                                            key2 = (String) key2
+                                        else
+                                            key2 = (Integer) key2
+                                        ps.addBatch([key1, key2] as List<Object>)
+                            }
                         }
-                    }
+
     }
 
     private Integer tryToStoreVariant(SimpleVariantContext variant) {
@@ -471,7 +478,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     private String tryToStoreCase(Case patient) {
         def result = sql.executeInsert("""INSERT INTO Entity (id) values \
         (${patient.identifier})
-     ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
+     ON DUPLICATE KEY UPDATE id=id;""")
         return patient.identifier
     }
 
@@ -561,14 +568,16 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
 
     private static Variant convertRowResultToVariant(GroovyRowResult row) {
         def variant = new Variant()
-        variant.setIdentifier(row.get("Variant_id") as String)
-        variant.setChromosome(row.get("chr") as Integer)
+        variant.setIdentifier(row.get("uuid") as String)
+        variant.setChromosome(row.get("chr") as String)
         variant.setStartPosition(row.get("start") as BigInteger)
         variant.setEndPosition(row.get("end") as BigInteger)
         variant.setReferenceAllele(row.get("ref") as String)
         variant.setObservedAllele(row.get("obs") as String)
         variant.setIsSomatic(row.get("isSomatic") as Boolean)
+        println(row)
         variant.setConsequences([convertRowResultToConsequence(row)])
+        println("yes")
         return variant
     }
 

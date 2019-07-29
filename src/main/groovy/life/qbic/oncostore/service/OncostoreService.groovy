@@ -25,7 +25,7 @@ interface OncostoreService {
 
     List<Sample> getSamplesForSpecifiedProperties(ListingArguments args)
 
-    List<Sample> getVariantsForSpecifiedProperties(ListingArguments args)
+    List<Variant> getVariantsForSpecifiedProperties(ListingArguments args)
 
     List<Gene> getGenesForSpecifiedProperties(ListingArguments args)
 

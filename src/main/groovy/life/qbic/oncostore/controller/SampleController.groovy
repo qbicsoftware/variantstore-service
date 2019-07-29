@@ -54,7 +54,7 @@ class SampleController {
     HttpResponse getSamples(@Valid ListingArguments args){
         try {
             List<Sample> samples = service.getSamplesForSpecifiedProperties(args)
-            return samples ? HttpResponse.ok(samples.get(0)) : HttpResponse.notFound("No samples found matching provided attributes.")
+            return samples ? HttpResponse.ok(samples) : HttpResponse.notFound("No samples found matching provided attributes.")
         }
         catch (Exception e) {
             log.error(e)
