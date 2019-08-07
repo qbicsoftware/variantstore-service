@@ -21,7 +21,8 @@ class Variant implements SimpleVariantContext, Comparable{
         identifier <=> other.identifier
     }
 
-    void setIdentifier(String identifier) {
+    @Override
+    void setId(String identifier) {
         this.identifier = identifier
     }
 
@@ -101,23 +102,14 @@ class Variant implements SimpleVariantContext, Comparable{
         return isSomatic
     }
 
-    @JsonProperty("identifier")
-    String getIdentifier() {
-        return identifier
-    }
-
     String getAttribute(String key) {
         return null
     }
 
+    @JsonProperty("identifier")
     @Override
-    @JsonProperty("id")
     String getId() {
         return identifier
     }
 
-    @Override
-    void setId(String identifier) {
-        this.identifier = identifier
-    }
 }

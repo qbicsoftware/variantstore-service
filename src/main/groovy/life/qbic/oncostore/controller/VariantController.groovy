@@ -55,7 +55,7 @@ class VariantController {
     HttpResponse getVariants(@Valid ListingArguments args) {
         try {
             List<Variant> variants = service.getVariantsForSpecifiedProperties(args)
-            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided attributes..")
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided attributes.")
         }
         catch (Exception e) {
             log.error(e)

@@ -123,6 +123,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchCases()
         }
         catch (Exception e) {
+            println(e)
             sql.close()
             throw new OncostoreStorageException("Could not fetch cases.", e)
         }
@@ -146,7 +147,11 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     List<Variant> findVariants(@NotNull ListingArguments args) {
         sql = new Sql(dataSource.connection)
         try {
-            if (!args.getChromosome().isPresent() && args.getStartPosition().isPresent()) {
+            if (args.getChromosome().isPresent() && args.getStartPosition().isPresent()) {
+                return fetchVariantsByChromosomeAndStartPosition(args.getChromosome().get(), args.getStartPosition().get())
+            }
+
+            if (args.getStartPosition().isPresent()) {
                 return fetchVariantsByStartPosition(args.getStartPosition().get())
             }
 
@@ -201,7 +206,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<Variant> fetchVariantForId(String id) {
-        def result = sql.rows("""SELECT * FROM Sample WHERE Variant.id=$id;""")
+        def result = sql.rows("""SELECT * FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id WHERE Variant.uuid=$id;""")
         //Variant variant = convertRowResultToVariant(result)
         //return variant
         return parseVariantQueryResult(result)
@@ -214,8 +219,8 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<Case> fetchCases() {
-        def result = sql.rows("""SELECT * FROM Case;""")
-        List<Case> cases = result.collect( convertRowResultToCase(it))
+        def result = sql.rows("""SELECT * FROM Entity;""")
+        List<Case> cases = result.collect{ convertRowResultToCase(it)}
         return cases
     }
 
@@ -254,9 +259,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         return samples
     }
 
+    private List<Variant> fetchVariantsByChromosomeAndStartPosition(String chromosome, BigInteger start) {
+        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.chr=$chromosome AND Variant.start=$start;""")
+        return parseVariantQueryResult(result)
+    }
+
     private List<Variant> fetchVariantsByChromosome(String chromosome) {
-        println(chromosome)
-        println(chromosome.getClass())
         def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.chr=$chromosome;""")
         //List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
         //return variants
@@ -290,7 +298,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<Gene> fetchGenesBySample(String sampleId) {
-        def result = sql.rows("""select distinct Gene_id from Consequence INNER JOIN Variant_has_Consequence ON Consequence.id = Variant_has_Consequence.Consequence_id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id where Sample_qbicID=$sampleId;""")
+        def result = sql.rows("""select distinct Gene.* from Gene INNER JOIN Consequence ON Gene.id = Consequence.Gene_id INNER JOIN Variant_has_Consequence ON Consequence.id = Variant_has_Consequence.Consequence_id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id where Sample_qbicID=$sampleId;""")
         List<Gene> genes = result.collect{ convertRowResultToGene(it) }
         return genes
     }
@@ -364,8 +372,6 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             def sId = tryToStoreSampleWithCase(metadata.getSample(), cId)
             def vcId = tryToStoreVariantCaller(metadata.getVariantCalling())
             def asId = tryToStoreAnnotationSoftware(metadata.getVariantAnnotation())
-            println("Connection")
-            println(this.sql.connection)
             def rgId = tryToStoreReferenceGenome(metadata.getReferenceGenome())
 
             def variantsToInsert = []
@@ -409,7 +415,6 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             sql.close()
         } catch (Exception e) {
             sql.close()
-            println(e)
             throw new OncostoreStorageException("Could not store variants with metadata in store: $metadata", e)
         }
     }
@@ -546,8 +551,8 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     private static Sample convertRowResultToSample(GroovyRowResult row) {
         def sample = new Sample()
         sample.setIdentifier(row.get("qbicID") as String)
-        sample.setCancerEntity(row.get("Entity_id") as String)
-        sample.setCaseID(row.get("cancerEntity") as String)
+        sample.setCancerEntity(row.get("cancerEntity") as String)
+        sample.setCaseID(row.get("Entity_id") as String)
         return sample
     }
 
@@ -575,9 +580,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         variant.setReferenceAllele(row.get("ref") as String)
         variant.setObservedAllele(row.get("obs") as String)
         variant.setIsSomatic(row.get("isSomatic") as Boolean)
-        println(row)
         variant.setConsequences([convertRowResultToConsequence(row)])
-        println("yes")
         return variant
     }
 
@@ -603,9 +606,8 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         Map<String, List<Variant>> variantsIdMap = rows.collect{ convertRowResultToVariant(it) }.groupBy{ it.identifier }
         List<Variant> variants = []
         variantsIdMap.each { key, value ->
-            //def consequences = value*.getConsequences().collectMany {[it]}
-            //value[0].consequences = consequences
-            //TODO check that
+            def consequences = value*.getConsequences().collectMany {[it]}
+            value[0].consequences = consequences
             variants.add(value[0])
         }
         return variants
