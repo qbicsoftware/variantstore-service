@@ -20,12 +20,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     private Sql sql
 
     /* Predefined queries for inserting db entries in junction tables */
-    String insertVariantConsequenceJunction = "INSERT INTO Variant_has_Consequence (Variant_id, Consequence_id) VALUES(?, ?) ON DUPLICATE KEY UPDATE Variant_id=Variant_id"
-    String insertVariantVariantCallerJunction = "INSERT INTO Variant_has_VariantCaller (VariantCaller_id, Variant_id) VALUES(?, ?) ON DUPLICATE KEY UPDATE VariantCaller_id=VariantCaller_id"
-    String insertGeneReferenceGenomeJunction = "INSERT INTO Gene_has_ReferenceGenome (ReferenceGenome_id, Gene_id) VALUES(?, ?) ON DUPLICATE KEY UPDATE ReferenceGenome_id=ReferenceGenome_id"
-    String insertAnnotationSoftwareConsequenceJunction = "INSERT INTO AnnotationSoftware_has_Consequence (AnnotationSoftware_id, Consequence_id) VALUE(?, ?) ON DUPLICATE KEY UPDATE AnnotationSoftware_id=AnnotationSoftware_id"
-    String insertReferenceGenomeVariantJunction = "INSERT INTO Variant_has_ReferenceGenome (ReferenceGenome_id, Variant_id) VALUE(?,?) ON DUPLICATE KEY UPDATE ReferenceGenome_id=ReferenceGenome_id"
-    String insertSampleVariantJunction = "INSERT INTO Sample_has_Variant (Sample_qbicID, Variant_id) VALUE(?,?) ON DUPLICATE KEY UPDATE Sample_qbicID=Sample_qbicID"
+    String insertVariantConsequenceJunction = "INSERT INTO Variant_has_Consequence (Variant_id, Consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE Variant_id=Variant_id"
+    String insertVariantVariantCallerJunction = "INSERT INTO Variant_has_VariantCaller (VariantCaller_id, Variant_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE VariantCaller_id=VariantCaller_id"
+    String insertGeneReferenceGenomeJunction = "INSERT INTO Gene_has_ReferenceGenome (ReferenceGenome_id, Gene_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE ReferenceGenome_id=ReferenceGenome_id"
+    String insertAnnotationSoftwareConsequenceJunction = "INSERT INTO AnnotationSoftware_has_Consequence (AnnotationSoftware_id, Consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE AnnotationSoftware_id=AnnotationSoftware_id"
+    String insertReferenceGenomeVariantJunction = "INSERT INTO Variant_has_ReferenceGenome (ReferenceGenome_id, Variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE ReferenceGenome_id=ReferenceGenome_id"
+    String insertSampleVariantJunction = "INSERT INTO Sample_has_Variant (Sample_qbicID, Variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE Sample_qbicID=Sample_qbicID"
 
     @Inject MariaDBOncostoreStorage(QBiCDataSource dataSource) {
         this.dataSource = dataSource
@@ -366,118 +366,149 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     @Override
     void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variants) throws OncostoreStorageException {
         this.sql = new Sql(dataSource.connection)
+
         try {
-            def genesToInsert = []
+            println("Inserting metadata")
             def cId = tryToStoreCase(metadata.getCase())
             def sId = tryToStoreSampleWithCase(metadata.getSample(), cId)
             def vcId = tryToStoreVariantCaller(metadata.getVariantCalling())
             def asId = tryToStoreAnnotationSoftware(metadata.getVariantAnnotation())
             def rgId = tryToStoreReferenceGenome(metadata.getReferenceGenome())
 
-            def variantsToInsert = []
-            def allConsequencesToInsert = []
-            def geneIds = []
+            sql.connection.autoCommit = false
+            sql.setCacheStatements(true)
 
-            variants.each { variant ->
-                def consequencesToInsert = []
-                variant.getConsequences().each { consequence ->
-                    genesToInsert.add(consequence.getGeneID())
-                }
+            /* INSERT variants and save consequences and genes for import */
+            def variantInsertResult = tryToStoreVariantsBatch(variants)
+            def consequencesToInsert = variantInsertResult.first
+            def geneIdentifiers = variantInsertResult.second
 
-                geneIds.addAll(tryToStoreGenes(genesToInsert))
-
-                variant.getConsequences().each { consequence ->
-                    consequencesToInsert.add(tryToStoreConsequence(consequence))
-                }
-
-                allConsequencesToInsert.addAll(consequencesToInsert)
-                def varId = tryToStoreVariant(variant)
-                tryToStoreJunctionBatch(varId, consequencesToInsert, insertVariantConsequenceJunction)
-
-                variantsToInsert.add(varId)
-            }
-
-            /* INSERT consequences and annotation software junction */
-            tryToStoreJunctionBatch(asId, allConsequencesToInsert, insertAnnotationSoftwareConsequenceJunction)
-
-            /* INSERT sample and variants junction */
-            tryToStoreJunctionBatch(sId, variantsToInsert, insertSampleVariantJunction)
+            /* INSERT genes */
+            tryToStoreGenes(geneIdentifiers)
 
             /* INSERT reference genome and genes junction */
-            tryToStoreJunctionBatch(rgId, geneIds, insertGeneReferenceGenomeJunction)
+            tryToStoreJunctionBatch(rgId, geneIdentifiers, insertGeneReferenceGenomeJunction)
+
+            /* GET ids of variants */
+            def variantIdMap = tryToFindVariants(variants)
+
+            /* INSERT consequences */
+            tryToStoreConsequencesBatch(consequencesToInsert)
+
+            /* GET ids of consequences */
+            def variantConsequenceIdMap = tryToFindConsequences(variants)
+
+            /* INSERT variant and consequence junction */
+            tryToStoreJunctionBatchFromMap(variantConsequenceIdMap, variantIdMap, insertVariantConsequenceJunction)
+
+            /* INSERT consequences and annotation software junction */
+            tryToStoreJunctionBatch(asId, variantConsequenceIdMap.values().toList().flatten(), insertAnnotationSoftwareConsequenceJunction)
+
+            /* INSERT sample and variants junction */
+            tryToStoreJunctionBatch(sId, variantIdMap.values().asList(), insertSampleVariantJunction)
 
             /* INSERT variants and variant caller in junction table */
-            tryToStoreJunctionBatch(vcId, variantsToInsert, insertVariantVariantCallerJunction)
+            tryToStoreJunctionBatch(vcId, variantIdMap.values().asList(), insertVariantVariantCallerJunction)
 
             /* INSERT variants and reference genome in junction table */
-            tryToStoreJunctionBatch(rgId, variantsToInsert, insertReferenceGenomeVariantJunction)
+            tryToStoreJunctionBatch(rgId, variantIdMap.values().asList(), insertReferenceGenomeVariantJunction)
 
             sql.close()
         } catch (Exception e) {
             sql.close()
+            println(e)
             throw new OncostoreStorageException("Could not store variants with metadata in store: $metadata", e)
         }
     }
 
-    void tryToStoreJunctionBatch(Object id, List ids, String insertStatement){
+    HashMap tryToFindVariants(List<SimpleVariantContext> variants) {
+        def ids = [:]
+
+        variants.each { var ->
             def result =
-                            sql.withBatch(500, insertStatement)
+                sql.firstRow("SELECT id FROM Variant WHERE Variant.chr=? and Variant.start=? and Variant.end=? and Variant.ref=? and Variant.obs=? and Variant.isSomatic=?",
+                        [var.chromosome, var.startPosition, var.endPosition, var.referenceAllele, var.observedAllele, var.isSomatic])
+                ids[var] = result.id
+            }
+        return ids
+    }
+
+    HashMap tryToFindConsequences(List<SimpleVariantContext> variants) {
+        def ids = [:]
+
+        variants.each {var ->
+            def consIds = []
+            var.getConsequences().each { cons ->
+                //def result = sql.firstRow("SELECT id FROM Consequence WHERE Consequence.codingChange=? and Consequence.aaChange=? and (Consequence.aaStart=? OR Consequence.aaStart IS NULL) and (Consequence.aaEnd=? OR Consequence.aaEnd IS NULL) and Consequence.type=? and Consequence.impact=? and (Consequence.strand=? OR Consequence.strand IS NULL) and Consequence.transcriptID=? and Consequence.transcriptVersion=? and (Consequence.canonical=? OR Consequence.canonical IS NULL) and Consequence.bioType=? and (Consequence.refSeqID=? OR Consequence.refSeqID IS NULL) and (Consequence.Gene_id=? OR Consequence.Gene_id IS NULL)",
+                def result = sql.firstRow("SELECT id FROM Consequence WHERE Consequence.codingChange=? and Consequence.aaChange=? and Consequence.aaStart=? and Consequence.aaEnd=? and Consequence.type=? and Consequence.impact=? and Consequence.strand=? and Consequence.transcriptID=? and Consequence.transcriptVersion=? and Consequence.canonical=? and Consequence.bioType=? and Consequence.refSeqID=? and Consequence.Gene_id=?",
+                        [cons.codingChange, cons.aaChange, cons.aaStart, cons.aaEnd, cons.consequenceType, cons.impact, cons.strand, cons.transcriptID, cons.transcriptVersion, cons.canonical, cons.bioType, cons.refSeqID, cons.geneID])
+                consIds.add(result.id)
+            }
+            ids[var] = consIds
+        }
+
+        return ids
+    }
+
+    void tryToStoreJunctionBatch(Object id, List ids, String insertStatement){
+            sql.withBatch(insertStatement)
                                 {  ps ->
-                                    [[id], ids].combinations().each { key1, key2 ->
-                                        if (key1 instanceof String)
-                                            key1 = (String) key1
+                                    ids.each { key2 ->
+                                        if (id instanceof String)
+                                            id = (String) id
                                         else
-                                            key1 = (Integer) key1
+                                            id = (Integer) id
 
                                         if (key2 instanceof String)
                                             key2 = (String) key2
                                         else
                                             key2 = (Integer) key2
-                                        ps.addBatch([key1, key2] as List<Object>)
+                                        ps.addBatch([id, key2] as List<Object>)
                             }
                         }
-
+        sql.commit()
     }
 
-    private Integer tryToStoreVariant(SimpleVariantContext variant) {
+    void tryToStoreJunctionBatchFromMap(HashMap ids, HashMap connectorMap, String insertStatement){
+        sql.withBatch(insertStatement)
+                        {  ps ->
+                            ids.each { entry ->
+                                entry.value.each{ cons ->
+                                    ps.addBatch([connectorMap.get(entry.key), cons] as List<Object>)
+                                }
+                            }
+                        }
+        sql.commit()
+    }
 
-         def result = sql.executeInsert("""INSERT INTO Variant (uuid, chr, start, end, ref, obs, isSomatic) values \
-        (${UUID.randomUUID().toString()},
-        ${variant.getChromosome()},
-        ${variant.getStartPosition()},
-        ${variant.getEndPosition()},
-        ${variant.getReferenceAllele()},
-        ${variant.getObservedAllele()},
-        ${variant.getIsSomatic()})
-        ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
-        return result.get(0).get(0) as Integer
-        /*def result = sql.withBatch(500, 'INSERT INTO Variant (uuid, chr, start, end, ref, obs, isSomatic) OUTPUT INSERTED.id values (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id;')
-                { ps ->
-            variants.each { v ->
-                ps.addBatch(UUID.randomUUID().toString(), v.getChromosome(), v.getStartPosition(), v.getEndPosition(), v.getReferenceAllele(), v.getObservedAllele(), v.getIsSomatic())
+    private Tuple2<List, List> tryToStoreVariantsBatch(List<SimpleVariantContext> variants) {
+        def consequences = []
+        def geneIds = []
+
+        sql.withBatch("INSERT INTO Variant (uuid, chr, start, end, ref, obs, isSomatic) values (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
+            { ps ->
+                variants.each { v ->
+                    ps.addBatch([UUID.randomUUID().toString(), v.getChromosome(), v.getStartPosition(), v.getEndPosition(), v.getReferenceAllele(), v.getObservedAllele(), v.getIsSomatic()])
+                    v.getConsequences().each { cons ->
+                        consequences.add(cons)
+                        geneIds.add(cons.geneID)
+                    }
+                }
+        }
+
+        sql.commit()
+        return new Tuple2(consequences, geneIds)
+    }
+
+    private void tryToStoreConsequencesBatch(List<Consequence> consequences) {
+        sql.withBatch("INSERT INTO Consequence (codingChange, aaChange, aaStart, aaEnd, type, impact, strand, transcriptID, transcriptVersion, canonical, bioType, refSeqID, Gene_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
+            { ps ->
+                consequences.each { cons ->
+                        ps.addBatch([cons.codingChange, cons.aaChange, cons.aaStart, cons.aaEnd, cons.consequenceType, cons.impact, cons.strand, cons.transcriptID, cons.transcriptVersion, cons.canonical, cons.bioType, cons.refSeqID, cons.geneID])
+                }
             }
-        }*/
 
-        //println(result)
-    }
-
-    private Integer tryToStoreConsequence(Consequence cons) {
-        def result = sql.executeInsert("""INSERT INTO Consequence (codingChange, aaChange, aaStart, aaEnd, type, impact, strand, transcriptID, transcriptVersion, canonical, bioType, refSeqID, Gene_id) values \
-        (${cons.codingChange},
-        ${cons.aaChange},
-        ${cons.aaStart},
-        ${cons.aaEnd},
-        ${cons.consequenceType},
-        ${cons.impact},
-        ${cons.strand},
-        ${cons.transcriptID},
-        ${cons.transcriptVersion},
-        ${cons.canonical},
-        ${cons.bioType},
-        ${cons.refSeqID},
-        ${cons.geneID})
-        ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
-        return result.get(0).get(0) as Integer
+        sql.commit()
     }
 
     private String tryToStoreCase(Case patient) {
@@ -532,12 +563,14 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<String> tryToStoreGenes(List<String> genes) {
-        def result = sql.withBatch(500, "insert INTO Gene (id) values (?) ON DUPLICATE KEY UPDATE id=id")
+        sql.withBatch("insert INTO Gene (id) values (?) ON DUPLICATE KEY UPDATE id=id")
                 { BatchingPreparedStatementWrapper ps ->
                     genes.each { identifier ->
                         ps.addBatch([identifier])
                     }
                 }
+
+        sql.commit()
         return genes
     }
 

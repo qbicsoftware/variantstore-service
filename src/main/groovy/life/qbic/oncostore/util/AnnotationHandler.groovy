@@ -88,7 +88,7 @@ public class AnnotationHandler {
                     cons.setAaEnd(protPositions.get(1).toInteger())
                 }
                 else {
-                    def protPos = (vep[version].get("protPos") != null) ? vep[version].get("protPos").toInteger() : vep[version].get("protPos")
+                    def protPos = (vep[version].get("protPos") != null) ? vep[version].get("protPos").toInteger() : -1
                     cons.setAaStart(protPos)
                     cons.setAaEnd(protPos)
                 }
@@ -104,15 +104,18 @@ public class AnnotationHandler {
                 //@TODO get transcript version
                 cons.setTranscriptVersion(0)
                 def (protStart, protLength) = parsedAnnotation[snpEff[version].get("protPos")].tokenize('/')
-                def protPos = (protStart != null) ? protStart.toInteger() : protStart
+                def protPos = (protStart != null) ? protStart.toInteger() : -1
                 cons.setAaStart(protPos)
                 cons.setAaEnd(protPos)
                 cons.setConsequenceType(parsedAnnotation[snpEff[version].get("consequence")])
                 cons.setBioType(parsedAnnotation[snpEff[version].get("bioType")])
-                //cons.setCanonical(false) //how to determine?
+                cons.setCanonical(false) //how to determine?
+                cons.setStrand(1)
+                cons.setRefSeqID('')
                 cons.setAaChange(parsedAnnotation[snpEff[version].get("protCoding")])
                 cons.setImpact(parsedAnnotation[snpEff[version].get("impact")])
-                cons.setGeneID(parsedAnnotation[snpEff[version].get("gene")])
+                def geneId = (parsedAnnotation[snpEff[version].get("gene")] != '') ? parsedAnnotation[snpEff[version].get("gene")] : ''
+                cons.setGeneID(geneId)
                 break
 
             default:

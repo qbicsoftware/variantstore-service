@@ -99,11 +99,7 @@ class OncostoreInformationCenter implements OncostoreService{
                 variantsToInsert.add(variant)
             }
         }
-        def start = new Date()
         storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), variantsToInsert)
-
-        def end = new Date()
-        println(groovy.time.TimeCategory.minus(end, start))
     }
 
 }

@@ -65,26 +65,23 @@ class VariantController {
 
     @Post(uri = "/upload", consumes = MediaType.TEXT_PLAIN)
     HttpResponse storeVariants(@QueryValue("url") @NotNull String url) {
-        println(url)
         try {
 
-            executor.submit(new MyRunnable(service, url));
+            service.storeVariantsInStore(url)
+            //executor.submit(new MyRunnable(service, url));
 
-            //Runnable task = new MyRunnable(service, url);
-            //Thread worker = new Thread(task);
-            //worker.start()
-            //threads.add(worker);
-            //println(threads.size().toString())
-
-
+            /*
             if (executor instanceof ThreadPoolExecutor) {
                 System.out.println(
                         "Pool size is now " +
                                 ((ThreadPoolExecutor) executor).getActiveCount()
                 );
             }
+            */
 
-            return HttpResponse.accepted()
+            //return HttpResponse.accepted()
+
+            return HttpResponse.ok()
         }
         catch (Exception e) {
             log.error(e)
