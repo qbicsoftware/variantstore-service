@@ -25,6 +25,7 @@ class CaseController {
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getCase(@Parameter('id') String identifier) {
+        log.info("Resource request for case: $identifier")
         try {
             List<Case> cases = service.getCaseForCaseId(identifier)
             return cases ? HttpResponse.ok(cases.get(0)) : HttpResponse.notFound("Case not found.")
@@ -42,6 +43,7 @@ class CaseController {
 
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getCases(@Valid ListingArguments args) {
+        log.info("Resource request for cases with filtering options.")
         try {
             List<Case> cases = service.getCasesForSpecifiedProperties(args)
             return cases ? HttpResponse.ok(cases) : HttpResponse.notFound("No cases found matching provided attributes.")

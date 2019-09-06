@@ -34,6 +34,7 @@ class VariantController {
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getVariant(@Parameter('id') String identifier) {
+        log.info("Resource request for variant: $identifier")
         try {
             List<Variant> variants = service.getVariantForVariantId(identifier)
             return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("Variant not found.")
@@ -51,6 +52,7 @@ class VariantController {
 
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getVariants(@Valid ListingArguments args) {
+        log.info("Resource request for variants with filtering options.")
         try {
             List<Variant> variants = service.getVariantsForSpecifiedProperties(args)
             return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided attributes.")

@@ -26,6 +26,7 @@ class GeneController {
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getGene(@Parameter('id') String identifier) {
+        log.info("Resource request for gene: $identifier")
         try {
             List<Gene> genes = service.getGeneForGeneId(identifier)
             return genes ? HttpResponse.ok(genes.get(0)) : HttpResponse.notFound("Gene not found.")
@@ -43,6 +44,7 @@ class GeneController {
 
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getGenes(@Valid ListingArguments args) {
+        log.info("Resource request for genes with filtering options.")
         try {
             List<Gene> genes = service.getGenesForSpecifiedProperties(args)
             return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("No genes found matching provided attributes..")

@@ -30,6 +30,7 @@ class SampleController {
      */
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getSample(@Parameter('id') String identifier) {
+        log.info("Resource request for sample: $identifier")
         try {
             List<Sample> samples = service.getSampleForSampleId(identifier)
             return samples ? HttpResponse.ok(samples.get(0)) : HttpResponse.notFound("Sample not found.")
@@ -51,6 +52,7 @@ class SampleController {
      */
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getSamples(@Valid ListingArguments args){
+        log.info("Resource request for samples with filtering options.")
         try {
             List<Sample> samples = service.getSamplesForSpecifiedProperties(args)
             return samples ? HttpResponse.ok(samples) : HttpResponse.notFound("No samples found matching provided attributes.")
