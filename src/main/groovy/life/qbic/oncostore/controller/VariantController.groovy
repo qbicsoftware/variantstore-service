@@ -25,13 +25,11 @@ import java.util.concurrent.ThreadPoolExecutor
 class VariantController {
 
     private final OncostoreService service
-    private final ExecutorService executor
-    private final List<Thread> threads = new ArrayList<Thread>();
 
     @Inject
     VariantController(OncostoreService service) {
         this.service = service
-        this.executor = Executors.newFixedThreadPool(1);
+        //this.executor = Executors.newFixedThreadPool(1);
     }
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
@@ -88,7 +86,7 @@ class VariantController {
         }
     }
 }
-
+/*
 public class MyRunnable implements Runnable {
     private final String url;
     private final OncostoreService service
@@ -103,3 +101,4 @@ public class MyRunnable implements Runnable {
         service.storeVariantsInStore(url)
     }
 }
+*/

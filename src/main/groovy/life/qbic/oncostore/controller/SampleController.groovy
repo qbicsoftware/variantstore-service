@@ -8,7 +8,6 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import life.qbic.oncostore.model.Sample
 import life.qbic.oncostore.service.OncostoreService
-import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject

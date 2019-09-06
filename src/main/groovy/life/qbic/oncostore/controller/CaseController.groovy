@@ -6,7 +6,7 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
-import life.qbic.oncostore.model.Gene
+import life.qbic.oncostore.model.Case
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
 
@@ -24,10 +24,10 @@ class CaseController {
     }
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getGene(@Parameter('id') String identifier) {
+    HttpResponse getCase(@Parameter('id') String identifier) {
         try {
-            List<Gene> genes = service.getCaseForCaseId(identifier)
-            return genes ? HttpResponse.ok(genes.get(0)) : HttpResponse.notFound("Case not found.")
+            List<Case> cases = service.getCaseForCaseId(identifier)
+            return cases ? HttpResponse.ok(cases.get(0)) : HttpResponse.notFound("Case not found.")
         }
         catch (IllegalArgumentException e) {
             log.error(e)
@@ -41,10 +41,10 @@ class CaseController {
 
 
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getGenes(@Valid ListingArguments args) {
+    HttpResponse getCases(@Valid ListingArguments args) {
         try {
-            List<Gene> genes = service.getCasesForSpecifiedProperties(args)
-            return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("No cases found matching provided attributes..")
+            List<Case> cases = service.getCasesForSpecifiedProperties(args)
+            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound("No cases found matching provided attributes.")
         }
         catch (Exception e) {
             log.error(e)

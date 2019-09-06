@@ -8,7 +8,8 @@ micronaut:
         name: oncostore
 datasources:
     default:
-      url: jdbc:mariadb://${db-host}/${db-name}?log=true&rewriteBatchedStatements=true
+      #url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
+      url: jdbc:mariadb://${db-host}/${db-name}
       username: ${db-user}
       password: ${db-pwd}
       driverClassName: org.mariadb.jdbc.Driver

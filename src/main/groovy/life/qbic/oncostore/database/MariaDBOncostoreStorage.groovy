@@ -40,7 +40,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return variant
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Beacon something? $start.", e)
+            throw new OncostoreStorageException("Beacon something? $e.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -56,7 +59,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return cases
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch case with identifier $id.", e)
+            throw new OncostoreStorageException("Could not fetch case with identifier $id.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -71,7 +77,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return samples
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch sample with identifier $id.", e)
+            throw new OncostoreStorageException("Could not fetch sample with identifier $id.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -86,7 +95,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return variants
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch variant with identifier $id.", e)
+            throw new OncostoreStorageException("Could not fetch variant with identifier $id.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -105,7 +117,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return genes
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch gene with identifier $id.", e)
+            throw new OncostoreStorageException("Could not fetch gene with identifier $id.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -123,9 +138,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchCases()
         }
         catch (Exception e) {
-            println(e)
+            throw new OncostoreStorageException("Could not fetch cases.", e.fillInStackTrace())
+        }
+        finally {
             sql.close()
-            throw new OncostoreStorageException("Could not fetch cases.", e)
         }
     }
 
@@ -139,7 +155,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchSamples()
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch samples.", e)
+            throw new OncostoreStorageException("Could not fetch samples.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -167,11 +186,16 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
                 return fetchVariantsBySample(args.getSampleId().get())
             }
 
+            if (args.getGeneId().isPresent()) {
+                return fetchVariantsByGeneId(args.getGeneId().get())
+            }
             return fetchVariants()
         }
         catch (Exception e) {
-            println(e)
-            throw new OncostoreStorageException("Could not fetch variants.", e)
+            throw new OncostoreStorageException("Could not fetch variants.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -189,12 +213,15 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchGenes()
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch genes.", e)
+            throw new OncostoreStorageException("Could not fetch genes.", e.fillInStackTrace())
+        }
+        finally {
+            sql.close()
         }
     }
 
     private List<Case> fetchCaseForId(String id) {
-        def result = sql.rows("""SELECT * FROM Entity WHERE Entity.id=$id;""")
+        def result = sql.rows("""SELECT distinct Entity.id, Project_id FROM Entity WHERE Entity.id=$id;""")
         List<Case> cases = result.collect{ convertRowResultToCase(it)}
         return cases
     }
@@ -242,13 +269,13 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<Case> fetchCasesByConsequenceType(String consequenceType) {
-        def result = sql.rows("""select disinct * from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id INNER JOIN Variant_has_Consequence ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Consequence.type = $consequenceType""")
+        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id INNER JOIN Variant_has_Consequence ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Consequence.type = $consequenceType""")
         List<Case> cases = result.collect{ convertRowResultToCase(it) }
         return cases
     }
 
     private List<Case> fetchCasesByChromosomeAndPositionRange(String chromosome, BigInteger startPosition, BigInteger endPosition) {
-        def result = sql.rows("""select distinct Entity.id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id where Variant.chr = $chromosome AND Variant.start >= $startPosition AND Variant.end <= $endPosition;""")
+        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id where Variant.chr = $chromosome AND Variant.start >= $startPosition AND Variant.end <= $endPosition;""")
         List<Case> cases = result.collect{ convertRowResultToCase(it) }
         return cases
     }
@@ -266,27 +293,26 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
 
     private List<Variant> fetchVariantsByChromosome(String chromosome) {
         def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.chr=$chromosome;""")
-        //List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
-        //return variants
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsByStartPosition(BigInteger start) {
         def result = sql.rows("""SELECT * FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id WHERE Variant.start=$start;""")
-        //List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
-        //return variants
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsBySample(String sampleId) {
-        def result = sql.rows("""select * from Variant INNER JOIN Sample_has_Variant ON Variant.id = Sample_has_Variant.Variant_id INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id where Sample_qbicID=$sampleId;""")
-        //List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
-        //return variants
+        def result = sql.rows("""select * from Variant INNER JOIN Sample_has_Variant ON Variant.id = Sample_has_Variant.Variant_id INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Sample_qbicID=$sampleId;""")
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId) {
         def result = sql.rows("""select distinct * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id INNER JOIN Consequence ON Variant_has_Consequence.Consequence_id = Consequence.id where Sample_qbicID = $sampleId AND Gene_id=$geneId;""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Variant> fetchVariantsByGeneId(String geneId) {
+        def result = sql.rows("""select distinct * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence ON Variant_has_Consequence.Consequence_id = Consequence.id where Gene_id=$geneId;""")
         return parseVariantQueryResult(result)
     }
 
@@ -308,10 +334,11 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreCase(patient)
-            sql.close()
         } catch (Exception e) {
-            sql.close()
             throw new OncostoreStorageException("Could not store case in store: $patient", e)
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -320,10 +347,11 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreSample(sample)
-            sql.close()
         } catch (Exception e) {
-            sql.close()
             throw new OncostoreStorageException("Could not store sample in store: $sample", e)
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -332,10 +360,11 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreReferenceGenome(referenceGenome)
-            sql.close()
         } catch (Exception e) {
-            sql.close()
             throw new OncostoreStorageException("Could not store reference genome in store: $referenceGenome", e)
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -344,10 +373,11 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreVariantCaller(variantCaller)
-            sql.close()
         } catch (Exception e) {
-            sql.close()
             throw new OncostoreStorageException("Could not store variant calling software in store: $variantCaller", e)
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -356,10 +386,11 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreAnnotationSoftware(annotationSoftware)
-            sql.close()
         } catch (Exception e) {
-            sql.close()
             throw new OncostoreStorageException("Could not store annotation software in store: $annotationSoftware", e)
+        }
+        finally {
+            sql.close()
         }
     }
 
@@ -413,11 +444,11 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             /* INSERT variants and reference genome in junction table */
             tryToStoreJunctionBatch(rgId, variantIdMap.values().asList(), insertReferenceGenomeVariantJunction)
 
-            sql.close()
         } catch (Exception e) {
-            sql.close()
-            println(e)
             throw new OncostoreStorageException("Could not store variants with metadata in store: $metadata", e)
+        }
+        finally {
+            sql.close()
         }
     }
 

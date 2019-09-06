@@ -99,6 +99,7 @@ class OncostoreInformationCenter implements OncostoreService{
                 variantsToInsert.add(variant)
             }
         }
+
         storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), variantsToInsert)
     }
 

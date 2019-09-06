@@ -28,7 +28,7 @@ class GeneController {
     HttpResponse getGene(@Parameter('id') String identifier) {
         try {
             List<Gene> genes = service.getGeneForGeneId(identifier)
-            return genes ? HttpResponse.ok(genes.get(0)) : HttpResponse.notFound("Variant not found.")
+            return genes ? HttpResponse.ok(genes.get(0)) : HttpResponse.notFound("Gene not found.")
         }
         catch (IllegalArgumentException e) {
             log.error(e)

@@ -26,7 +26,7 @@ class Case {
             return identifier
         }
 
-        @JsonProperty("Project_id")
+        @JsonProperty("projectId")
         String getProjectId() {
             return projectId
         }

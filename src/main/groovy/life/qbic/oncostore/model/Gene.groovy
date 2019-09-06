@@ -1,5 +1,7 @@
 package life.qbic.oncostore.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
+
 class Gene {
 
     String chromosome
@@ -53,6 +55,7 @@ class Gene {
         return geneEnd
     }
 
+    @JsonProperty("geneId")
     String getGeneID() {
         return geneID
     }
