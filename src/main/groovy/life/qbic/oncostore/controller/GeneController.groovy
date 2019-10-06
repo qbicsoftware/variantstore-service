@@ -6,6 +6,8 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.security.annotation.Secured
+import io.micronaut.security.rules.SecurityRule
 import life.qbic.oncostore.model.Gene
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
@@ -15,6 +17,7 @@ import javax.validation.Valid
 
 @Log4j2
 @Controller("/genes")
+@Secured(SecurityRule.IS_ANONYMOUS)
 class GeneController {
 
     private final OncostoreService service

@@ -2,7 +2,6 @@ package life.qbic.oncostore.service
 
 import htsjdk.samtools.util.CloseableIterator
 import htsjdk.variant.vcf.VCFFileReader
-import life.qbic.oncostore.database.OncostoreStorage
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.MetadataReader
 import life.qbic.oncostore.parser.SimpleVCFReader

@@ -5,6 +5,8 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.security.annotation.Secured
+import io.micronaut.security.rules.SecurityRule
 import life.qbic.oncostore.model.BeaconAlleleResponse
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
@@ -23,6 +25,7 @@ A GA4GH Beacon based on the v0.4 specification. Given a position in a chromosome
 
 @Log4j2
 @Controller("/beacon")
+@Secured(SecurityRule.IS_ANONYMOUS)
 class BeaconController {
 
     private final OncostoreService service

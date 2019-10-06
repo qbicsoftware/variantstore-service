@@ -6,6 +6,7 @@ import groovy.sql.Sql
 import life.qbic.micronaututils.QBiCDataSource
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.MetadataContext
+import life.qbic.oncostore.service.OncostoreStorage
 import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
 

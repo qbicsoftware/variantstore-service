@@ -6,6 +6,8 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.security.annotation.Secured
+import io.micronaut.security.rules.SecurityRule
 import life.qbic.oncostore.model.Sample
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
@@ -15,6 +17,7 @@ import javax.validation.Valid
 
 @Log4j2
 @Controller("/samples")
+@Secured(SecurityRule.IS_ANONYMOUS)
 class SampleController {
 
     private final OncostoreService service
@@ -28,6 +31,7 @@ class SampleController {
      * @param identifier The sample identifier
      * @return The found sample
      */
+    @Secured(SecurityRule.IS_AUTHENTICATED)
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getSample(@Parameter('id') String identifier) {
         log.info("Resource request for sample: $identifier")

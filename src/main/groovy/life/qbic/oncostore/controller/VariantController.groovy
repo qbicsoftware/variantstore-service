@@ -8,6 +8,8 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.security.annotation.Secured
+import io.micronaut.security.rules.SecurityRule
 import life.qbic.oncostore.model.Variant
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
@@ -22,6 +24,7 @@ import java.util.concurrent.ThreadPoolExecutor
 
 @Log4j2
 @Controller("/variants")
+@Secured(SecurityRule.IS_ANONYMOUS)
 class VariantController {
 
     private final OncostoreService service

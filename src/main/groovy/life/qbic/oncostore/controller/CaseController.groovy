@@ -6,6 +6,8 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.security.annotation.Secured
+import io.micronaut.security.rules.SecurityRule
 import life.qbic.oncostore.model.Case
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
@@ -15,6 +17,7 @@ import javax.validation.Valid
 
 @Log4j2
 @Controller("/cases")
+@Secured(SecurityRule.IS_ANONYMOUS)
 class CaseController {
     private final OncostoreService service
 

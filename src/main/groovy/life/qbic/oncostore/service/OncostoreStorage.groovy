@@ -1,5 +1,6 @@
-package life.qbic.oncostore.database
+package life.qbic.oncostore.service
 
+import life.qbic.oncostore.database.OncostoreStorageException
 import life.qbic.oncostore.model.Case
 import life.qbic.oncostore.model.Gene
 import life.qbic.oncostore.model.ReferenceGenome
