@@ -160,12 +160,24 @@
       <dependency>
           <groupId>io.micronaut.configuration</groupId>
           <artifactId>micronaut-openapi</artifactId>
-          <scope>provided</scope>
+          <version>1.2.2</version>
+          <scope>compile</scope>
       </dependency>
     <dependency>
       <groupId>info.picocli</groupId>
       <artifactId>picocli</artifactId>
     </dependency>
+      <dependency>
+          <groupId>org.biojava</groupId>
+          <artifactId>biojava-core</artifactId>
+          <version>5.3.0</version>
+      </dependency>
+      <!-- https://mvnrepository.com/artifact/org.biojava/biojava-genome -->
+      <dependency>
+          <groupId>org.biojava</groupId>
+          <artifactId>biojava-genome</artifactId>
+          <version>5.3.0</version>
+      </dependency>
     <dependency>
       <groupId>io.micronaut.configuration</groupId>
       <artifactId>micronaut-picocli</artifactId>

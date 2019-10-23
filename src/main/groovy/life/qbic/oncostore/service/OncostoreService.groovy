@@ -34,4 +34,5 @@ interface OncostoreService {
 
     void storeVariantsInStore(String url)
 
+    void storeGeneInformationInStore(String url)
 }

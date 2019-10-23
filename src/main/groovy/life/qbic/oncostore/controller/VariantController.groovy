@@ -17,10 +17,6 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.inject.Inject
 import javax.validation.Valid
 import javax.validation.constraints.NotNull
-import java.util.concurrent.ExecutorService
-import java.util.concurrent.Executors
-import java.util.concurrent.ThreadPoolExecutor
-
 
 @Log4j2
 @Controller("/variants")
@@ -69,7 +65,7 @@ class VariantController {
     @Post(uri = "/upload", consumes = MediaType.TEXT_PLAIN)
     HttpResponse storeVariants(@QueryValue("url") @NotNull String url) {
         try {
-
+            log.info("Request for storing variant information.")
             service.storeVariantsInStore(url)
             //executor.submit(new MyRunnable(service, url));
 

@@ -6,7 +6,8 @@ micronaut:
     router:
       static-resources:
           swagger:
-              paths: classpath:META-INF/swagger
+              paths:
+                - classpath:META-INF/swagger
               mapping: /swagger/**
     security:
       enabled: true
@@ -20,8 +21,7 @@ micronaut:
               issuer: <<my openid issuer>>
 datasources:
     default:
-      #url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
-      url: jdbc:mariadb://${db-host}/${db-name}
+      url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
       username: ${db-user}
       password: ${db-pwd}
       driverClassName: org.mariadb.jdbc.Driver

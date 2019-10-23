@@ -1,8 +1,10 @@
 package life.qbic.oncostore.service
 
+import groovy.util.logging.Log4j2
 import htsjdk.samtools.util.CloseableIterator
 import htsjdk.variant.vcf.VCFFileReader
 import life.qbic.oncostore.model.*
+import life.qbic.oncostore.parser.EnsemblParser
 import life.qbic.oncostore.parser.MetadataReader
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.util.AnnotationHandler
@@ -11,6 +13,8 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.constraints.NotNull
+
+@Log4j2
 
 @Singleton
 class OncostoreInformationCenter implements OncostoreService{
@@ -99,8 +103,17 @@ class OncostoreInformationCenter implements OncostoreService{
             }
         }
 
+        log.info("Storing provided metadata and variants in store")
         storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), variantsToInsert)
+        log.info("...done.")
     }
 
+    @Override
+    void storeGeneInformationInStore(String url) {
+        EnsemblParser ensembl = new EnsemblParser(url)
+        log.info("Storing provided gene information in store")
+        storage.storeGenesWithMetadata(ensembl.version, ensembl.date, ensembl.referenceGenome, ensembl.genes)
+        log.info("...done.")
+    }
 }
 

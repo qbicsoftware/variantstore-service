@@ -8,9 +8,12 @@ class Gene {
     String symbol
     String name
     String bioType
+    String description
     BigInteger geneStart
     BigInteger geneEnd
     String geneID
+    String strand
+    Integer version
     List<String> synonyms
 
     Gene() {
@@ -31,26 +34,32 @@ class Gene {
         this.synonyms = synonyms
     }
 
+    @JsonProperty("chromosome")
     String getChromosome() {
         return chromosome
     }
 
+    @JsonProperty("symbol")
     String getSymbol() {
         return symbol
     }
 
+    @JsonProperty("name")
     String getName() {
         return name
     }
 
+    @JsonProperty("bioType")
     String getBioType() {
         return bioType
     }
 
+    @JsonProperty("geneStart")
     BigInteger getGeneStart() {
         return geneStart
     }
 
+    @JsonProperty("geneEnd")
     BigInteger getGeneEnd() {
         return geneEnd
     }
@@ -60,8 +69,36 @@ class Gene {
         return geneID
     }
 
+    @JsonProperty("synonyms")
     List<String> getSynonyms() {
         return synonyms
+    }
+
+    @JsonProperty("description")
+    String getDescription() {
+        return description
+    }
+
+    @JsonProperty("strand")
+    String getStrand() {
+        return strand
+    }
+
+    @JsonProperty("version")
+    Integer getVersion() {
+        return version
+    }
+
+    void setStrand(String strand) {
+        this.strand = strand
+    }
+
+    void setVersion(Integer version) {
+        this.version = version
+    }
+
+    void setDescription(String description) {
+        this.description = description
     }
 
     void setChromosome(String chromosome) {

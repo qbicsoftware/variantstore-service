@@ -27,6 +27,8 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     String insertAnnotationSoftwareConsequenceJunction = "INSERT INTO AnnotationSoftware_has_Consequence (AnnotationSoftware_id, Consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE AnnotationSoftware_id=AnnotationSoftware_id"
     String insertReferenceGenomeVariantJunction = "INSERT INTO Variant_has_ReferenceGenome (ReferenceGenome_id, Variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE ReferenceGenome_id=ReferenceGenome_id"
     String insertSampleVariantJunction = "INSERT INTO Sample_has_Variant (Sample_qbicID, Variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE Sample_qbicID=Sample_qbicID"
+    String insertEnsemblGeneJunction = "INSERT INTO Ensembl_has_Gene (Ensembl_id, Gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE Ensembl_id=Ensembl_id"
+    String insertConsequenceGeneJunction = "INSERT INTO Consequence_has_Gene (Consequence_id, Gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE Consequence_id=Consequence_id"
 
     @Inject MariaDBOncostoreStorage(QBiCDataSource dataSource) {
         this.dataSource = dataSource
@@ -241,7 +243,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     private List<Gene> fetchGeneForId(String id) {
-        def result = sql.rows("""SELECT * FROM Gene WHERE Gene.id=$id;""")
+        def result = sql.rows("""SELECT * FROM Gene WHERE Gene.geneID=$id;""")
         List<Gene> genes = result.collect{ convertRowResultToGene(it)}
         return genes
     }
@@ -400,38 +402,49 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         this.sql = new Sql(dataSource.connection)
 
         try {
-            println("Inserting metadata")
             def cId = tryToStoreCase(metadata.getCase())
             def sId = tryToStoreSampleWithCase(metadata.getSample(), cId)
-            def vcId = tryToStoreVariantCaller(metadata.getVariantCalling())
-            def asId = tryToStoreAnnotationSoftware(metadata.getVariantAnnotation())
-            def rgId = tryToStoreReferenceGenome(metadata.getReferenceGenome())
+            tryToStoreVariantCaller(metadata.getVariantCalling())
+            tryToStoreAnnotationSoftware(metadata.getVariantAnnotation())
+            tryToStoreReferenceGenome(metadata.getReferenceGenome())
+
+            def vcId = tryToFindVariantCaller(metadata.getVariantCalling())
+            def asId = tryToFindAnnotationSoftware(metadata.getVariantAnnotation())
+            def rgId = tryToFindReferenceGenome(metadata.getReferenceGenome())
 
             sql.connection.autoCommit = false
             sql.setCacheStatements(true)
 
-            /* INSERT variants and save consequences and genes for import */
-            def variantInsertResult = tryToStoreVariantsBatch(variants)
-            def consequencesToInsert = variantInsertResult.first
-            def geneIdentifiers = variantInsertResult.second
+            /* INSERT variants and save consequences for import */
+            def consequencesToInsert = tryToStoreVariantsBatch(variants)
+
+            /* INSERT consequences */
+            def consGeneMap = tryToStoreConsequencesBatch(consequencesToInsert)
 
             /* INSERT genes */
-            tryToStoreGenes(geneIdentifiers)
+            tryToStoreGenes(consGeneMap.values().toList().flatten() as List<String>)
+
+            /* GET ids of genes */
+            def geneIdMap = tryToFindGenesByConsequence(consGeneMap)
 
             /* INSERT reference genome and genes junction */
-            tryToStoreJunctionBatch(rgId, geneIdentifiers, insertGeneReferenceGenomeJunction)
+            //tryToStoreJunctionBatch(rgId, geneIdMap.values().flatten() as List<String>, insertGeneReferenceGenomeJunction)
 
             /* GET ids of variants */
             def variantIdMap = tryToFindVariants(variants)
 
-            /* INSERT consequences */
-            tryToStoreConsequencesBatch(consequencesToInsert)
-
             /* GET ids of consequences */
-            def variantConsequenceIdMap = tryToFindConsequences(variants)
+            def findConsequenceMaps = tryToFindConsequences(variants)
+            def variantConsequenceIdMap = findConsequenceMaps.first
+
+            /* consequence to consequence DB id map */
+            def consIdMap = findConsequenceMaps.second
 
             /* INSERT variant and consequence junction */
             tryToStoreJunctionBatchFromMap(variantConsequenceIdMap, variantIdMap, insertVariantConsequenceJunction)
+
+            /* INSERT consequence and gene junction */
+            tryToStoreJunctionBatchFromMap(geneIdMap, consIdMap, insertConsequenceGeneJunction)
 
             /* INSERT consequences and annotation software junction */
             tryToStoreJunctionBatch(asId, variantConsequenceIdMap.values().toList().flatten(), insertAnnotationSoftwareConsequenceJunction)
@@ -453,6 +466,36 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         }
     }
 
+    @Override
+    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws OncostoreStorageException {
+        this.sql = new Sql(dataSource.connection)
+        try {
+            tryToStoreReferenceGenome(referenceGenome)
+            def rgId = tryToFindReferenceGenome(referenceGenome)
+
+            tryToStoreEnsemblDB(version, date, rgId)
+            def enId = tryToFindEnsemblDB(version, date, rgId)
+
+            sql.connection.autoCommit = false
+            sql.setCacheStatements(true)
+
+            tryToStoreGeneObjects(genes)
+
+            /* GET ids of genes */
+            def geneIdMap = tryToFindGenes(genes)
+
+            /* INSERT genes and ensembl version in junction table */
+            tryToStoreJunctionBatch(enId, geneIdMap.values().asList(), insertEnsemblGeneJunction)
+
+
+        } catch (Exception e) {
+            throw new OncostoreStorageException("Could not store genes in store: ", e)
+        }
+        finally {
+            sql.close()
+        }
+    }
+
     HashMap tryToFindVariants(List<SimpleVariantContext> variants) {
         def ids = [:]
 
@@ -465,20 +508,50 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         return ids
     }
 
-    HashMap tryToFindConsequences(List<SimpleVariantContext> variants) {
+    Tuple2<HashMap, HashMap> tryToFindConsequences(List<SimpleVariantContext> variants) {
         def ids = [:]
+        def consIdMap = [:]
 
         variants.each {var ->
             def consIds = []
             var.getConsequences().each { cons ->
                 //def result = sql.firstRow("SELECT id FROM Consequence WHERE Consequence.codingChange=? and Consequence.aaChange=? and (Consequence.aaStart=? OR Consequence.aaStart IS NULL) and (Consequence.aaEnd=? OR Consequence.aaEnd IS NULL) and Consequence.type=? and Consequence.impact=? and (Consequence.strand=? OR Consequence.strand IS NULL) and Consequence.transcriptID=? and Consequence.transcriptVersion=? and (Consequence.canonical=? OR Consequence.canonical IS NULL) and Consequence.bioType=? and (Consequence.refSeqID=? OR Consequence.refSeqID IS NULL) and (Consequence.Gene_id=? OR Consequence.Gene_id IS NULL)",
-                def result = sql.firstRow("SELECT id FROM Consequence WHERE Consequence.codingChange=? and Consequence.aaChange=? and Consequence.aaStart=? and Consequence.aaEnd=? and Consequence.type=? and Consequence.impact=? and Consequence.strand=? and Consequence.transcriptID=? and Consequence.transcriptVersion=? and Consequence.canonical=? and Consequence.bioType=? and Consequence.refSeqID=? and Consequence.Gene_id=?",
-                        [cons.codingChange, cons.aaChange, cons.aaStart, cons.aaEnd, cons.consequenceType, cons.impact, cons.strand, cons.transcriptID, cons.transcriptVersion, cons.canonical, cons.bioType, cons.refSeqID, cons.geneID])
+                def result = sql.firstRow("SELECT id FROM Consequence WHERE Consequence.codingChange=? and Consequence.aaChange=? and Consequence.aaStart=? and Consequence.aaEnd=? and Consequence.type=? and Consequence.impact=? and Consequence.strand=? and Consequence.transcriptID=? and Consequence.transcriptVersion=? and Consequence.canonical=? and Consequence.bioType=? and Consequence.refSeqID=?",
+                        [cons.codingChange, cons.aaChange, cons.aaStart, cons.aaEnd, cons.consequenceType, cons.impact, cons.strand, cons.transcriptID, cons.transcriptVersion, cons.canonical, cons.bioType, cons.refSeqID])
                 consIds.add(result.id)
+                consIdMap[cons] = result.id
             }
             ids[var] = consIds
         }
+        return new Tuple2(ids, consIdMap)
+    }
 
+    HashMap tryToFindGenes(List<Gene> genes) {
+        def ids = [:]
+
+        genes.each { gene ->
+            def result =
+                    sql.firstRow("SELECT id FROM Gene WHERE Gene.symbol=? and Gene.name=? and Gene.bioType=? and Gene.chr=? and Gene.start=? and Gene.end=? and Gene.synonyms=? and Gene.geneID=? and Gene.description=? and Gene.strand=? and Gene.version=?",
+                            [gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart, gene.geneEnd, gene.synonyms[0], gene.geneID, gene.description, gene.strand, gene.version])
+            ids[gene] = result.id
+        }
+        return ids
+    }
+
+    HashMap tryToFindGenesByConsequence(HashMap consequenceToGeneIds) {
+        def ids = [:]
+
+        consequenceToGeneIds.each { cons, geneIDs ->
+            def geneDBids = []
+            geneIDs.each { geneId ->
+                def result =
+                        sql.firstRow("SELECT id FROM Gene WHERE Gene.geneID=?",
+                                [geneId])
+                geneDBids.add(result.id)
+            }
+
+            ids[cons] = geneDBids
+        }
         return ids
     }
 
@@ -505,7 +578,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         sql.withBatch(insertStatement)
                         {  ps ->
                             ids.each { entry ->
-                                entry.value.each{ cons ->
+                                entry.value.each { cons ->
                                     ps.addBatch([connectorMap.get(entry.key), cons] as List<Object>)
                                 }
                             }
@@ -513,9 +586,8 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         sql.commit()
     }
 
-    private Tuple2<List, List> tryToStoreVariantsBatch(List<SimpleVariantContext> variants) {
+    private List tryToStoreVariantsBatch(List<SimpleVariantContext> variants) {
         def consequences = []
-        def geneIds = []
 
         sql.withBatch("INSERT INTO Variant (uuid, chr, start, end, ref, obs, isSomatic) values (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
             { ps ->
@@ -523,24 +595,33 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
                     ps.addBatch([UUID.randomUUID().toString(), v.getChromosome(), v.getStartPosition(), v.getEndPosition(), v.getReferenceAllele(), v.getObservedAllele(), v.getIsSomatic()])
                     v.getConsequences().each { cons ->
                         consequences.add(cons)
-                        geneIds.add(cons.geneID)
                     }
                 }
         }
 
         sql.commit()
-        return new Tuple2(consequences, geneIds)
+        return consequences
     }
 
-    private void tryToStoreConsequencesBatch(List<Consequence> consequences) {
-        sql.withBatch("INSERT INTO Consequence (codingChange, aaChange, aaStart, aaEnd, type, impact, strand, transcriptID, transcriptVersion, canonical, bioType, refSeqID, Gene_id) values (?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
+    private HashMap tryToStoreConsequencesBatch(List<Consequence> consequences) {
+        def consGeneMap = [:]
+
+
+        sql.withBatch("INSERT INTO Consequence (codingChange, aaChange, aaStart, aaEnd, type, impact, strand, transcriptID, transcriptVersion, canonical, bioType, refSeqID) values (?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
             { ps ->
                 consequences.each { cons ->
-                        ps.addBatch([cons.codingChange, cons.aaChange, cons.aaStart, cons.aaEnd, cons.consequenceType, cons.impact, cons.strand, cons.transcriptID, cons.transcriptVersion, cons.canonical, cons.bioType, cons.refSeqID, cons.geneID])
+                    ps.addBatch([cons.codingChange, cons.aaChange, cons.aaStart, cons.aaEnd, cons.consequenceType, cons.impact, cons.strand, cons.transcriptID, cons.transcriptVersion, cons.canonical, cons.bioType, cons.refSeqID])
+                    if (cons.geneID.contains("-")) {
+                        consGeneMap[cons] = cons.geneID.split("-")
+                    }
+                    else {
+                        consGeneMap[cons] = [cons.geneID]
+                    }
                 }
             }
 
         sql.commit()
+        return consGeneMap
     }
 
     private String tryToStoreCase(Case patient) {
@@ -550,13 +631,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         return patient.identifier
     }
 
-    private Integer tryToStoreVariantCaller(VariantCaller variantCaller) {
+    private void tryToStoreVariantCaller(VariantCaller variantCaller) {
         def result = sql.executeInsert("""INSERT INTO VariantCaller (name, version, doi) values \
         (${variantCaller.name},
         ${variantCaller.version},
         ${variantCaller.doi})
      ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
-        return result.get(0).get(0) as Integer
     }
 
     private String tryToStoreSample(Sample sample) {
@@ -576,26 +656,31 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         return sample.identifier
     }
 
-    private Integer tryToStoreAnnotationSoftware(Annotation annotationSoftware) {
+    private void tryToStoreAnnotationSoftware(Annotation annotationSoftware) {
         def result = sql.executeInsert("""INSERT INTO AnnotationSoftware (name, version, doi) values \
         (${annotationSoftware.name},
         ${annotationSoftware.version},
         ${annotationSoftware.doi})
      ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
-        return result.get(0).get(0) as Integer
     }
 
-    private Integer tryToStoreReferenceGenome(ReferenceGenome referenceGenome) {
+    private void tryToStoreReferenceGenome(ReferenceGenome referenceGenome) {
         def result = sql.executeInsert("""INSERT INTO ReferenceGenome (source, build, version) values \
         (${referenceGenome.source},
         ${referenceGenome.build},
         ${referenceGenome.version})
-     ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
-        return result.get(0).get(0) as Integer
+     ON DUPLICATE KEY UPDATE id=id;""")
+    }
+
+    private Integer tryToFindReferenceGenome(ReferenceGenome referenceGenome) {
+        def result =
+                sql.firstRow("SELECT id FROM ReferenceGenome WHERE ReferenceGenome.source=? and ReferenceGenome.build=? and ReferenceGenome.version=?",
+                        [referenceGenome.source, referenceGenome.build, referenceGenome.version])
+        return result.id
     }
 
     private List<String> tryToStoreGenes(List<String> genes) {
-        sql.withBatch("insert INTO Gene (id) values (?) ON DUPLICATE KEY UPDATE id=id")
+        sql.withBatch("insert INTO Gene (geneID) values (?) ON DUPLICATE KEY UPDATE id=id")
                 { BatchingPreparedStatementWrapper ps ->
                     genes.each { identifier ->
                         ps.addBatch([identifier])
@@ -604,6 +689,47 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
 
         sql.commit()
         return genes
+    }
+
+    private List<Gene> tryToStoreGeneObjects(List<Gene> genes) {
+        sql.withBatch("insert INTO Gene (symbol, name, bioType, chr, start, end, synonyms, geneID, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=id")
+                { BatchingPreparedStatementWrapper ps ->
+                    genes.each { gene ->
+                        ps.addBatch([gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart, gene.geneEnd, gene.synonyms[0], gene.geneID, gene.description, gene.strand, gene.version])
+                    }
+                }
+
+        sql.commit()
+        return genes
+    }
+
+    private void tryToStoreEnsemblDB(Integer version, String date, Integer referenceGenomeId) {
+        def result = sql.executeInsert("""INSERT INTO Ensembl (version, date, ReferenceGenome_id) values \
+        ($version,
+        $date,
+        $referenceGenomeId)
+     ON DUPLICATE KEY UPDATE id=id;""")
+    }
+
+    private Integer tryToFindEnsemblDB(Integer version, String date, Integer rgId) {
+        def result =
+                sql.firstRow("SELECT id FROM Ensembl WHERE Ensembl.version=? and Ensembl.date=? and Ensembl.ReferenceGenome_id=?",
+                        [version, date, rgId])
+        return result.id
+    }
+
+    private Integer tryToFindVariantCaller(VariantCaller variantCaller) {
+        def result =
+                sql.firstRow("SELECT id FROM VariantCaller WHERE VariantCaller.name=? and VariantCaller.version=? and VariantCaller.DOI=?",
+                        [variantCaller.name, variantCaller.version, variantCaller.doi])
+        return result.id
+    }
+
+    private Integer tryToFindAnnotationSoftware(Annotation annotation){
+        def result =
+                sql.firstRow("SELECT id FROM AnnotationSoftware WHERE AnnotationSoftware.name=? and AnnotationSoftware.version=? and AnnotationSoftware.DOI=?",
+                        [annotation.name, annotation.version, annotation.doi])
+        return result.id
     }
 
     private static Case convertRowResultToCase(GroovyRowResult row) {
@@ -621,16 +747,20 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         return sample
     }
 
+    //TODO ADAPT
     private static Gene convertRowResultToGene(GroovyRowResult row) {
         def gene = new Gene()
         gene.setBioType(row.get("bioType") as String)
         //TODO check if string or int?
         gene.setChromosome(row.get("chr") as String)
         gene.setGeneEnd(row.get("end") as BigInteger)
-        gene.setGeneID(row.get("id") as String)
+        gene.setGeneID(row.get("geneID") as String)
         gene.setGeneStart(row.get("start") as BigInteger)
         gene.setName(row.get("name") as String)
         gene.setSymbol(row.get("symbol") as String)
+        gene.setDescription(row.get("description") as String)
+        gene.setStrand(row.get("strand") as String)
+        gene.setVersion(row.get("version") as Integer)
         //TODO list of synonyms ?
         gene.setSynonyms([row.get("synonyms") as String])
         return gene

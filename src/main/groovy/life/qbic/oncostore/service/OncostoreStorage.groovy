@@ -49,4 +49,5 @@ interface OncostoreStorage {
 
     void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variantContext) throws OncostoreStorageException
 
+    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws OncostoreStorageException
 }

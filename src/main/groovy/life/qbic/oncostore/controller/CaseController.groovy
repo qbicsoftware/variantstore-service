@@ -26,6 +26,11 @@ class CaseController {
         this.service = service
     }
 
+    /**
+     *
+     * @param identifier The case identifier
+     * @return The found case
+     */
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getCase(@Parameter('id') String identifier) {
         log.info("Resource request for case: $identifier")
@@ -44,6 +49,11 @@ class CaseController {
     }
 
 
+    /**
+     *
+     * @param args The filter arguments
+     * @return The found cases
+     */
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getCases(@Valid ListingArguments args) {
         log.info("Resource request for cases with filtering options.")
