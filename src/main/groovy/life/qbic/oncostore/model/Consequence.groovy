@@ -1,8 +1,10 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.swagger.v3.oas.annotations.media.Schema
 
-class Consequence {
+@Schema(name="Consequence", description="A variant consequence")
+class Consequence implements Comparable{
 
     String codingChange
     String transcriptID
@@ -20,6 +22,13 @@ class Consequence {
 
     Consequence() {
 
+    }
+
+    @Override
+    int compareTo(Object other) {
+        Consequence c = (Consequence) other
+        int byCoding = this.codingChange <=> c.codingChange
+        return byCoding ?: this.transcriptID <=> c.transcriptID
     }
 
     @JsonProperty("codingChange")

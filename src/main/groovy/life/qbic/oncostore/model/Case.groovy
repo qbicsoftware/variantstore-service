@@ -21,11 +21,13 @@ class Case {
         Case() {
         }
 
+        @Schema(description="The case identifier")
         @JsonProperty("id")
         String getIdentifier() {
             return identifier
         }
 
+        @Schema(description="The associated project identifier")
         @JsonProperty("projectId")
         String getProjectId() {
             return projectId

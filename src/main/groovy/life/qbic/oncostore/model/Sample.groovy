@@ -22,16 +22,19 @@ class Sample {
     Sample() {
     }
 
+    @Schema(description="The sample identifier")
     @JsonProperty("sampleIdentifier")
     String getIdentifier() {
         return identifier
     }
 
+    @Schema(description="The associated cancer entity")
     @JsonProperty("cancerEntity")
     String getCancerEntity() {
         return cancerEntity
     }
 
+    @Schema(description="The associated case identifier")
     @JsonProperty("caseID")
     String getCaseID() {
         return caseID

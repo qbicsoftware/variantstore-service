@@ -36,8 +36,8 @@ class OncostoreInformationCenter implements OncostoreService{
     }
 
     @Override
-    List<Gene> getGeneForGeneId(String geneId) {
-        return storage.findGeneById(geneId)
+    List<Gene> getGeneForGeneId(String geneId, @NotNull ListingArguments args) {
+        return storage.findGeneById(geneId, args)
     }
 
     @Override
@@ -51,7 +51,7 @@ class OncostoreInformationCenter implements OncostoreService{
         request.setAssemblyId(assemblyId)
         request.setReferenceBases(reference)
         request.setReferenceName(chromosome)
-        request.setStart(startPosition)
+        request.setStart(start)
 
         BeaconAlleleResponse response = new BeaconAlleleResponse()
         response.setAlleleRequest(request)

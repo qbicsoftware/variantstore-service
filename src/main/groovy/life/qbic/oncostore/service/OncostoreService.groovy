@@ -17,7 +17,7 @@ interface OncostoreService {
 
     List<Variant> getVariantForVariantId(String variantId)
 
-    List<Gene> getGeneForGeneId(String geneId)
+    List<Gene> getGeneForGeneId(String geneId, ListingArguments args)
 
     List<Sample> getSampleForSampleId(String sampleId)
 

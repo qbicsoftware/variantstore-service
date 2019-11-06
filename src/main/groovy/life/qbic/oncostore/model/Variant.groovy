@@ -1,7 +1,9 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.swagger.v3.oas.annotations.media.Schema
 
+@Schema(name="Variant", description="A genomic variant")
 class Variant implements SimpleVariantContext, Comparable{
 
     String identifier
@@ -17,8 +19,10 @@ class Variant implements SimpleVariantContext, Comparable{
     Variant() {
     }
 
+    @Override
     int compareTo(Object other) {
-        identifier <=> other.identifier
+        Variant v = (Variant) other
+        return identifier <=> v.identifier
     }
 
     @Override
@@ -54,48 +58,56 @@ class Variant implements SimpleVariantContext, Comparable{
         this.consequences = consequences
     }
 
+    @Schema(description="The chromosome")
     @JsonProperty("chromosome")
     @Override
     String getChromosome() {
         return chromosome
     }
 
+    @Schema(description="The genomic start position")
     @JsonProperty("startPosition")
     @Override
     BigInteger getStartPosition() {
         return startPosition
     }
 
+    @Schema(description="The genomic end position")
     @JsonProperty("endPosition")
     @Override
     BigInteger getEndPosition() {
         return endPosition
     }
 
+    @Schema(description="The reference allele")
     @JsonProperty("referenceAllele")
     @Override
     String getReferenceAllele() {
         return referenceAllele
     }
 
+    @Schema(description="The observed allele")
     @JsonProperty("observedAllele")
     @Override
     String getObservedAllele() {
         return observedAllele
     }
 
+    @Schema(description="The consequences")
     @JsonProperty("consequences")
     @Override
     List<Consequence> getConsequences() {
         return consequences
     }
 
+    @Schema(description="The reference genome")
     @JsonProperty("referenceGenome")
     @Override
     ReferenceGenome getReferenceGenome() {
         return referenceGenome
     }
 
+    @Schema(description="Is it a somatic variant?")
     @JsonProperty("isSomatic")
     @Override
     Boolean getIsSomatic() {
@@ -106,6 +118,7 @@ class Variant implements SimpleVariantContext, Comparable{
         return null
     }
 
+    @Schema(description="The variant identifier")
     @JsonProperty("identifier")
     @Override
     String getId() {

@@ -35,12 +35,12 @@ class GeneController {
      * @param identifier The gene identifier
      * @return The found genes
      */
-    @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getGene(@Parameter('id') String identifier) {
+    @Get(uri = "/{id}{?args*}", produces = MediaType.APPLICATION_JSON)
+    HttpResponse getGene(@Parameter('id') String identifier, @Valid ListingArguments args) {
         log.info("Resource request for gene: $identifier")
         try {
-            List<Gene> genes = service.getGeneForGeneId(identifier)
-            return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("Gene not found.")
+            List<Gene> genes = service.getGeneForGeneId(identifier, args)
+            return genes ? HttpResponse.ok(genes.get(0)) : HttpResponse.notFound("Gene not found.")
         }
         catch (IllegalArgumentException e) {
             log.error(e)

@@ -111,13 +111,14 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
      * @param id Gene identifier
      * @return List<Gene> containing the found gene for specified identifier
      */
-    List<Gene> findGeneById(String id) {
-        // TODO check for valid gene identifier?
-
+    List<Gene> findGeneById(String id, @NotNull ListingArguments args) {
         sql = new Sql(dataSource.connection)
         try {
-            def genes = fetchGeneForId(id)
-            return genes
+            if (args.getEnsemblVersion().isPresent()) {
+                return fetchGeneForId(id, args.getEnsemblVersion().get())
+            }
+            def ensemblversion = fetchEnsemblVersion()
+            return fetchGeneForId(id, ensemblversion)
         }
         catch (Exception e) {
             throw new OncostoreStorageException("Could not fetch gene with identifier $id.", e.fillInStackTrace())
@@ -223,113 +224,10 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         }
     }
 
-    private List<Case> fetchCaseForId(String id) {
-        def result = sql.rows("""SELECT distinct Entity.id, Project_id FROM Entity WHERE Entity.id=$id;""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it)}
-        return cases
-    }
-
-    private List<Sample> fetchSampleForId(String id) {
-        def result = sql.rows("""SELECT * FROM Sample WHERE Sample.qbicID=$id;""")
-        List<Sample> sample = result.collect{ convertRowResultToSample(it)}
-        return sample
-    }
-
-    private List<Variant> fetchVariantForId(String id) {
-        def result = sql.rows("""SELECT * FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id WHERE Variant.uuid=$id;""")
-        //Variant variant = convertRowResultToVariant(result)
-        //return variant
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Gene> fetchGeneForId(String id) {
-        def result = sql.rows("""SELECT * FROM Gene WHERE Gene.geneID=$id;""")
-        List<Gene> genes = result.collect{ convertRowResultToGene(it)}
-        return genes
-    }
-
-    private List<Case> fetchCases() {
-        def result = sql.rows("""SELECT * FROM Entity;""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it)}
-        return cases
-    }
-
-    private List<Sample> fetchSamples() {
-        def result = sql.rows("""SELECT * FROM Sample;""")
-        List<Sample> samples = result.collect{ convertRowResultToSample(it) }
-        return samples
-    }
-
-    private List<Variant> fetchVariants() {
-        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id;""")
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Gene> fetchGenes() {
-        def result = sql.rows("""SELECT * FROM Gene;""")
-        List<Gene> genes = result.collect{ convertRowResultToGene(it) }
-        return genes
-    }
-
-    private List<Case> fetchCasesByConsequenceType(String consequenceType) {
-        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id INNER JOIN Variant_has_Consequence ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Consequence.type = $consequenceType""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it) }
-        return cases
-    }
-
-    private List<Case> fetchCasesByChromosomeAndPositionRange(String chromosome, BigInteger startPosition, BigInteger endPosition) {
-        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id where Variant.chr = $chromosome AND Variant.start >= $startPosition AND Variant.end <= $endPosition;""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it) }
-        return cases
-    }
-
-    private List<Sample> fetchSamplesByCancerEntity(String entity) {
-        def result = sql.rows("""SELECT * FROM Sample WHERE Sample.cancerEntity=$entity;""")
-        List<Sample> samples = result.collect{ convertRowResultToSample(it) }
-        return samples
-    }
-
-    private List<Variant> fetchVariantsByChromosomeAndStartPosition(String chromosome, BigInteger start) {
-        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.chr=$chromosome AND Variant.start=$start;""")
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Variant> fetchVariantsByChromosome(String chromosome) {
-        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Variant.chr=$chromosome;""")
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Variant> fetchVariantsByStartPosition(BigInteger start) {
-        def result = sql.rows("""SELECT * FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id WHERE Variant.start=$start;""")
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Variant> fetchVariantsBySample(String sampleId) {
-        def result = sql.rows("""select * from Variant INNER JOIN Sample_has_Variant ON Variant.id = Sample_has_Variant.Variant_id INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Sample_qbicID=$sampleId;""")
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId) {
-        def result = sql.rows("""select distinct * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id INNER JOIN Consequence ON Variant_has_Consequence.Consequence_id = Consequence.id where Sample_qbicID = $sampleId AND Gene_id=$geneId;""")
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Variant> fetchVariantsByGeneId(String geneId) {
-        def result = sql.rows("""select distinct * from Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence ON Variant_has_Consequence.Consequence_id = Consequence.id where Gene_id=$geneId;""")
-        return parseVariantQueryResult(result)
-    }
-
-    private List<Variant> fetchVariantsForBeaconResponse(String chromosome, BigInteger start,
-                                                         String reference, String observed, String assemblyId, ListingArguments args) {
-        def result = sql.rows("""select * from Variant INNER JOIN Variant_has_ReferenceGenome ON Variant.id = Variant_has_ReferenceGenome.Variant_id INNER JOIN ReferenceGenome on Variant_has_ReferenceGenome.ReferenceGenome_id = ReferenceGenome.id where ReferenceGenome.build=$assemblyId and Variant.chr=$chromosome and Variant.start=$start and Variant.ref=$reference and Variant.obs=$observed;""")
-        List<Variant> variants = result.collect{ convertRowResultToVariant(it) }
-        return variants
-    }
-
-    private List<Gene> fetchGenesBySample(String sampleId) {
-        def result = sql.rows("""select distinct Gene.* from Gene INNER JOIN Consequence ON Gene.id = Consequence.Gene_id INNER JOIN Variant_has_Consequence ON Consequence.id = Variant_has_Consequence.Consequence_id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id where Sample_qbicID=$sampleId;""")
-        List<Gene> genes = result.collect{ convertRowResultToGene(it) }
-        return genes
+    private Integer fetchEnsemblVersion() {
+        def result =
+                sql.firstRow("""SELECT MAX(version) AS version FROM Ensembl;""")
+        return result.version
     }
 
     @Override
@@ -555,6 +453,113 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         return ids
     }
 
+    private List<Case> fetchCaseForId(String id) {
+        def result = sql.rows("""SELECT distinct Entity.id, Project_id FROM Entity WHERE Entity.id=$id;""")
+        List<Case> cases = result.collect{ convertRowResultToCase(it)}
+        return cases
+    }
+
+    private List<Sample> fetchSampleForId(String id) {
+        def result = sql.rows("""SELECT * FROM Sample WHERE Sample.qbicID=$id;""")
+        List<Sample> sample = result.collect{ convertRowResultToSample(it)}
+        return sample
+    }
+
+    private List<Variant> fetchVariantForId(String id) {
+        def result = sql.rows("""SELECT * FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE Variant.uuid=$id;""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Gene> fetchGeneForId(String id, Integer ensemblVersion) {
+        //def result = sql.rows("""SELECT * FROM Gene INNER JOIN Variant_has_Consequence ON Variant.id WHERE Gene.geneID=$id;""")
+        def result = sql.rows("""SELECT distinct * FROM Gene INNER JOIN Ensembl_has_Gene ON Gene.id = Ensembl_has_Gene.Gene_id INNER JOIN Ensembl ON Ensembl_has_Gene.Ensembl_id = Ensembl.id WHERE Gene.geneID=$id and Ensembl.version=$ensemblVersion;""")
+        List<Gene> genes = result.collect{ convertRowResultToGene(it)}
+        return genes
+    }
+
+    private List<Case> fetchCases() {
+        def result = sql.rows("""SELECT * FROM Entity;""")
+        List<Case> cases = result.collect{ convertRowResultToCase(it)}
+        return cases
+    }
+
+    private List<Sample> fetchSamples() {
+        def result = sql.rows("""SELECT * FROM Sample;""")
+        List<Sample> samples = result.collect{ convertRowResultToSample(it) }
+        return samples
+    }
+
+    private List<Variant> fetchVariants() {
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid FROM Variant;""")
+        return parseVariantQueryResult(result, false)
+    }
+
+    private List<Gene> fetchGenes() {
+        def result = sql.rows("""SELECT * FROM Gene;""")
+        List<Gene> genes = result.collect{ convertRowResultToGene(it) }
+        return genes
+    }
+
+    private List<Case> fetchCasesByConsequenceType(String consequenceType) {
+        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id INNER JOIN Variant_has_Consequence ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Consequence.type = $consequenceType""")
+        List<Case> cases = result.collect{ convertRowResultToCase(it) }
+        return cases
+    }
+
+    private List<Case> fetchCasesByChromosomeAndPositionRange(String chromosome, BigInteger startPosition, BigInteger endPosition) {
+        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.qbicID = Sample_has_Variant.Sample_qbicId INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id where Variant.chr = $chromosome AND Variant.start >= $startPosition AND Variant.end <= $endPosition;""")
+        List<Case> cases = result.collect{ convertRowResultToCase(it) }
+        return cases
+    }
+
+    private List<Sample> fetchSamplesByCancerEntity(String entity) {
+        def result = sql.rows("""SELECT * FROM Sample WHERE Sample.cancerEntity=$entity;""")
+        List<Sample> samples = result.collect{ convertRowResultToSample(it) }
+        return samples
+    }
+
+    private List<Variant> fetchVariantsByChromosomeAndStartPosition(String chromosome, BigInteger start) {
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.* FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE Variant.chr=$chromosome AND Variant.start=$start;""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Variant> fetchVariantsByChromosome(String chromosome) {
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.* FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE Variant.chr=$chromosome""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Variant> fetchVariantsByStartPosition(BigInteger start) {
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.* FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE Variant.start=$start;""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Variant> fetchVariantsBySample(String sampleId) {
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.* FROM Variant INNER JOIN Sample_has_Variant ON Variant.id = Sample_has_Variant.Variant_id INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE Sample_qbicID=$sampleId;""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId) {
+        def result = sql.rows("""SELECT distinct Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.* FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id where Sample_qbicID = $sampleId AND geneID=$geneId;""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Variant> fetchVariantsByGeneId(String geneId) {
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.* FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE geneID=$geneId;""")
+        return parseVariantQueryResult(result)
+    }
+
+    private List<Variant> fetchVariantsForBeaconResponse(String chromosome, BigInteger start,
+                                                         String reference, String observed, String assemblyId, ListingArguments args) {
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid FROM Variant INNER JOIN Variant_has_ReferenceGenome ON Variant.id = Variant_has_ReferenceGenome.Variant_id INNER JOIN ReferenceGenome on Variant_has_ReferenceGenome.ReferenceGenome_id = ReferenceGenome.id where ReferenceGenome.build=$assemblyId and Variant.chr=$chromosome and Variant.start=$start and Variant.ref=$reference and Variant.obs=$observed;""")
+        return parseVariantQueryResult(result, false)
+    }
+
+    private List<Gene> fetchGenesBySample(String sampleId) {
+        def result = sql.rows(""" SELECT Gene.*, Sample_has_Variant.* FROM Gene INNER JOIN Consequence_has_Gene ON Gene.id = Consequence_has_Gene.Gene_id INNER JOIN Consequence on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Variant_has_Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Variant ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant.id WHERE Sample_qbicID=$sampleId;""")
+        List<Gene> genes = result.collect{ convertRowResultToGene(it) }
+        return genes
+    }
+
     void tryToStoreJunctionBatch(Object id, List ids, String insertStatement){
             sql.withBatch(insertStatement)
                                 {  ps ->
@@ -751,7 +756,6 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     private static Gene convertRowResultToGene(GroovyRowResult row) {
         def gene = new Gene()
         gene.setBioType(row.get("bioType") as String)
-        //TODO check if string or int?
         gene.setChromosome(row.get("chr") as String)
         gene.setGeneEnd(row.get("end") as BigInteger)
         gene.setGeneID(row.get("geneID") as String)
@@ -766,16 +770,18 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         return gene
     }
 
-    private static Variant convertRowResultToVariant(GroovyRowResult row) {
+    private static Variant convertRowResultToVariant(GroovyRowResult row, Boolean withConsequence) {
         def variant = new Variant()
-        variant.setIdentifier(row.get("uuid") as String)
-        variant.setChromosome(row.get("chr") as String)
-        variant.setStartPosition(row.get("start") as BigInteger)
-        variant.setEndPosition(row.get("end") as BigInteger)
-        variant.setReferenceAllele(row.get("ref") as String)
-        variant.setObservedAllele(row.get("obs") as String)
-        variant.setIsSomatic(row.get("isSomatic") as Boolean)
-        variant.setConsequences([convertRowResultToConsequence(row)])
+        variant.setIdentifier(row.get("varuuid") as String)
+        variant.setChromosome(row.get("varchr") as String)
+        variant.setStartPosition(row.get("varstart") as BigInteger)
+        variant.setEndPosition(row.get("varend") as BigInteger)
+        variant.setReferenceAllele(row.get("varref") as String)
+        variant.setObservedAllele(row.get("varobs") as String)
+        variant.setIsSomatic(row.get("varSomatic") as Boolean)
+        if (withConsequence) {
+            variant.setConsequences([convertRowResultToConsequence(row)])
+        }
         return variant
     }
 
@@ -792,17 +798,39 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
         consequence.setAaStart(row.get("aaStart") as Integer)
         consequence.setAaEnd(row.get("aaEnd") as Integer)
         consequence.setImpact(row.get("impact") as String)
-        consequence.setGeneID(row.get("Gene_id") as String)
+        consequence.setGeneID(row.get("geneID") as String)
         consequence.setStrand(row.get("strand") as Integer)
         return consequence
     }
 
-    private static List<Variant> parseVariantQueryResult(List<GroovyRowResult> rows) {
-        Map<String, List<Variant>> variantsIdMap = rows.collect{ convertRowResultToVariant(it) }.groupBy{ it.identifier }
+    private static List<Variant> parseVariantQueryResult(List<GroovyRowResult> rows, Boolean withConsequence=true) {
+        Map<String, List<Variant>> variantsIdMap = rows.collect{ convertRowResultToVariant(it, withConsequence) }.groupBy{ it.identifier }
         List<Variant> variants = []
+
+        if(!withConsequence) {
+            return variantsIdMap.values().toList()
+        }
+
         variantsIdMap.each { key, value ->
-            def consequences = value*.getConsequences().collectMany {[it]}
-            value[0].consequences = consequences
+            def consequences = value*.getConsequences().collectMany{[it]}.flatten()
+
+            // in case of e.g. intergenic consequences, we have to join the corresponding identifiers of affected genes and report it as one consequence
+            // @TODO investigate alternative to just set the annotated transcript ID as geneID in such cases...
+            def groupedConsequences = consequences.groupBy({it.codingChange}, {it.transcriptID})
+            def joinedConsequences = []
+            groupedConsequences.each {coding, values ->
+                values.each {
+                    transcript, cons ->
+                        if(cons.size > 1) {
+                            Consequence c = (Consequence) cons[0]
+                              joinedConsequences.add(c)
+                        }
+                        else {
+                            joinedConsequences.addAll(cons)
+                        }
+                }
+            }
+            value[0].consequences = joinedConsequences
             variants.add(value[0])
         }
         return variants

@@ -8,7 +8,7 @@ import com.fasterxml.jackson.annotation.JsonProperty
 class BeaconAlleleRequest {
 
     String referenceName
-    Integer start
+    BigInteger start
     String referenceBases
     String alternateBases
     String assemblyId
@@ -17,7 +17,7 @@ class BeaconAlleleRequest {
         this.referenceName = referenceName
     }
 
-    void setStart(Integer start) {
+    void setStart(BigInteger start) {
         this.start = start
     }
 
@@ -39,7 +39,7 @@ class BeaconAlleleRequest {
     }
 
     @JsonProperty("start")
-    Integer getStart() {
+    BigInteger getStart() {
         return start
     }
 

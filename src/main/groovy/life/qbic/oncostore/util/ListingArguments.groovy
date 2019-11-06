@@ -34,6 +34,10 @@ class ListingArguments {
     @Nullable
     private String consequenceType
 
+    @Nullable
+    @Positive
+    private Integer ensemblVersion
+
     public ListingArguments() {
 
     }
@@ -87,6 +91,13 @@ class ListingArguments {
         return Optional.of(consequenceType)
     }
 
+    public Optional<Integer> getEnsemblVersion() {
+        if (ensemblVersion == null) {
+            return Optional.empty()
+        }
+        return Optional.of(ensemblVersion)
+    }
+
     public void setChromosome(@Nullable String chromosome) {
         this.chromosome = chromosome
     }
@@ -113,6 +124,10 @@ class ListingArguments {
 
     public void setConsequenceType(@Nullable String consequenceType) {
         this.consequenceType = consequenceType
+    }
+
+    public void setEnsemblVersion(@Nullable Integer ensemblVersion) {
+        this.ensemblVersion = ensemblVersion
     }
 
     public static Builder builder() {
@@ -146,6 +161,10 @@ class ListingArguments {
 
         if (consequenceType != null) {
             uriBuilder.queryParam("consequenceType", consequenceType)
+        }
+
+        if (ensemblVersion != null) {
+            uriBuilder.queryParam("ensemblVersion", ensemblVersion)
         }
 
         return uriBuilder.build();
@@ -190,6 +209,11 @@ class ListingArguments {
 
         public Builder consequenceType(String consequenceType) {
             args.setConsequenceType(consequenceType)
+            return this
+        }
+
+        public Builder ensemblVersion(Integer ensemblVersion) {
+            args.setEnsemblVersion(ensemblVersion)
             return this
         }
 

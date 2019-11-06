@@ -10,6 +10,7 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.swagger.v3.oas.annotations.tags.Tag
 import life.qbic.oncostore.model.Variant
 import life.qbic.oncostore.service.OncostoreService
 import life.qbic.oncostore.util.ListingArguments
@@ -32,6 +33,7 @@ class VariantController {
     }
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
+    @Tag(name = "variant")
     HttpResponse getVariant(@Parameter('id') String identifier) {
         log.info("Resource request for variant: $identifier")
         try {

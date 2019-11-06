@@ -1,5 +1,8 @@
 package life.qbic.oncostore.model
 
+import io.swagger.v3.oas.annotations.media.Schema
+
+@Schema(name="Variant Annotation", description="A variant annotation software")
 class Annotation implements Software{
 
     final String name

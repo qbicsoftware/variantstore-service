@@ -27,7 +27,7 @@ interface OncostoreStorage {
 
     List<Variant> findVariantById(String id)
 
-    List<Gene> findGeneById(String id)
+    List<Gene> findGeneById(String id, @NotNull ListingArguments args)
 
     List<Case> findCases(@NotNull ListingArguments args)
 

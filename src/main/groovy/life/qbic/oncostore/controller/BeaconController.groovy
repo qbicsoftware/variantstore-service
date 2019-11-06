@@ -38,7 +38,7 @@ class BeaconController {
     @Get(uri = "/query{?args}", produces = MediaType.APPLICATION_JSON)
     HttpResponse checkVariant(@NotNull @Pattern(regexp = "[1-22]|X|Y") String chromosome, @NotNull @PositiveOrZero BigInteger startPosition,
                              @NotNull @Pattern(regexp = "[ACTG]+") String reference, @NotNull @Pattern(regexp = "[ACTG]+") String observed, @NotNull String assemblyId, @Nullable ListingArguments args){
-
+        log.info("Beacon request for variant.")
         try {
             BeaconAlleleResponse response = service.getBeaconAlleleResponse(chromosome, startPosition, reference, observed, assemblyId, args)
             return HttpResponse.ok(response)
