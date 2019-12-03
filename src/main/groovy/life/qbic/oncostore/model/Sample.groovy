@@ -8,7 +8,7 @@ class Sample {
 
     String identifier
     String cancerEntity
-    String caseID
+    String caseId
 
     Sample(String identifier, String cancerEntity) {
         this.identifier = identifier
@@ -36,8 +36,8 @@ class Sample {
 
     @Schema(description="The associated case identifier")
     @JsonProperty("caseID")
-    String getCaseID() {
-        return caseID
+    String getCaseId() {
+        return caseId
     }
 
     void setIdentifier(String identifier) {
@@ -48,7 +48,7 @@ class Sample {
         this.cancerEntity = cancerEntity
     }
 
-    void setCaseID(String caseID) {
-        this.caseID = caseID
+    void setCaseId(String caseId) {
+        this.caseId = caseId
     }
 }
