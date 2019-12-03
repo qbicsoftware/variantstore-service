@@ -21,11 +21,13 @@ interface SimpleVariantContext {
 
     Boolean getIsSomatic()
 
-    String getAttribute(String key)
+    List<Object> getAttribute(String key)
 
     String getId()
 
     void setId(String id)
 
     void setIsSomatic(Boolean somatic)
+
+    void setConsequences(List<Consequence> consequences)
 }
