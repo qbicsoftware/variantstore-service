@@ -92,6 +92,12 @@
           <groupId>io.micronaut</groupId>
           <artifactId>micronaut-security</artifactId>
       </dependency>
+      <!-- https://mvnrepository.com/artifact/io.micronaut/micronaut-security-jwt -->
+      <dependency>
+          <groupId>io.micronaut</groupId>
+          <artifactId>micronaut-security-jwt</artifactId>
+          <version>1.2.2</version>
+      </dependency>
     <dependency>
       <groupId>ch.qos.logback</groupId>
       <artifactId>logback-classic</artifactId>
