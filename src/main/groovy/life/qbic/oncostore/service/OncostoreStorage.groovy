@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull
 interface OncostoreStorage {
 
     List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
-                                          String reference, String observed, String assemblyId, ListingArguments args)
+                                          String reference, String observed, String assemblyId)
 
     List<Case> findCaseById(String id)
 

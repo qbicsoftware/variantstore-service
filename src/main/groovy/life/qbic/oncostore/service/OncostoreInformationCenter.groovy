@@ -9,6 +9,7 @@ import life.qbic.oncostore.parser.MetadataReader
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.util.AnnotationHandler
 import life.qbic.oncostore.util.ListingArguments
+import life.qbic.oncostore.util.VariantExporter
 
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -42,9 +43,9 @@ class OncostoreInformationCenter implements OncostoreService{
 
     @Override
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
-                                        String reference, String observed, String assemblyId, ListingArguments args) {
+                                        String reference, String observed, String assemblyId) {
 
-        List<Variant> variants = storage.findVariantsForBeaconResponse(chromosome, start, reference, observed, assemblyId, args)
+        List<Variant> variants = storage.findVariantsForBeaconResponse(chromosome, start, reference, observed, assemblyId)
 
         BeaconAlleleRequest request = new BeaconAlleleRequest()
         request.setAlternateBases(observed)
@@ -83,6 +84,11 @@ class OncostoreInformationCenter implements OncostoreService{
     @Override
     List<Gene> getGenesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findGenes(args)
+    }
+
+    @Override
+    String getVcfContentForVariants(List<Variant> variants) {
+        return VariantExporter.exportVariantsToVCF(variants)
     }
 
     @Override
