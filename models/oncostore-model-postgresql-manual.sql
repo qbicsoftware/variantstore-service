@@ -191,7 +191,7 @@ CREATE TABLE IF NOT EXISTS oncostore.Entity (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX entity_project_id  on oncostore.Entity (
+CREATE INDEX entity_project_id ON oncostore.Entity (
     Project_id ASC
 );
 CREATE UNIQUE INDEX entity_id_UNIQUE ON oncostore.Entity (
@@ -209,7 +209,6 @@ CREATE TABLE IF NOT EXISTS oncostore.VariantCaller (
     version VARCHAR(15) NOT NULL,
     DOI VARCHAR(30) NOT NULL
 );
-
 CREATE UNIQUE INDEX variant_caller_idx_UNIQUE ON oncostore.VariantCaller (
     variantCallerName ASC,
     version ASC,
@@ -234,12 +233,12 @@ CREATE TABLE IF NOT EXISTS oncostore.Sample (
 CREATE INDEX fk_Sample_Entity_idx ON oncostore.Sample (
     Entity_id ASC
 );
-CREATE UNIQUE INDEX fk_Sample_Entity_UNIQUE (
+CREATE UNIQUE INDEX fk_Sample_Entity_UNIQUE ON oncostore.Sample (
     qbicID ASC,
     Entity_id ASC,
     cancerEntity ASC
 );
-CREATE UNIQUE INDEX qbicID_UNIQUE (
+CREATE UNIQUE INDEX qbicID_UNIQUE ON oncostore.Sample (
     qbicID ASC
 );
 
@@ -263,13 +262,13 @@ CREATE TABLE IF NOT EXISTS oncostore.AnnotationSoftware_has_Consequence (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_AnnotationSoftware_has_Consequence_Consequence_idx (
+CREATE INDEX fk_AnnotationSoftware_has_Consequence_Consequence_idx ON oncostore.AnnotationSoftware_has_Consequence (
     Consequence_id ASC
 );
-CREATE INDEX fk_AnnotationSoftware_has_Consequence_AnnotationSoftware_idx (
+CREATE INDEX fk_AnnotationSoftware_has_Consequence_AnnotationSoftware_idx ON oncostore.AnnotationSoftware_has_Consequence (
     AnnotationSoftware_id ASC
 );
-CREATE UNIQUE INDEX fk_AnnotationSoftware_has_Consequence_Consequence_UNIQUE (
+CREATE UNIQUE INDEX fk_AnnotationSoftware_has_Consequence_Consequence_UNIQUE ON oncostore.AnnotationSoftware_has_Consequence (
     AnnotationSoftware_id ASC,
     Consequence_id ASC
 );
@@ -294,13 +293,13 @@ CREATE TABLE IF NOT EXISTS oncostore.Variant_has_ReferenceGenome (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_Variant_has_ReferenceGenome_ReferenceGenome_idx (
+CREATE INDEX fk_Variant_has_ReferenceGenome_ReferenceGenome_idx ON oncostore.Variant_has_ReferenceGenome (
     ReferenceGenome_id ASC
 );
-CREATE INDEX fk_Variant_has_ReferenceGenome_Variant_idx (
+CREATE INDEX fk_Variant_has_ReferenceGenome_Variant_idx ON oncostore.Variant_has_ReferenceGenome (
     Variant_id ASC
 );
-CREATE UNIQUE INDEX fk_Variant_has_ReferenceGenome_ReferenceGenome_Variant_idx_UNIQUE (
+CREATE UNIQUE INDEX fk_Variant_has_ReferenceGenome_ReferenceGenome_Variant_idx_UNIQUE ON oncostore.Variant_has_ReferenceGenome (
     Variant_id ASC,
     ReferenceGenome_id ASC
 );
@@ -325,13 +324,13 @@ CREATE TABLE IF NOT EXISTS oncostore.Variant_has_Consequence (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_Variant_has_Consequence_Consequence_idx (
+CREATE INDEX fk_Variant_has_Consequence_Consequence_idx ON oncostore.Variant_has_Consequence (
     Consequence_id ASC
 );
-CREATE INDEX fk_Variant_has_Consequence_Variant (
+CREATE INDEX fk_Variant_has_Consequence_Variant ON oncostore.Variant_has_Consequence (
     Variant_id ASC
 );
-CREATE UNIQUE INDEX fk_Variant_has_Consequence_Consequence_Variant_Consequence_idx_UNIQUE (
+CREATE UNIQUE INDEX fk_Variant_has_Consequence_Consequence_Variant_Consequence_idx_UNIQUE ON oncostore.Variant_has_Consequence (
     Variant_id ASC,
     Consequence_id ASC
 );
@@ -343,26 +342,26 @@ DROP TABLE IF EXISTS oncostore.Variant_has_VariantCaller;
 
 CREATE TABLE IF NOT EXISTS oncostore.Variant_has_VariantCaller (
     Variant_id INTEGER NOT NULL,
-    VariantCaller_id INTEGER NOT NULL
+    VariantCaller_id INTEGER NOT NULL,
     PRIMARY KEY (Variant_id, VariantCaller_id),
     CONSTRAINT fk_Variant_has_VariantCaller_Variant
         FOREIGN KEY (Variant_id)
         REFERENCES oncostore.Variant (id)
         ON DELETE NO ACTION
         ON UPDATE NO ACTION,
-    CONSTRAINT fk_Variant_has_VariantCaller_Variant 
+    CONSTRAINT fk_Variant_has_VariantCaller_VariantCaller
         FOREIGN KEY (VariantCaller_id)
         REFERENCES oncostore.VariantCaller (id)
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_Variant_has_VariantCaller_VariantCaller_idx (
+CREATE INDEX fk_Variant_has_VariantCaller_VariantCaller_idx ON oncostore.Variant_has_VariantCaller (
     VariantCaller_id ASC
 );
-CREATE INDEX fk_Variant_has_VariantCaller_Variant_idx (
+CREATE INDEX fk_Variant_has_VariantCaller_Variant_idx ON oncostore.Variant_has_VariantCaller (
     Variant_id ASC
 );
-CREATE UNIQUE INDEX fk_Variant_has_VariantCaller_Variant_VariantCaller_idx_UNIQUE (
+CREATE UNIQUE INDEX fk_Variant_has_VariantCaller_Variant_VariantCaller_idx_UNIQUE ON oncostore.Variant_has_VariantCaller (
     Variant_id ASC,
     VariantCaller_id ASC
 );
@@ -387,13 +386,13 @@ CREATE TABLE IF NOT EXISTS oncostore.Sample_has_Variant (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_Sample_has_Variant_Variant_idx (
+CREATE INDEX fk_Sample_has_Variant_Variant_idx ON oncostore.Sample_has_Variant(
     Variant_id ASC
 );
-CREATE INDEX fk_Sample_has_Variant_Sample_idx (
+CREATE INDEX fk_Sample_has_Variant_Sample_idx ON oncostore.Sample_has_Variant (
     Sample_qbicID ASC
 );
-CREATE UNIQUE INDEX fk_Sample_has_Variant_Sample_Variant (
+CREATE UNIQUE INDEX fk_Sample_has_Variant_Sample_Variant ON oncostore.Sample_has_Variant (
     Sample_qbicID ASC,
     Variant_id ASC
 );
@@ -414,10 +413,10 @@ CREATE TABLE IF NOT EXISTS oncostore.Ensembl (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_Ensembl_ReferenceGenome_idx (
+CREATE INDEX fk_Ensembl_ReferenceGenome_idx ON oncostore.Ensembl (
     ReferenceGenome_id ASC
 );
-CREATE UNIQUE INDEX fk_Ensembl_ReferenceGenome_idx_UNIQUE (
+CREATE UNIQUE INDEX fk_Ensembl_ReferenceGenome_idx_UNIQUE ON oncostore.Ensembl (
     version ASC,
     date ASC
 );
@@ -442,10 +441,10 @@ CREATE TABLE IF NOT EXISTS oncostore.Consequence_has_Gene (
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_Consequence_has_Gene_Gene (
+CREATE INDEX fk_Consequence_has_Gene_Gene ON oncostore.Consequence_has_Gene (
     Gene_id ASC
 );
-CREATE INDEX fk_Consequence_has_Gene_Consequence (
+CREATE INDEX fk_Consequence_has_Gene_Consequence ON oncostore.Consequence_has_Gene (
     Consequence_id ASC
 );
 
@@ -459,19 +458,19 @@ CREATE TABLE IF NOT EXISTS oncostore.Ensembl_has_Gene (
     Gene_id INTEGER NOT NULL,
     PRIMARY KEY (Ensembl_id, Gene_id),
     CONSTRAINT fk_Ensembl_has_Gene_Ensembl 
-        FOREIGN KEY Ensembl_id
+        FOREIGN KEY (Ensembl_id)
         REFERENCES oncostore.Ensembl (id)
         ON DELETE NO ACTION
         ON UPDATE NO ACTION,
     CONSTRAINT fk_Ensembl_has_Gene_Gene 
-        FOREIGN KEY Gene_id
+        FOREIGN KEY (Gene_id)
         REFERENCES oncostore.Gene (id)
         ON DELETE NO ACTION
         ON UPDATE NO ACTION
 );
-CREATE INDEX fk_Ensembl_has_Gene_Gene_idx (
+CREATE INDEX fk_Ensembl_has_Gene_Gene_idx ON oncostore.Ensembl_has_Gene (
     Gene_id ASC
 );
-CREATE INDEX fk_Ensembl_has_Gene_Ensembl_idx (
+CREATE INDEX fk_Ensembl_has_Gene_Ensembl_idx ON oncostore.Ensembl_has_Gene (
     Ensembl_id ASC
 );
