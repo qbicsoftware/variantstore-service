@@ -1,5 +1,5 @@
-Welcome to spark-service's documentation!
-=========================================
+Welcome to oncostore-proto-project's documentation!
+===================================================
 
 .. toctree::
    :maxdepth: 2
