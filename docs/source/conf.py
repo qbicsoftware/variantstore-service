@@ -19,14 +19,14 @@
 
 # -- Project information -----------------------------------------------------
 
-project = 'spark-service'
-copyright = '2019, Lukas Heumos'
+project = 'oncostore-proto-project'
+copyright = '2020, qbicsoftware'
 author = 'Lukas Heumos'
 
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '1.1.0'
+release = '1.0.0'
 
 
 # -- General configuration ---------------------------------------------------
