@@ -43,9 +43,9 @@ class CaseController {
             description = "The case with the specified identifier is returned.",
             tags = "Case")
     @ApiResponse(
-            responseCode = "200", description = "Returns a case", content = [@Content(
+            responseCode = "200", description = "Returns a case", content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Sample.class))])
+                    schema = @Schema(implementation = Sample.class)))
     @ApiResponse(responseCode = "400", description = "Invalid case identifier supplied")
     @ApiResponse(responseCode = "404", description = "Case not found")
     HttpResponse getCase(@PathVariable(name="id") String identifier) {
@@ -74,11 +74,11 @@ class CaseController {
     @Operation(summary = "Request a set of cases",
             description = "The cases matching the supplied properties are returned.",
             tags = "Case")
-    @ApiResponse(responseCode = "200", description = "Returns a set of cases", content = [@Content(
+    @ApiResponse(responseCode = "200", description = "Returns a set of cases", content = @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = Case.class))])
+            schema = @Schema(implementation = Case.class)))
     @ApiResponse(responseCode = "404", description = "No cases found matching provided attributes")
-    HttpResponse getCases(@Valid ListingArguments args) {
+    HttpResponse getCases(ListingArguments args) {
         log.info("Resource request for cases with filtering options.")
         try {
             List<Case> cases = service.getCasesForSpecifiedProperties(args)

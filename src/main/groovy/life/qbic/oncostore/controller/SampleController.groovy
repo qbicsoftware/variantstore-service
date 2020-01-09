@@ -43,9 +43,9 @@ class SampleController {
             description = "The sample with the specified identifier is returned.",
             tags = "Sample")
     @ApiResponse(
-            responseCode = "200", description = "Returns a sample", content = [@Content(
+            responseCode = "200", description = "Returns a sample", content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Sample.class))])
+                    schema = @Schema(implementation = Sample.class)))
     @ApiResponse(responseCode = "400", description = "Invalid sample identifier supplied")
     @ApiResponse(responseCode = "404", description = "Sample not found")
     HttpResponse getSample(@PathVariable(name="id") String identifier) {
@@ -73,12 +73,12 @@ class SampleController {
     @Operation(summary = "Request a set of samples",
             description = "The samples matching the supplied properties are returned.",
             tags = "Sample")
-    @ApiResponse(responseCode = "200", description = "Returns a set of samples", content = [@Content(
+    @ApiResponse(responseCode = "200", description = "Returns a set of samples", content = @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = Sample.class))])
+            schema = @Schema(implementation = Sample.class)))
     @ApiResponse(responseCode = "400", description = "Invalid sample identifier supplied")
     @ApiResponse(responseCode = "404", description = "No samples found matching provided attributes")
-    HttpResponse getSamples(@Valid ListingArguments args){
+    HttpResponse getSamples(ListingArguments args){
         log.info("Resource request for samples with filtering options.")
         try {
             List<Sample> samples = service.getSamplesForSpecifiedProperties(args)

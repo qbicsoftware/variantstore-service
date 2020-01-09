@@ -46,12 +46,12 @@ class GeneController {
             description = "The gene with the specified identifier is returned.",
             tags = "Gene")
     @ApiResponse(
-            responseCode = "200", description = "Returns a gene", content = [@Content(
+            responseCode = "200", description = "Returns a gene", content = @Content(
                     mediaType = "application/json",
-                    schema = @Schema(implementation = Gene.class))])
+                    schema = @Schema(implementation = Gene.class)))
     @ApiResponse(responseCode = "400", description = "Invalid gene identifier supplied")
     @ApiResponse(responseCode = "404", description = "Gene not found")
-    HttpResponse getGene(@PathVariable(name="id") String identifier, @Valid ListingArguments args) {
+    HttpResponse getGene(@PathVariable(name="id") String identifier, ListingArguments args) {
         log.info("Resource request for gene: $identifier")
         try {
             List<Gene> genes = service.getGeneForGeneId(identifier, args)
@@ -76,12 +76,12 @@ class GeneController {
     @Operation(summary = "Request a set of genes",
             description = "The genes matching the supplied properties are returned.",
             tags = "Gene")
-    @ApiResponse(responseCode = "200", description = "Returns a set of genes", content = [@Content(
+    @ApiResponse(responseCode = "200", description = "Returns a set of genes", content = @Content(
             mediaType = "application/json",
-            schema = @Schema(implementation = Gene.class))])
+            schema = @Schema(implementation = Gene.class)))
     @ApiResponse(responseCode = "404", description = "No genes found matching provided attributes")
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getGenes(@Valid ListingArguments args) {
+    HttpResponse getGenes(ListingArguments args) {
         log.info("Resource request for genes with filtering options.")
         try {
             List<Gene> genes = service.getGenesForSpecifiedProperties(args)

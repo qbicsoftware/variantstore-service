@@ -42,18 +42,18 @@ class BeaconController {
             description = "Answers the question: \"Have you observed this genotype?\"",
             tags = "Beacon")
     @ApiResponse(
-            responseCode = "200", description = "Returns the answer to the specified question", content = [@Content(
-            )])
-                    //schema = @Schema(implementation = BeaconAlleleResponse.class))])
-    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = "[1-22]|X|Y") @QueryValue String chromosome, @PositiveOrZero @QueryValue BigInteger startPosition,
-                              @Pattern(regexp = "[ACTG]+") @QueryValue String reference, @Pattern(regexp = "[ACTG]+") @QueryValue String observed, @QueryValue String assemblyId){
-        log.info("Beacon request for variant.")
+            responseCode = "200", description = "Returns the answer to the specified question", content = @Content(
+                    schema = @Schema(implementation = BeaconAlleleResponse.class)))
+    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = '[1-22]|X|Y/') @QueryValue String chromosome, @PositiveOrZero @QueryValue BigInteger startPosition,
+                              @Pattern(regexp = '[ACTG]+') @QueryValue String reference, @Pattern(regexp = '[ACTG]+') @QueryValue String observed, @QueryValue String assemblyId){
+        log.info("Beacon request for specified variant.")
         try {
             BeaconAlleleResponse response = service.getBeaconAlleleResponse(chromosome, startPosition, reference, observed, assemblyId)
             return HttpResponse.ok(response)
         }
 
         catch (Exception e) {
+            println(chromosome)
             log.error(e)
             return HttpResponse.serverError()
         }

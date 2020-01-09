@@ -96,7 +96,7 @@ class Gene {
         return strand
     }
 
-    @Schema(description="The gene version")
+    @Schema(description = "The gene version")
     @JsonProperty("version")
     Integer getVersion() {
         return version
