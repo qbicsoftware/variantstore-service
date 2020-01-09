@@ -16,7 +16,6 @@ import javax.inject.Singleton
 import javax.validation.constraints.NotNull
 
 @Log4j2
-
 @Singleton
 class OncostoreInformationCenter implements OncostoreService{
 
@@ -88,9 +87,14 @@ class OncostoreInformationCenter implements OncostoreService{
 
     @Override
     String getVcfContentForVariants(List<Variant> variants) {
-        return VariantExporter.exportVariantsToVCF(variants)
+        // order variants by contig and position in order to get valid VCF file
+        return VariantExporter.exportVariantsToVCF(variants.sort { it.startPosition })
     }
 
+    /**
+     * Stores variants given in VCF file in the store.
+     * @param url path to the VCF file
+     */
     @Override
     void storeVariantsInStore(String url) {
         MetadataReader meta = new MetadataReader(new File(url))
@@ -114,6 +118,10 @@ class OncostoreInformationCenter implements OncostoreService{
         log.info("...done.")
     }
 
+    /**
+     * Stores gene information provided in a GFF3 file in the store.
+     * @param url path to the GFF3 file
+     */
     @Override
     void storeGeneInformationInStore(String url) {
         EnsemblParser ensembl = new EnsemblParser(url)

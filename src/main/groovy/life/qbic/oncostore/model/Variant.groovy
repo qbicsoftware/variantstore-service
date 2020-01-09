@@ -126,8 +126,8 @@ class Variant implements SimpleVariantContext, Comparable{
         return identifier
     }
 
-    static String toVcf() {
-        return ""
+    String toVcfFormat() {
+        return new StringBuilder().append(chromosome + "\t").append(startPosition + "\t").append(referenceAllele + "\t").append(observedAllele + "\t")
     }
 
 }

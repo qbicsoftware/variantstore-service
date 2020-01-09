@@ -72,10 +72,16 @@ public class AnnotationHandler {
         snpeff1.put("warnings", 15)
         snpEff.put("4.3t", snpeff1)
 
-        def outputString = "%{allele}|%{consequence}|%{impact}|%{symbo}l|%{gene}|%{featureType}|%{transcriptId}|%{bioType}|%{exon}|%{cdsCoding}|%{protCoding}|%{cdna}|%{cds}|%{protein}|%{distance}|%{warnings}"
+        def outputString = "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s"
         snpEffOutput.put("4.3t", outputString)
     }
 
+    /**
+     *
+     * @param simpleVariant
+     * @param annotationSoftware
+     * @return
+     */
     static SimpleVariantContext addAnnotationsToVariant(SimpleVariantContext simpleVariant, Annotation annotationSoftware) {
         def variantConsequences = []
         def annotationTool = annotationSoftware.getName().toUpperCase()  as AnnotationTools
@@ -90,6 +96,13 @@ public class AnnotationHandler {
         return simpleVariant
     }
 
+    /**
+     *
+     * @param cons
+     * @param annotation
+     * @param annotationSoftware
+     * @return
+     */
     private static Consequence populateConsequence(Consequence cons, String annotation, Annotation annotationSoftware) {
         def parsedAnnotation = annotation.split('\\|', -1)
         def version = annotationSoftware.getVersion()
@@ -170,15 +183,25 @@ public class AnnotationHandler {
         return cons
     }
 
-    //@TODO determine version of annotation software?
+    /**
+     * Generate snpEff output for consequence
+     * @param cons the provided consequence
+     * @return a snpEff annotation
+     */
     static String toSnpEff(Consequence cons) {
-        return snpEffOutput["4.3t"].format(cons.allele, cons.type, cons.impact, cons.geneSymbol, cons.geneId, cons.featureType, cons.transcriptId, cons.bioType, cons.exon, cons.codingChange, cons.aaChange, "/".join(cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(cons.cdsPosition.toString(), cons.cdsPosition.toString()), "/".join(cons.aaStart.toString(), cons.proteinLength.toString()), cons.distance, cons.warnings)
+        //@TODO determine version of annotation software?
+
+        return sprintf(snpEffOutput["4.3t"], cons.allele, cons.type, cons.impact, cons.geneSymbol, cons.geneId, cons.featureType, cons.transcriptId, cons.bioType, cons.exon, cons.codingChange, cons.aaChange, "/".join(cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(cons.cdsPosition.toString(), cons.cdsPosition.toString()), "/".join(cons.proteinPosition.toString(), cons.proteinLength.toString()), cons.distance.toString(), cons.warnings)
     }
 
     //@TODO implement
+    /**
+     * Generates VEP output for consequence
+     * @param cons the provided consequence
+     * @return a VEP annotation
+     */
     static String toVep(Consequence cons) {
 
         return ""
-
     }
 }
