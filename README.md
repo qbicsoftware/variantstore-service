@@ -1,7 +1,15 @@
-THIS SERVICE IS WORK IN PROGRESS.
+**THIS SERVICE IS WORK IN PROGRESS.**
 
-# OncoStore Service
+# Variantstore
 Service that implements the oncostore interface.
+
+## Introduction
+
+
+## Quick Start
+
+## Documentation
+
 
 ## Micronaut app
 This service has been built with [micronaut](https://micronaut.io):
@@ -27,5 +35,8 @@ mn create-app life.qbic.oncostore --features=groovy --build maven
 The data base model of the OncoStore is shown in the following diagram.
 ![diagram](models/oncostore-model-diagram.svg)
 
-## API design
+## REST API
 The remote RESTful API documentation will be provided on [SwaggerHub](https://swagger.io/tools/swaggerhub/).
+
+## Credits
+This software was written by Christopher Mohr ([christopher-mohr](https://github.com/christopher-mohr)). Feel free to contribute!
