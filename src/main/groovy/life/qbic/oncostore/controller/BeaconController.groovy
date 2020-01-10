@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.BeaconAlleleResponse
-import life.qbic.oncostore.service.OncostoreService
+import life.qbic.oncostore.service.VariantstoreService
 
 import javax.inject.Inject
 import javax.validation.constraints.Pattern
@@ -30,10 +30,10 @@ A GA4GH Beacon based on the v0.4 specification. Given a position in a chromosome
 @Secured(SecurityRule.IS_ANONYMOUS)
 class BeaconController {
 
-    private final OncostoreService service
+    private final VariantstoreService service
 
     @Inject
-    BeaconController(OncostoreService service) {
+    BeaconController(VariantstoreService service) {
         this.service = service
     }
 

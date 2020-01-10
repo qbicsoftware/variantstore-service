@@ -6,7 +6,7 @@ import groovy.sql.Sql
 import life.qbic.micronaututils.QBiCDataSource
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.MetadataContext
-import life.qbic.oncostore.service.OncostoreStorage
+import life.qbic.oncostore.service.VariantstoreStorage
 import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
 
@@ -15,7 +15,7 @@ import javax.inject.Singleton
 import javax.validation.constraints.NotNull
 
 @Singleton
-class MariaDBOncostoreStorage implements OncostoreStorage{
+class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
     private QBiCDataSource dataSource
     private Sql sql
@@ -29,7 +29,8 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     String insertEnsemblGeneJunction = "INSERT INTO Ensembl_has_Gene (Ensembl_id, Gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE Ensembl_id=Ensembl_id"
     String insertConsequenceGeneJunction = "INSERT INTO Consequence_has_Gene (Consequence_id, Gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE Consequence_id=Consequence_id"
 
-    @Inject MariaDBOncostoreStorage(QBiCDataSource dataSource) {
+    @Inject
+    MariaDBVariantstoreStorage(QBiCDataSource dataSource) {
         this.dataSource = dataSource
     }
 
@@ -42,7 +43,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return variant
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Beacon something? $e.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Beacon something? $e.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -61,7 +62,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return cases
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch case with identifier $id.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch case with identifier $id.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -79,7 +80,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return samples
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch sample with identifier $id.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch sample with identifier $id.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -97,7 +98,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return variants
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch variant with identifier $id.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch variant with identifier $id.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -124,7 +125,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchGeneForId(id)
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch gene with identifier $id.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch gene with identifier $id.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -145,7 +146,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchCases()
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch cases.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch cases.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -162,7 +163,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchSamples()
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch samples.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch samples.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -199,7 +200,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchVariants()
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch variants.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch variants.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -220,7 +221,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             return fetchGenes()
         }
         catch (Exception e) {
-            throw new OncostoreStorageException("Could not fetch genes.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch genes.", e.fillInStackTrace())
         }
         finally {
             sql.close()
@@ -234,12 +235,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     @Override
-    void storeCaseInStore(Case patient) throws OncostoreStorageException {
+    void storeCaseInStore(Case patient) throws VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreCase(patient)
         } catch (Exception e) {
-            throw new OncostoreStorageException("Could not store case in store: $patient", e)
+            throw new VariantstoreStorageException("Could not store case in store: $patient", e)
         }
         finally {
             sql.close()
@@ -247,12 +248,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     @Override
-    void storeSampleInStore(Sample sample) throws OncostoreStorageException {
+    void storeSampleInStore(Sample sample) throws VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreSample(sample)
         } catch (Exception e) {
-            throw new OncostoreStorageException("Could not store sample in store: $sample", e)
+            throw new VariantstoreStorageException("Could not store sample in store: $sample", e)
         }
         finally {
             sql.close()
@@ -260,12 +261,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     @Override
-    void storeReferenceGenomeInStore(ReferenceGenome referenceGenome) throws OncostoreStorageException {
+    void storeReferenceGenomeInStore(ReferenceGenome referenceGenome) throws VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreReferenceGenome(referenceGenome)
         } catch (Exception e) {
-            throw new OncostoreStorageException("Could not store reference genome in store: $referenceGenome", e)
+            throw new VariantstoreStorageException("Could not store reference genome in store: $referenceGenome", e)
         }
         finally {
             sql.close()
@@ -273,12 +274,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     @Override
-    void storeVariantCallerInStore(VariantCaller variantCaller) throws OncostoreStorageException {
+    void storeVariantCallerInStore(VariantCaller variantCaller) throws VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreVariantCaller(variantCaller)
         } catch (Exception e) {
-            throw new OncostoreStorageException("Could not store variant calling software in store: $variantCaller", e)
+            throw new VariantstoreStorageException("Could not store variant calling software in store: $variantCaller", e)
         }
         finally {
             sql.close()
@@ -286,12 +287,12 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     @Override
-    void storeAnnotationSoftwareInStore(Annotation annotationSoftware) throws OncostoreStorageException {
+    void storeAnnotationSoftwareInStore(Annotation annotationSoftware) throws VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreAnnotationSoftware(annotationSoftware)
         } catch (Exception e) {
-            throw new OncostoreStorageException("Could not store annotation software in store: $annotationSoftware", e)
+            throw new VariantstoreStorageException("Could not store annotation software in store: $annotationSoftware", e)
         }
         finally {
             sql.close()
@@ -299,7 +300,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     @Override
-    void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variants) throws OncostoreStorageException {
+    void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variants) throws VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
 
         try {
@@ -357,7 +358,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
             tryToStoreJunctionBatch(rgId, variantIdMap.values().asList(), insertReferenceGenomeVariantJunction)
 
         } catch (Exception e) {
-            throw new OncostoreStorageException("Could not store variants with metadata in store: $metadata", e)
+            throw new VariantstoreStorageException("Could not store variants with metadata in store: $metadata", e)
         }
         finally {
             sql.close()
@@ -365,7 +366,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
     }
 
     @Override
-    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws OncostoreStorageException {
+    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
         try {
             tryToStoreReferenceGenome(referenceGenome)
@@ -387,7 +388,7 @@ class MariaDBOncostoreStorage implements OncostoreStorage{
 
 
         } catch (Exception e) {
-            throw new OncostoreStorageException("Could not store genes in store: ", e)
+            throw new VariantstoreStorageException("Could not store genes in store: ", e)
         }
         finally {
             sql.close()

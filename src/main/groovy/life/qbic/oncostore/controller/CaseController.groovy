@@ -1,7 +1,6 @@
 package life.qbic.oncostore.controller
 
 import groovy.util.logging.Log4j2
-import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
@@ -14,22 +13,20 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.Case
-import life.qbic.oncostore.model.Gene
 import life.qbic.oncostore.model.Sample
-import life.qbic.oncostore.service.OncostoreService
+import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
-import javax.validation.Valid
 
 @Log4j2
 @Controller("/cases")
 @Secured(SecurityRule.IS_ANONYMOUS)
 class CaseController {
-    private final OncostoreService service
+    private final VariantstoreService service
 
     @Inject
-    CaseController(OncostoreService service) {
+    CaseController(VariantstoreService service) {
         this.service = service
     }
 

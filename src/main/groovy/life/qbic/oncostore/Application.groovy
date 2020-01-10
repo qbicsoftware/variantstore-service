@@ -11,7 +11,7 @@ import io.swagger.v3.oas.annotations.info.License
 @OpenAPIDefinition(
         info = @Info(
                 title = "Variantstore",
-                version = "0.2",
+                version = "0.6",
                 description = "Variantstore Restful API",
                 license = @License(name = "", url = ""),
                 contact = @Contact(url = "https://github.com/christopher-mohr", name = "Christopher Mohr", email = "christopher.mohr@uni-tuebingen.de")

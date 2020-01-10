@@ -1,14 +1,9 @@
 package life.qbic.oncostore.controller
 
 import groovy.util.logging.Log4j2
-import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.PathVariable
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.*
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.swagger.v3.oas.annotations.Operation
@@ -16,12 +11,10 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.Gene
-import life.qbic.oncostore.model.Variant
-import life.qbic.oncostore.service.OncostoreService
+import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
-import javax.validation.Valid
 import javax.validation.constraints.NotNull
 
 @Log4j2
@@ -29,10 +22,10 @@ import javax.validation.constraints.NotNull
 @Secured(SecurityRule.IS_ANONYMOUS)
 class GeneController {
 
-    private final OncostoreService service
+    private final VariantstoreService service
 
     @Inject
-    GeneController(OncostoreService service) {
+    GeneController(VariantstoreService service) {
         this.service = service
     }
 

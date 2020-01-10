@@ -12,7 +12,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.Variant
-import life.qbic.oncostore.service.OncostoreService
+import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
 
@@ -25,10 +25,10 @@ import javax.validation.constraints.NotNull
 @Secured(SecurityRule.IS_ANONYMOUS)
 class VariantController {
 
-    private final OncostoreService service
+    private final VariantstoreService service
 
     @Inject
-    VariantController(OncostoreService service) {
+    VariantController(VariantstoreService service) {
         this.service = service
         //this.executor = Executors.newFixedThreadPool(1);
     }

@@ -11,7 +11,7 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.inject.Singleton
 
 @Singleton
-interface OncostoreService {
+interface VariantstoreService {
 
     List<Case> getCaseForCaseId(String identifier)
 

@@ -17,11 +17,12 @@ import javax.validation.constraints.NotNull
 
 @Log4j2
 @Singleton
-class OncostoreInformationCenter implements OncostoreService{
+class VariantstoreInformationCenter implements VariantstoreService{
 
-    private final OncostoreStorage storage
+    private final VariantstoreStorage storage
 
-    @Inject OncostoreInformationCenter(OncostoreStorage storage) {
+    @Inject
+    VariantstoreInformationCenter(VariantstoreStorage storage) {
         this.storage = storage
     }
 
