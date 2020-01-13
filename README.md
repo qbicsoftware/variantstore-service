@@ -70,8 +70,8 @@ make sure to specify the database model, set up the datasource in the [`applicat
 and provide an implementation for the `VariantstoreStorage` interface. 
 
 The database model expected by the **Variantstore** is the following:
-![diagram](models/oncostore-model-diagram.svg) We are currently working on the support of [PostgreSQL](https://www.postgresql.org).
-
+![diagram](models/oncostore-model-diagram.png) We are currently working on the support of [PostgreSQL](https://www.postgresql.org).
+``
 ### REST API
 The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.2).
 Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via /swagger-ui` and `.../rapidoc`.
@@ -116,7 +116,7 @@ Query the beacon for a variant
 **GET /health**  
 Status of the Variantstore service
 
-**GET swagger-ui**  
+**GET /swagger-ui**  
 OpenAPI documentation in swagger-ui format
 
 **GET /rapidoc**  
