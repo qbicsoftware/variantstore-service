@@ -12,7 +12,7 @@ Stable releases of the Variantstore are bundled as an executable `jar` and can b
 Please make sure that the required environment variables are set accordingly as described [here](#Configuration).
 ## Documentation
 
-Please refer to the following sections if you would like to run the **Variantstore** service on your system. Currently, the Variantstore
+Please refer to the following sections if you would like to run the **Variantstore** service on your system. Currently, the **Variantstore**
 provides the following main features: 
 * Import metadata (JSON files using [this](https://github.com/qbicsoftware/mtb-metadata-specs/blob/master/schemes/mtb/variants.metadata.schema.json) scheme) 
 * Import variants (VCF files, annotated using [SnpEff](http://snpeff.sourceforge.net) or [VEP](https://www.ensembl.org/info/docs/tools/vep/index.html)) 
@@ -20,7 +20,7 @@ provides the following main features:
 * Query variant information via REST endpoints
 
 ### Configuration
-The configuration of the Variantstore instance is done by setting the environment variables which are used in the [`application.yml`](https://github.com/qbicsoftware/oncostore-proto-project/blob/development/src/main/resources/application.yml).
+The configuration of the **Variantstore** instance is done by setting the environment variables which are used in the [`application.yml`](https://github.com/qbicsoftware/oncostore-proto-project/blob/development/src/main/resources/application.yml).
 
 ```
 server:
@@ -39,7 +39,7 @@ server:
 If you want to use a port other than 8080, set the optional environment variable `VARIANTSTORE_PORT`. The default data source can be configured by the following environment variables: `DB_HOST` (database host address), `DB_NAME` (database name), `DB_USER`(database user) and `DB_PWD`(database password).
 
 ### Logging
-All requests to the Variantstore are logged. The default location is `tmp` but you can specify a different location by 
+All requests to the **Variantstore** are logged. The default location is `tmp` but you can specify a different location by 
 setting the environment variable `SERVICES_LOG_PATH`. The current log file is called `variantstore.log` whereas older 
 log files follow the following naming scheme `variantstore.%d{dd-MMM}.log.gz".`
 
@@ -65,15 +65,18 @@ This command will create an executable `jar` in your current working directory u
 [above](#quick-start).
 
 ### Database
-In the current version, the Variantstore service can be used with a MariaDB database. If you want to use a different DBMS,  
+In the current version, the **Variantstore** service can be used with a MariaDB database. If you want to use a different DBMS,  
 make sure to specify the database model, set up the datasource in the [`application.yml`](https://github.com/qbicsoftware/oncostore-proto-project/blob/development/src/main/resources/application.yml), 
 and provide an implementation for the `VariantstoreStorage` interface. 
 
-The database model expected by the Variantstore is the following:
+The database model expected by the **Variantstore** is the following:
 ![diagram](models/oncostore-model-diagram.svg) We are currently working on the support of [PostgreSQL](https://www.postgresql.org).
 
 ### REST API
 The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.2).
+Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via /swagger-ui` and `.../rapidoc`.
+                                                                                                                                                          
+
 
 **GET /genes/{id}**  
 Request a gene
@@ -112,6 +115,12 @@ Query the beacon for a variant
 
 **GET /health**  
 Status of the Variantstore service
+
+**GET swagger-ui**  
+OpenAPI documentation in swagger-ui format
+
+**GET /rapidoc**  
+OpenAPI documentation in rapidoc format
 
 
 ## Contribute
