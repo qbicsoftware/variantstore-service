@@ -11,3 +11,13 @@ out/
 .project
 .settings
 .classpath
+
+# VS code
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+
+# Sphinx documentation
+docs/build/
