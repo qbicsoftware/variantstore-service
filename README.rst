@@ -1,5 +1,9 @@
 **THIS SERVICE IS WORK IN PROGRESS.**
 
+.. image:: https://readthedocs.org/projects/oncostore-proto-project/badge/?version=latest
+    :target: https://oncostore-proto-project.readthedocs.io/en/latest/?badge=latest
+    :alt: Documentation Status
+
 Variantstore
 ============
 The **Variantstore** is a Java/Groovy-based service application implemented using the `Micronaut framework <https://micronaut.io>`_ and enables storage and access to information on genomic variants and metadata from a connected database *via* a RESTful API. 
