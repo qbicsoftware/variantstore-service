@@ -2,8 +2,7 @@ package life.qbic.database
 
 import io.micronaut.test.annotation.MicronautTest
 
-import life.qbic.oncostore.database.MariaDBOncostoreStorage
-
+import life.qbic.oncostore.service.OncostoreStorage
 import spock.lang.Specification
 
 import javax.inject.Inject
@@ -12,11 +11,11 @@ import javax.inject.Inject
 class MariaDBOncostoreStorageIntegrationTest extends Specification {
 
     @Inject
-    MariaDBOncostoreStorage storage
+    OncostoreStorage storage
 
     def "confirm that storage connection is alive"() {
         when:
-        def dataSource = storage.dataSource
+        def dataSource = storage.dataSource.connection
 
         then:
         assert dataSource

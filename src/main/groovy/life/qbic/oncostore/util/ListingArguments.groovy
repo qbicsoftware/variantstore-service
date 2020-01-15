@@ -38,6 +38,10 @@ class ListingArguments {
     @Positive
     private Integer ensemblVersion
 
+    @Nullable
+    @Pattern(regexp = "vcf|VCF")
+    private String format
+
     public ListingArguments() {
 
     }
@@ -98,6 +102,13 @@ class ListingArguments {
         return Optional.of(ensemblVersion)
     }
 
+    public Optional<String> getFormat() {
+        if (format == null) {
+            return Optional.empty()
+        }
+        return Optional.of(format)
+    }
+
     public void setChromosome(@Nullable String chromosome) {
         this.chromosome = chromosome
     }
@@ -128,6 +139,10 @@ class ListingArguments {
 
     public void setEnsemblVersion(@Nullable Integer ensemblVersion) {
         this.ensemblVersion = ensemblVersion
+    }
+
+    public void setFormat(@Nullable String format) {
+        this.format = format
     }
 
     public static Builder builder() {
@@ -165,6 +180,10 @@ class ListingArguments {
 
         if (ensemblVersion != null) {
             uriBuilder.queryParam("ensemblVersion", ensemblVersion)
+        }
+
+        if (format != null) {
+            uriBuilder.queryParam("format", format)
         }
 
         return uriBuilder.build();
@@ -214,6 +233,11 @@ class ListingArguments {
 
         public Builder ensemblVersion(Integer ensemblVersion) {
             args.setEnsemblVersion(ensemblVersion)
+            return this
+        }
+
+        public Builder format(String format) {
+            args.setFormat(format)
             return this
         }
 

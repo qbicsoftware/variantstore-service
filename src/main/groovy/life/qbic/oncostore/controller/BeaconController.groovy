@@ -5,15 +5,17 @@ import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.BeaconAlleleResponse
-import life.qbic.oncostore.service.OncostoreService
-import life.qbic.oncostore.util.ListingArguments
+import life.qbic.oncostore.service.VariantstoreService
 
-import javax.annotation.Nullable
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.PositiveOrZero
 
@@ -28,28 +30,34 @@ A GA4GH Beacon based on the v0.4 specification. Given a position in a chromosome
 @Secured(SecurityRule.IS_ANONYMOUS)
 class BeaconController {
 
-    private final OncostoreService service
+    private final VariantstoreService service
 
     @Inject
-    BeaconController(OncostoreService service) {
+    BeaconController(VariantstoreService service) {
         this.service = service
     }
 
-    @Get(uri = "/query{?args}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse checkVariant(@NotNull @Pattern(regexp = "[1-22]|X|Y") String chromosome, @NotNull @PositiveOrZero BigInteger startPosition,
-                             @NotNull @Pattern(regexp = "[ACTG]+") String reference, @NotNull @Pattern(regexp = "[ACTG]+") String observed, @NotNull String assemblyId, @Nullable ListingArguments args){
-        log.info("Beacon request for variant.")
+    @Get(uri = "/query", produces = MediaType.APPLICATION_JSON)
+    @Operation(summary = "Query the Beacon",
+            description = "Answers the question: \"Have you observed this genotype?\"",
+            tags = "Beacon")
+    @ApiResponse(
+            responseCode = "200", description = "Returns the answer to the specified question", content = @Content(
+                    schema = @Schema(implementation = BeaconAlleleResponse.class)))
+    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = '[1-22]|X|Y/') @QueryValue String chromosome, @PositiveOrZero @QueryValue BigInteger startPosition,
+                              @Pattern(regexp = '[ACTG]+') @QueryValue String reference, @Pattern(regexp = '[ACTG]+') @QueryValue String observed, @QueryValue String assemblyId){
+        log.info("Beacon request for specified variant.")
         try {
-            BeaconAlleleResponse response = service.getBeaconAlleleResponse(chromosome, startPosition, reference, observed, assemblyId, args)
+            BeaconAlleleResponse response = service.getBeaconAlleleResponse(chromosome, startPosition, reference, observed, assemblyId)
             return HttpResponse.ok(response)
         }
 
         catch (Exception e) {
+            println(chromosome)
             log.error(e)
-            return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
+            return HttpResponse.serverError()
         }
 
         // check for 400 ? (bad request), missing mandatory parameters
-        // we have to implement 401 and 403 here as well when we're dealing with permissions
     }
 }

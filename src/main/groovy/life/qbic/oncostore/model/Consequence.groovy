@@ -6,19 +6,31 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(name="Consequence", description="A variant consequence")
 class Consequence implements Comparable{
 
+
+    String allele
     String codingChange
-    String transcriptID
+    String transcriptId
     Integer transcriptVersion
-    String refSeqID
-    String consequenceType
+    String type
     String bioType
     Boolean canonical
     String aaChange
-    Integer aaStart
-    Integer aaEnd
+    // the following three positions can be ranges (including -) therefore we will just use (for now) the string as annotated
+    String cdnaPosition
+    String cdsPosition
+    String proteinPosition
+    Integer proteinLength
+    Integer cdnaLength
+    Integer cdsLength
     String impact
+    String exon
+    String intron
     Integer strand
-    String geneID
+    String geneSymbol
+    String geneId
+    String featureType
+    Integer distance
+    String warnings
 
     Consequence() {
 
@@ -28,7 +40,12 @@ class Consequence implements Comparable{
     int compareTo(Object other) {
         Consequence c = (Consequence) other
         int byCoding = this.codingChange <=> c.codingChange
-        return byCoding ?: this.transcriptID <=> c.transcriptID
+        return byCoding ?: this.transcriptId <=> c.transcriptId
+    }
+
+    @JsonProperty("allele")
+    String getAllele() {
+        return allele
     }
 
     @JsonProperty("codingChange")
@@ -36,9 +53,9 @@ class Consequence implements Comparable{
         return codingChange
     }
 
-    @JsonProperty("transcriptID")
-    String getTranscriptID() {
-        return transcriptID
+    @JsonProperty("transcriptId")
+    String getTranscriptId() {
+        return transcriptId
     }
 
     @JsonProperty("transcriptVersion")
@@ -51,14 +68,10 @@ class Consequence implements Comparable{
         return bioType
     }
 
-    @JsonProperty("refseqID")
-    String getRefSeqID() {
-        return refSeqID
-    }
 
     @JsonProperty("consequenceType")
-    String getConsequenceType() {
-        return consequenceType
+    String getType() {
+        return type
     }
 
     @JsonProperty("canonical")
@@ -71,14 +84,9 @@ class Consequence implements Comparable{
         return aaChange
     }
 
-    @JsonProperty("aaStart")
-    Integer getAaStart() {
-        return aaStart
-    }
-
-    @JsonProperty("aaEnd")
-    Integer getAaEnd() {
-        return aaEnd
+    @JsonProperty("proteinPosition")
+    String getProteinPosition() {
+        return proteinPosition
     }
 
     @JsonProperty("impact")
@@ -86,9 +94,9 @@ class Consequence implements Comparable{
         return impact
     }
 
-    @JsonProperty("geneID")
-    String getGeneID() {
-        return geneID
+    @JsonProperty("geneId")
+    String getGeneId() {
+        return geneId
     }
 
     @JsonProperty("strand")
@@ -96,24 +104,83 @@ class Consequence implements Comparable{
         return strand
     }
 
+    @JsonProperty("proteinLength")
+    Integer getProteinLength() {
+        return proteinLength
+    }
+
+    @JsonProperty("cdnaPos")
+    String getCdnaPosition() {
+        return cdnaPosition
+    }
+
+    @JsonProperty("cdnaLength")
+    Integer getCdnaLength() {
+        return cdnaLength
+    }
+
+    @JsonProperty("cdsPos")
+    String getCdsPosition() {
+        return cdsPosition
+    }
+
+    @JsonProperty("cdsLength")
+    Integer getCdsLength() {
+        return cdsLength
+    }
+
+    @JsonProperty("geneSymbol")
+    String getGeneSymbol() {
+        return geneSymbol
+    }
+
+    @JsonProperty("featureType")
+    String getFeatureType() {
+        return featureType
+    }
+
+    @JsonProperty("distance")
+    Integer getDistance() {
+        return distance
+    }
+
+    @JsonProperty("warnings")
+    String getWarnings() {
+        return warnings
+    }
+
+    @JsonProperty("exon")
+    String getExon() {
+        return exon
+    }
+
+    @JsonProperty("intron")
+    String getIntron() {
+        return intron
+    }
+
+    void setCdsLength(Integer cdsLength) {
+        this.cdsLength = cdsLength
+    }
+
+    void setAllele(String allele) {
+        this.allele = allele
+    }
+
     void setCodingChange(String codingChange) {
         this.codingChange = codingChange
     }
 
-    void setTranscriptID(String transcriptID) {
-        this.transcriptID = transcriptID
+    void setTranscriptId(String transcriptId) {
+        this.transcriptId = transcriptId
     }
 
     void setTranscriptVersion(Integer transcriptVersion) {
         this.transcriptVersion = transcriptVersion
     }
 
-    void setRefSeqID(String refSeqID) {
-        this.refSeqID = refSeqID
-    }
-
-    void setConsequenceType(String consequenceType) {
-        this.consequenceType = consequenceType
+    void setType(String consequenceType) {
+        this.type = consequenceType
     }
 
     void setBioType(String bioType) {
@@ -128,23 +195,59 @@ class Consequence implements Comparable{
         this.aaChange = aaChange
     }
 
-    void setAaStart(Integer aaStart) {
-        this.aaStart = aaStart
-    }
-
-    void setAaEnd(Integer aaEnd) {
-        this.aaEnd = aaEnd
+    void setProteinPosition(String protPosition) {
+        this.proteinPosition = protPosition
     }
 
     void setImpact(String impact) {
         this.impact = impact
     }
 
-    void setGeneID(String geneID) {
-        this.geneID = geneID
+    void setGeneId(String geneId) {
+        this.geneId = geneId
     }
 
     void setStrand(Integer strand) {
         this.strand = strand
+    }
+
+    void setProteinLength(Integer protLength) {
+        this.proteinLength = protLength
+    }
+
+    void setCdnaPosition(String cdnaPos) {
+        this.cdnaPosition = cdnaPos
+    }
+
+    void setCdsPosition(String cdsPos) {
+        this.cdsPosition = cdsPos
+    }
+
+    void setCdnaLength(Integer cdnaLength) {
+        this.cdnaLength = cdnaLength
+    }
+
+    void setGeneSymbol(String geneSymbol) {
+        this.geneSymbol = geneSymbol
+    }
+
+    void setFeatureType(String featureType) {
+        this.featureType = featureType
+    }
+
+    void setDistance(Integer distance) {
+        this.distance = distance
+    }
+
+    void setWarnings(String warnings) {
+        this.warnings = warnings
+    }
+
+    void setExon(String exon) {
+        this.exon = exon
+    }
+
+    void setIntron(String intron) {
+        this.intron = intron
     }
 }

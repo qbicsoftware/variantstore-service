@@ -1,17 +1,23 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.swagger.v3.oas.annotations.media.Schema
 
 /**
  * Allele request as interpreted by the beacon.
  */
+@Schema(name="BeaconAlleleRequest", description="A request to the beacon")
 class BeaconAlleleRequest {
 
-    String referenceName
-    BigInteger start
-    String referenceBases
-    String alternateBases
-    String assemblyId
+    private String referenceName
+    private BigInteger start
+    private String referenceBases
+    private String alternateBases
+    private String assemblyId
+
+    public BeaconAlleleRequest() {
+
+    }
 
     void setReferenceName(String referenceName) {
         this.referenceName = referenceName

@@ -1,28 +1,31 @@
 package life.qbic.oncostore.controller
 
 import groovy.util.logging.Log4j2
-import io.micronaut.context.annotation.Parameter
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.PathVariable
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.swagger.v3.oas.annotations.Operation
+import io.swagger.v3.oas.annotations.media.Content
+import io.swagger.v3.oas.annotations.media.Schema
+import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.Sample
-import life.qbic.oncostore.service.OncostoreService
+import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
-import javax.validation.Valid
 
 @Log4j2
 @Controller("/samples")
 @Secured(SecurityRule.IS_ANONYMOUS)
 class SampleController {
 
-    private final OncostoreService service
+    private final VariantstoreService service
 
-    @Inject SampleController(OncostoreService service) {
+    @Inject SampleController(VariantstoreService service) {
         this.service = service
     }
 
@@ -31,9 +34,18 @@ class SampleController {
      * @param identifier The sample identifier
      * @return The found sample
      */
-    @Secured(SecurityRule.IS_AUTHENTICATED)
+    //@Secured(SecurityRule.IS_AUTHENTICATED)
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getSample(@Parameter('id') String identifier) {
+    @Operation(summary = "Request a sample",
+            description = "The sample with the specified identifier is returned.",
+            tags = "Sample")
+    @ApiResponse(
+            responseCode = "200", description = "Returns a sample", content = @Content(
+                    mediaType = "application/json",
+                    schema = @Schema(implementation = Sample.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid sample identifier supplied")
+    @ApiResponse(responseCode = "404", description = "Sample not found")
+    HttpResponse getSample(@PathVariable(name="id") String identifier) {
         log.info("Resource request for sample: $identifier")
         try {
             List<Sample> samples = service.getSampleForSampleId(identifier)
@@ -55,7 +67,15 @@ class SampleController {
      * @return The found samples
      */
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getSamples(@Valid ListingArguments args){
+    @Operation(summary = "Request a set of samples",
+            description = "The samples matching the supplied properties are returned.",
+            tags = "Sample")
+    @ApiResponse(responseCode = "200", description = "Returns a set of samples", content = @Content(
+            mediaType = "application/json",
+            schema = @Schema(implementation = Sample.class)))
+    @ApiResponse(responseCode = "400", description = "Invalid sample identifier supplied")
+    @ApiResponse(responseCode = "404", description = "No samples found matching provided attributes")
+    HttpResponse getSamples(ListingArguments args){
         log.info("Resource request for samples with filtering options.")
         try {
             List<Sample> samples = service.getSamplesForSpecifiedProperties(args)

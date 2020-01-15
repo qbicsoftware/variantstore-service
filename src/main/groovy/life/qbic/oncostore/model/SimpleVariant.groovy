@@ -41,6 +41,7 @@ class SimpleVariant implements SimpleVariantContext{
     @JsonProperty("observedAllele")
     @Override
     String getObservedAllele() {
+        //@TODO check that for release!
         // this is a list, usually we would expect one observed allele, so we will just take the first one for now
         context.alternateAlleles.get(0)
     }
@@ -62,8 +63,8 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    String getAttribute(String key) {
-        this.context.getAttribute(key) ?: ""
+    List<Object> getAttribute(String key) {
+        this.context.getAttributeAsList(key)
     }
 
     @Override

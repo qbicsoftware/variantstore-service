@@ -13,7 +13,7 @@ class Gene {
     String description
     BigInteger geneStart
     BigInteger geneEnd
-    String geneID
+    String geneId
     String strand
     Integer version
     List<String> synonyms
@@ -21,18 +21,18 @@ class Gene {
     Gene() {
     }
 
-    Gene(String geneID) {
-        this.geneID = geneID
+    Gene(String geneId) {
+        this.geneId = geneId
     }
 
-    Gene(String chromosome, String symbol, String name, String bioType, BigInteger geneStart, BigInteger geneEnd, String geneID, List<String> synonyms) {
+    Gene(String chromosome, String symbol, String name, String bioType, BigInteger geneStart, BigInteger geneEnd, String geneId, List<String> synonyms) {
         this.chromosome = chromosome
         this.symbol = symbol
         this.name = name
         this.bioType = bioType
         this.geneStart = geneStart
         this.geneEnd = geneEnd
-        this.geneID = geneID
+        this.geneId = geneId
         this.synonyms = synonyms
     }
 
@@ -73,9 +73,9 @@ class Gene {
     }
 
     @Schema(description="The gene identifier")
-    @JsonProperty("geneId")
-    String getGeneID() {
-        return geneID
+    @JsonProperty("geneID")
+    String getGeneId() {
+        return geneId
     }
 
     @Schema(description="The synonyms")
@@ -96,7 +96,7 @@ class Gene {
         return strand
     }
 
-    @Schema(description="The gene version")
+    @Schema(description = "The gene version")
     @JsonProperty("version")
     Integer getVersion() {
         return version
@@ -138,8 +138,8 @@ class Gene {
         this.geneEnd = geneEnd
     }
 
-    void setGeneID(String geneID) {
-        this.geneID = geneID
+    void setGeneId(String geneID) {
+        this.geneId = geneID
     }
 
     void setSynonyms(List<String> synonyms) {

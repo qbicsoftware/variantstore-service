@@ -11,7 +11,7 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.inject.Singleton
 
 @Singleton
-interface OncostoreService {
+interface VariantstoreService {
 
     List<Case> getCaseForCaseId(String identifier)
 
@@ -30,7 +30,9 @@ interface OncostoreService {
     List<Gene> getGenesForSpecifiedProperties(ListingArguments args)
 
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
-                                                 String reference, String observed, String assemblyId, ListingArguments args)
+                                                 String reference, String observed, String assemblyId)
+
+    String getVcfContentForVariants(List<Variant> variants)
 
     void storeVariantsInStore(String url)
 

@@ -2,7 +2,7 @@ package life.qbic.oncostore.model
 
 import io.swagger.v3.oas.annotations.media.Schema
 
-@Schema(name="Reference Genome", description="A reference genome")
+@Schema(name="ReferenceGenome", description="A reference genome")
 class ReferenceGenome {
 
     final String source
@@ -15,17 +15,17 @@ class ReferenceGenome {
         this.version = version
     }
 
-    @Schema(description="The source")
+    @Schema(description="The genome source")
     String getSource() {
         return source
     }
 
-    @Schema(description="The build")
+    @Schema(description="The genome build")
     String getBuild() {
         return build
     }
 
-    @Schema(description="The version")
+    @Schema(description="The genome version")
     String getVersion() {
         return version
     }

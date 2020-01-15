@@ -9,19 +9,20 @@ import life.qbic.oncostore.parser.MetadataReader
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.util.AnnotationHandler
 import life.qbic.oncostore.util.ListingArguments
+import life.qbic.oncostore.util.VariantExporter
 
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.constraints.NotNull
 
 @Log4j2
-
 @Singleton
-class OncostoreInformationCenter implements OncostoreService{
+class VariantstoreInformationCenter implements VariantstoreService{
 
-    private final OncostoreStorage storage
+    private final VariantstoreStorage storage
 
-    @Inject OncostoreInformationCenter(OncostoreStorage storage) {
+    @Inject
+    VariantstoreInformationCenter(VariantstoreStorage storage) {
         this.storage = storage
     }
 
@@ -42,9 +43,9 @@ class OncostoreInformationCenter implements OncostoreService{
 
     @Override
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
-                                        String reference, String observed, String assemblyId, ListingArguments args) {
+                                        String reference, String observed, String assemblyId) {
 
-        List<Variant> variants = storage.findVariantsForBeaconResponse(chromosome, start, reference, observed, assemblyId, args)
+        List<Variant> variants = storage.findVariantsForBeaconResponse(chromosome, start, reference, observed, assemblyId)
 
         BeaconAlleleRequest request = new BeaconAlleleRequest()
         request.setAlternateBases(observed)
@@ -86,6 +87,16 @@ class OncostoreInformationCenter implements OncostoreService{
     }
 
     @Override
+    String getVcfContentForVariants(List<Variant> variants) {
+        // order variants by contig and position in order to get valid VCF file
+        return VariantExporter.exportVariantsToVCF(variants.sort { it.startPosition })
+    }
+
+    /**
+     * Stores variants given in VCF file in the store.
+     * @param url path to the VCF file
+     */
+    @Override
     void storeVariantsInStore(String url) {
         MetadataReader meta = new MetadataReader(new File(url))
 
@@ -108,6 +119,10 @@ class OncostoreInformationCenter implements OncostoreService{
         log.info("...done.")
     }
 
+    /**
+     * Stores gene information provided in a GFF3 file in the store.
+     * @param url path to the GFF3 file
+     */
     @Override
     void storeGeneInformationInStore(String url) {
         EnsemblParser ensembl = new EnsemblParser(url)

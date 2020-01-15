@@ -1,6 +1,6 @@
 package life.qbic.oncostore.service
 
-import life.qbic.oncostore.database.OncostoreStorageException
+import life.qbic.oncostore.database.VariantstoreStorageException
 import life.qbic.oncostore.model.Case
 import life.qbic.oncostore.model.Gene
 import life.qbic.oncostore.model.ReferenceGenome
@@ -16,10 +16,10 @@ import javax.inject.Singleton
 import javax.validation.constraints.NotNull
 
 @Singleton
-interface OncostoreStorage {
+interface VariantstoreStorage {
 
     List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
-                                          String reference, String observed, String assemblyId, ListingArguments args)
+                                          String reference, String observed, String assemblyId)
 
     List<Case> findCaseById(String id)
 
@@ -37,17 +37,17 @@ interface OncostoreStorage {
 
     List<Gene> findGenes(@NotNull ListingArguments args)
 
-    void storeCaseInStore(Case patient) throws OncostoreStorageException
+    void storeCaseInStore(Case patient) throws VariantstoreStorageException
 
-    void storeSampleInStore(Sample sample) throws OncostoreStorageException
+    void storeSampleInStore(Sample sample) throws VariantstoreStorageException
 
-    void storeReferenceGenomeInStore(ReferenceGenome referenceGenome) throws OncostoreStorageException
+    void storeReferenceGenomeInStore(ReferenceGenome referenceGenome) throws VariantstoreStorageException
 
-    void storeVariantCallerInStore(VariantCaller variantCaller) throws OncostoreStorageException
+    void storeVariantCallerInStore(VariantCaller variantCaller) throws VariantstoreStorageException
 
-    void storeAnnotationSoftwareInStore(Annotation annotationSoftware) throws OncostoreStorageException
+    void storeAnnotationSoftwareInStore(Annotation annotationSoftware) throws VariantstoreStorageException
 
-    void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variantContext) throws OncostoreStorageException
+    void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variantContext) throws VariantstoreStorageException
 
-    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws OncostoreStorageException
+    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws VariantstoreStorageException
 }

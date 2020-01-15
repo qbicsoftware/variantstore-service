@@ -114,7 +114,8 @@ class Variant implements SimpleVariantContext, Comparable{
         return isSomatic
     }
 
-    String getAttribute(String key) {
+    //@TODO needed?
+    List<Object> getAttribute(String key) {
         return null
     }
 
@@ -123,6 +124,10 @@ class Variant implements SimpleVariantContext, Comparable{
     @Override
     String getId() {
         return identifier
+    }
+
+    String toVcfFormat() {
+        return new StringBuilder().append(chromosome + "\t").append(startPosition + "\t").append(referenceAllele + "\t").append(observedAllele + "\t")
     }
 
 }

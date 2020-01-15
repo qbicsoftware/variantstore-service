@@ -64,7 +64,7 @@ class EnsemblParser {
             def description = (feat.getAttribute("description") != null) ? feat.getAttribute("description").split("\\[").first() : ''
             def synonym = (feat.getAttribute("description") != null) && feat.getAttribute("description").contains("HGNC") ? feat.getAttribute("description").split("\\[").last().split("HGNC:").last().replace("]", "") : ''
 
-            gene.geneID = feat.getAttribute("gene_id")
+            gene.geneId = feat.getAttribute("gene_id")
             gene.bioType = feat.getAttribute("biotype")
             gene.chromosome = feat.seqname()
             gene.geneEnd = feat.location().bioEnd()
