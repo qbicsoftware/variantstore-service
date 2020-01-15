@@ -1,27 +1,15 @@
 Installation
 ============
 
-
-
 Requirements
 ------------
 
+Varianstore runs on Java 8. Support for Java 9+ is experimental. Building Varianstore requires maven, however note that a maven wrapper is provided under the folder `.mvn <https://github.com/qbicsoftware/oncostore-proto-project/tree/master/.mvn>`_. 
 
 
-Obtaining the code
-------------------
-
-Building
+Compiling
 --------
 
 .. code-block:: bash
 
-    mn create-app life.qbic.oncostore --features=groovy --build maven
-
-Running tests
--------------
-
-.. code-block:: bash
-
-    ./mvnw test 
-
+    mvn clean compile
