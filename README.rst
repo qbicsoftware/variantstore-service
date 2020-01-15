@@ -35,7 +35,7 @@ We are currently working on the support of `PostgreSQL <https://www.postgresql.o
 Contribute
 ----------
 
-The contribution guidelines can be found on :ref:`contributing`.
+The contribution guidelines can be found on `Contributing <https://oncostore-proto-project.readthedocs.io/en/latest/contributing.html>`_.
 
 
 Credits
