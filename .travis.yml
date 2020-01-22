@@ -52,7 +52,7 @@ deploy:
     condition: '"$TRAVIS_EVENT_TYPE" = "push"'
     tags: true
 
-# activate our conda environment, generate maven site and upload reports to gh-pages branch
+# generate maven site
 after_deploy:   
   - mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml site 
 
