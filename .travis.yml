@@ -6,7 +6,10 @@ dist: xenial
 
 # no need to check for oracle's java
 language: java
-jdk: openjdk8
+jdk:
+  - openjdk8
+  - openjdk 11
+  - openjdk-ea
 
 
 # speed up builds by caching maven local repository
