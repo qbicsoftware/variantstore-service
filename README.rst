@@ -25,7 +25,7 @@ Documentation
 -------------
 Please visit the `Documentation <https://oncostore-proto-project.readthedocs.io/en/latest/>`_ for detailed installation, run and configuration instructions.
 
-The remote RESTFUL API documentation will be provided on `SwaggerHub <https://swagger.io/tools/swaggerhub>`_.
+The remote RESTFUL API documentation is available on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.2>`_.
 
 
 Database
@@ -48,4 +48,4 @@ The contribution guidelines can be found on `Contributing <https://oncostore-pro
 
 Credits
 -------
-OncoStore service was designed by `Christopher Mohr <https://github.com/christopher-mohr>`_ and implemented by `Christopher Mohr <https://github.com/christopher-mohr>`_ and `Lukas Heumos <https://github.com/zethson>`_. Feel free to contribute!
+The Variantstore service was designed by `Christopher Mohr <https://github.com/christopher-mohr>`_ and implemented by `Christopher Mohr <https://github.com/christopher-mohr>`_ and `Lukas Heumos <https://github.com/zethson>`_. Feel free to contribute!
