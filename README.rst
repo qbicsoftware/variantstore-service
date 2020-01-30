@@ -1,5 +1,9 @@
 **THIS SERVICE IS WORK IN PROGRESS.**
 
+.. image:: https://travis-ci.com/qbicsoftware/oncostore-proto-project.svg
+    :target: https://travis-ci.com/qbicsoftware/oncostore-proto-project
+    :alt: Travis Build Status
+
 .. image:: https://readthedocs.org/projects/oncostore-proto-project/badge/?version=latest
     :target: https://oncostore-proto-project.readthedocs.io/en/latest/?badge=latest
     :alt: Documentation Status
