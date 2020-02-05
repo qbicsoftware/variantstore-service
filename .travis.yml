@@ -1,73 +1,48 @@
-# Build script for Travis CI
-#
-
-# use xenial distribution
 dist: xenial
-
-# no need to check for oracle's java
 language: java
 jdk:
-  - openjdk8
-#  - openjdk 11
-#  - openjdk-ea
-
-
-# speed up builds by caching maven local repository
-# we are also using python via conda/pip
+- openjdk8
 cache:
   directories:
   - "$HOME/.m2/repository"
-
-# as agreed in our SOP
 branches:
   only:
   - master
   - development
-  # Travis treats pushed tags as branches
-  - /^[vV]?\d+\.\d+\.\d+$/ # matches e.g., v1.2.3, 1.2.3, V1.2.3
-
-# added to make logs look cleaner, crisper, certified fresh
-before_install: unset _JAVA_OPTIONS 
-
-# as agreed in our SOP, build everything (don't deploy, just try to 'mvn package' locally, which covers unit tests)
-script: mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml clean cobertura:cobertura package
-# upload code coverage report, generate maven site (javadocs, documentation, static code analysis, etc.)
-after_success: 
+  - "/^[vV]?\\d+\\.\\d+\\.\\d+$/"
+before_install: unset _JAVA_OPTIONS
+script: mvn --quiet --activate-profiles !development-build,!release-build --settings
+  .travis.settings.xml clean cobertura:cobertura package
+after_success:
 - bash <(curl -s https://codecov.io/bash)
-
-# upload to maven
 deploy:
-  # as agreed in our SOP, builds on development branch will deploy to our maven repository after validating
-  # the artifact has a proper SNAPSHOT version
-  # make sure to skip integration tests! (using -DskipITs)
 - skip_cleanup: true
   provider: script
-  script: mvn --quiet --activate-profiles development-build,!release-build --settings .travis.settings.xml deploy -DskipITs
+  script: mvn --quiet --activate-profiles development-build,!release-build --settings
+    .travis.settings.xml deploy -DskipITs
   on:
     branch: development
     condition: '"$TRAVIS_EVENT_TYPE" = "push"'
-  # as agreed in our SOP, releases are performed by tagging commits,
-  # the version string and version of dependencies are validated (no snapshots allowed)
 - skip_cleanup: true
   provider: script
-  script: mvn --quiet --activate-profiles !development-build,release-build --settings .travis.settings.xml deploy -DskipITs
+  script: mvn --quiet --activate-profiles !development-build,release-build --settings
+    .travis.settings.xml deploy -DskipITs
   on:
     condition: '"$TRAVIS_EVENT_TYPE" = "push"'
     tags: true
-
-# generate maven site
-after_deploy:   
-  - mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml site 
-
-# change according to your needs, but we recommend to deactivate email notifications
-# for now, we configured Travis to send a notification to the #travis-ci Slack channel 
+after_deploy:
+- mvn --quiet --activate-profiles !development-build,!release-build --settings .travis.settings.xml
+  site
 notifications:
   email:
     on_success: never
     on_failure: never
-  slack: 
+  slack:
     on_success: never
     on_failure: always
-    # edit the following section if you want to get slack notifications
     rooms:
-      - secure: "***"
+    - secure: "***"
+env:
+  global:
+  - secure: XpTLnkmpPqFm4wSqfMBUpWrNhY+0QJ6RVw9hUYUzDNaHLiDusCd7lwIbnGD3y6mDTTyzAUna9KPIJxv5xqoz0/r+r1ycfPU6s8KqKwG7YyhE4ynh7EOPZZm6WPLPnW1W50/pdjMixOgtPlANCmTZ8PEoXryG7fqJZ7voHYTGWuGLwB9Gwhlu8+r6onqUzLYWP1LRtB680QwYXo4vt+DfAETPbpo8f/2fcl8bkHKm46sVM1XRObwz45cJxMloEvpg3rKaK/R8D6F2d9G8cri1m6fX3kvmdpTtvMKM0UL4FQYvFKOWKx/ZYarC4mREpa2rft6ezCcQGS0pL6IiRkuVy/rQ2k5GHVq3W3P2bfqr2zfPtHK2+HkN7v1gdzFqigAoOitUzyKa4CNnm+dAjwKVO+8nwShSBlhhLq/nkLt5lUbSLaTMowSbKu1r2xV5uD3pK5Ryp4Y3HE0JlYcPl37tbeiv6Cv0EuVW8uDFBlkrrL/J12C+CslQpG/ErTm/G993P5SZRKWKJQz5tqGApZLbTOKYJGQyX+wVdWhTbFnB/sehmrZunRy0QMEJq3oinGrB0o4WBIx6mK7gqvgzWwI80DZY6lwIWpcmvLaRvf4kf47CzjwygkruKJG4P2/RaiqrmLLTyzCZE14LjR12vp9PAkVVDgi5ut9bZ4gQvYXezRc=
+  - secure: mh8D+Ij7kXYeHH9UAL5CIwjPfPhh2amQ45s0U9LnPUe5pdt0Qur7YU300i2KsCCYR0MLck+ClfKybEpVNsYFT5MR8c/JgXw/PfUsGH4N0k/j2vFLEAeF7lxh9JkQ7dhnWnKwlu6ACZfMWSc1UVMulc0n578HeLPOM1LeJSNDaXTvliwMbzo+V2/QOFrkdiKujyE4ELvId6qAJyXp8j49NwH3ZdACXTnhoRpmS64QpmJ01uW48oeilNfj1MqnC3iOgQCb4bqGXELVsJEqVXnW2V9KP4X6Q1LdnoLRC++jec2GZZGriKA9eotgWYQGZPqLvdz41NMNmfjGj+ZPHuCUo3Eu3D/kqpyMg+LOdbyNbVMIBqdszWF7NNh0WtMt1h+sDU7bHxy72e0w+jJISV+SFGPExBMhzl0A82w2s0ZJVwrLMDksm+yZbJT7NOw92GaOpf1FMj+AEHcuEFDxWEj5cBBcpN/QM0b/qn/9Y/Wn6AGOGc310GJlOBl8jgznst4ZHFqRSWYx4qqZ1n0w6e/VUabQrcCVnVn9RWbtyT8hvI/IJe0q462cIG+5+a83ZQIVKFthEfn8P7GznBcpDh3ASbwwtnOMeIxRfZgBmRx0iVEThTwWBU8bMyxCQWiMzkkAq33X7BFveC8HEfsXfJICQcqxMNw0OGtsr4+qiq8E7Yw=
