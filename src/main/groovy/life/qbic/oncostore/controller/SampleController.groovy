@@ -20,7 +20,7 @@ import javax.inject.Inject
 
 @Log4j2
 @Controller("/samples")
-@Secured(SecurityRule.IS_ANONYMOUS)
+@Secured(SecurityRule.IS_AUTHENTICATED)
 class SampleController {
 
     private final VariantstoreService service
@@ -34,7 +34,6 @@ class SampleController {
      * @param identifier The sample identifier
      * @return The found sample
      */
-    //@Secured(SecurityRule.IS_AUTHENTICATED)
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a sample",
             description = "The sample with the specified identifier is returned.",

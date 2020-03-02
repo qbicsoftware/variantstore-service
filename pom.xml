@@ -75,16 +75,22 @@
             <artifactId>micronaut-runtime</artifactId>
             <scope>compile</scope>
         </dependency>
+        <!-- Micronaut security dependencies -->
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>micronaut-security</artifactId>
-            <version>1.2.2</version>
+            <artifactId>micronaut-security-session</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-        <groupId>io.micronaut</groupId>
-        <artifactId>micronaut-security-jwt</artifactId>
-        <scope>compile</scope>
+            <groupId>io.micronaut.configuration</groupId>
+            <artifactId>micronaut-security-oauth2</artifactId>
+            <scope>compile</scope>
+            <version>1.3.1</version>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-security-jwt</artifactId>
+            <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>io.swagger.core.v3</groupId>
@@ -239,6 +245,11 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.1</version>
+            </plugin>
+            <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
                 <version>1.6.3</version>
@@ -256,11 +267,6 @@
                         </goals>
                     </execution>
                 </executions>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
             </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>

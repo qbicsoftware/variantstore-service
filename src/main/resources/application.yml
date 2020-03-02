@@ -1,35 +1,59 @@
 micronaut:
-    application:
-      name: oncostore
-    server:
-      port: ${variantstore-port}
-    router:
-      static-resources:
-          swagger:
-              paths:
-                - classpath:META-INF/swagger
-              mapping: /swagger/**
-    security:
-      enabled: true
-      oauth2:
+  application:
+    name: variantstore
+  server:
+    port: ${variantstore-port:8080}
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+      rapidoc:
+        paths: classpath:META-INF/swagger/views/rapidoc
+        mapping: /rapidoc/**
+  security:
+    enabled: ${variantstore-security-enabled:true}
+    endpoints:
+      login:
         enabled: true
-        clients:
-          keycloak:
-            client-secret: <<my client id>>
-            client-id: <<my client secret>>
-            openid:
-              issuer: <<my openid issuer>>
+      logout:
+        enabled: true
+        get-allowed: true
+      oauth:
+        enabled: true
+    session:
+      enabled: true
+    token:
+      jwt:
+        enabled: true
+    oauth2:
+      enabled: ${variantstore-oauth2-enabled:false}
+      default-provider: keycloak
+      clients:
+        keycloak:
+          client-id: ${variantstore-oauth2-client-id}
+          client-secret: ${variantstore-oauth2-client-secret}
+          openid:
+            issuer: ${variantstore-oauth2-issuer}
+          authorization:
+            url: ${variantstore-oauth2-auth-url}
+          token:
+            url: ${variantstore-oauth2-token-url}
+            auth-method: client-secret-jwt
 datasources:
-    default:
-      url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
-      username: ${db-user}
-      password: ${db-pwd}
-      driverClassName: org.mariadb.jdbc.Driver
+  default:
+    url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
+    username: ${db-user}
+    password: ${db-pwd}
+    driverClassName: org.mariadb.jdbc.Driver
 endpoints:
-    health:
-      enabled: true
-      sensitive: false
-      details-visible: ANONYMOUS
-    routes:
-      enabled: true
-      sensitive: false
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: ANONYMOUS
+  routes:
+    enabled: true
+    sensitive: false

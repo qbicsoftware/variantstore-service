@@ -22,7 +22,7 @@ import javax.validation.constraints.NotNull
 
 @Log4j2
 @Controller("/variants")
-@Secured(SecurityRule.IS_ANONYMOUS)
+@Secured(SecurityRule.IS_AUTHENTICATED)
 class VariantController {
 
     private final VariantstoreService service

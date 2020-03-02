@@ -21,7 +21,7 @@ import javax.inject.Inject
 
 @Log4j2
 @Controller("/cases")
-@Secured(SecurityRule.IS_ANONYMOUS)
+@Secured(SecurityRule.IS_AUTHENTICATED)
 class CaseController {
     private final VariantstoreService service
 

@@ -19,7 +19,7 @@ import javax.validation.constraints.NotNull
 
 @Log4j2
 @Controller("/genes")
-@Secured(SecurityRule.IS_ANONYMOUS)
+@Secured(SecurityRule.IS_AUTHENTICATED)
 class GeneController {
 
     private final VariantstoreService service
