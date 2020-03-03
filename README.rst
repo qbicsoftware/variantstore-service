@@ -15,21 +15,21 @@ The **Variantstore** is a Java/Groovy-based service application implemented usin
 
 Features
 --------
-- Import metadata (JSON files using `this <https://github.com/qbicsoftware/mtb-metadata-specs/blob/master/schemes/mtb/variants.metadata.schema.json>`_
+- Import metadata (JSON files using this `schema <https://github.com/qbicsoftware/mtb-metadata-specs/blob/master/schemes/mtb/variants.metadata.schema.json>`_)
 - Import variants (VCF files, annotated using `SnpEff <http://snpeff.sourceforge.net>`_ or `VEP <https://www.ensembl.org/info/docs/tools/vep/index.html>`_)
 - Import gene information (Ensembl, GFF3 files)  
-- Query variant information via REST endpoints
+- Query variant information via (secured) REST endpoints
 
 
 Documentation
 -------------
 Please visit the `Documentation <https://oncostore-proto-project.readthedocs.io/en/latest/>`_ for detailed installation, run and configuration instructions.
 
-The remote RESTFUL API documentation is available on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.2>`_.
+Detailed documentation of the RESTful API is additionally available on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.2>`_.
 
 
 Database
-----------
+--------
 In the current version, the **Variantstore** service can be used with a MariaDB database. If you want to use a different DBMS,
 make sure to specify the database model, set up the datasource in the ``application.yml``, and provide an implementation for the ``VariantstoreStorage`` interface.
 
@@ -42,7 +42,6 @@ We are currently working on the support of `PostgreSQL <https://www.postgresql.o
 
 Contribute
 ----------
-
 The contribution guidelines can be found on `Contributing <https://oncostore-proto-project.readthedocs.io/en/latest/contributing.html>`_.
 
 
