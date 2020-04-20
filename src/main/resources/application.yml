@@ -3,6 +3,9 @@ micronaut:
     name: variantstore
   server:
     port: ${variantstore-port:8080}
+  logger:
+    levels:
+      ROOT: INFO
   router:
     static-resources:
       swagger:
@@ -16,6 +19,19 @@ micronaut:
         mapping: /rapidoc/**
   security:
     enabled: ${variantstore-security-enabled:true}
+    intercept-url-map:
+      - pattern: /swagger/*
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/*
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /rapidoc/*
+        http-method: GET
+        access:
+          - isAnonymous()
     endpoints:
       login:
         enabled: true
@@ -55,5 +71,8 @@ endpoints:
     sensitive: false
     details-visible: ANONYMOUS
   routes:
+    enabled: true
+    sensitive: false
+  loggers:
     enabled: true
     sensitive: false
