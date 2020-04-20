@@ -6,7 +6,7 @@
         <RollingFile
                 name="rollingFile"
                 fileName="${env:SERVICES_LOG_PATH:-/tmp}/variantstore.log"
-                filePattern="${env:SERVICES_LOG_PATH:-/tmp}/variantstore.%d{dd-MMM}.log.gz">
+                filePattern="${env:SERVICES_LOG_PATH:-/tmp}/variantstore.%d{yy-MM-dd}.log.gz">
             <PatternLayout pattern="%d{dd.MM.yyyy HH:mm:ss} [%level] [%logger{1}] - %msg%n"/>
             <Policies>
                 <TimeBasedTriggeringPolicy interval="1"/>
