@@ -72,7 +72,6 @@ class SampleController {
     @ApiResponse(responseCode = "200", description = "Returns a set of samples", content = @Content(
             mediaType = "application/json",
             schema = @Schema(implementation = Sample.class)))
-    @ApiResponse(responseCode = "400", description = "Invalid sample identifier supplied")
     @ApiResponse(responseCode = "404", description = "No samples found matching provided attributes")
     HttpResponse getSamples(ListingArguments args){
         log.info("Resource request for samples with filtering options.")

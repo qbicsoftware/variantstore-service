@@ -11,8 +11,15 @@ class BeaconAlleleResponse {
     private Boolean exists
     private BeaconAlleleRequest alleleRequest
 
-    public BeaconAlleleResponse() {
+    BeaconAlleleResponse() {
 
+    }
+
+    BeaconAlleleResponse(String beaconId, String apiVersion, Boolean exists, BeaconAlleleRequest alleleRequest) {
+        this.beaconId = beaconId
+        this.apiVersion = apiVersion
+        this.exists = exists
+        this.alleleRequest = alleleRequest
     }
 
     @JsonProperty("beaconId")

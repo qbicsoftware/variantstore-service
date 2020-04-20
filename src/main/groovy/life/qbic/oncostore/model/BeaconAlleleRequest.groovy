@@ -15,7 +15,15 @@ class BeaconAlleleRequest {
     private String alternateBases
     private String assemblyId
 
-    public BeaconAlleleRequest() {
+    BeaconAlleleRequest(String referenceName, BigInteger start, String referenceBases, String alternateBases, String assemblyId) {
+        this.referenceName = referenceName
+        this.start = start
+        this.referenceBases = referenceBases
+        this.alternateBases = alternateBases
+        this.assemblyId = assemblyId
+    }
+
+    BeaconAlleleRequest() {
 
     }
 

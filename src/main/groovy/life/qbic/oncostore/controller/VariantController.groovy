@@ -1,6 +1,5 @@
 package life.qbic.oncostore.controller
 
-
 import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
@@ -92,6 +91,7 @@ class VariantController {
         }
     }
 
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Post(uri = "/upload", consumes = MediaType.TEXT_PLAIN)
     @Operation(summary = "Add variants to the store",
             description = "Upload an annotated VCF file and store the contained variants.",

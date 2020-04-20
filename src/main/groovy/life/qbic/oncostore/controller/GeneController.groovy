@@ -86,6 +86,7 @@ class GeneController {
         }
     }
 
+    @Secured(SecurityRule.IS_ANONYMOUS)
     @Operation(summary = "Upload gene information",
             description = "Uploa Ensembl GFF3 file to add gene information to the store.",
             tags = "Gene")

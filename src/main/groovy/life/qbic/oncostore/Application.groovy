@@ -8,6 +8,7 @@ import io.swagger.v3.oas.annotations.info.Contact
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.info.License
 
+
 @OpenAPIDefinition(
         info = @Info(
                 title = "Variantstore",
@@ -17,8 +18,9 @@ import io.swagger.v3.oas.annotations.info.License
                 contact = @Contact(url = "https://github.com/christopher-mohr", name = "Christopher Mohr", email = "christopher.mohr@uni-tuebingen.de")
         )
 )
-@CompileStatic
+
 @Log4j2
+@CompileStatic
 class Application {
     static void main(String[] args) {
         log.info("Variantstore started.")

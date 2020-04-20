@@ -49,12 +49,14 @@ class CaseController {
         log.info("Resource request for case: $identifier")
         try {
             List<Case> cases = service.getCaseForCaseId(identifier)
-            return cases ? HttpResponse.ok(cases.get(0)) : HttpResponse.notFound("Case not found.")
+            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound()
         }
+
         catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid case identifier supplied.")
         }
+
         catch (Exception e) {
             log.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
@@ -79,7 +81,7 @@ class CaseController {
         log.info("Resource request for cases with filtering options.")
         try {
             List<Case> cases = service.getCasesForSpecifiedProperties(args)
-            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound("No cases found matching provided attributes.")
+            return cases ? HttpResponse.ok(cases) : HttpResponse.ok([])
         }
         catch (Exception e) {
             log.error(e)

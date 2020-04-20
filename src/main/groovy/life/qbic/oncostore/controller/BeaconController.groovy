@@ -44,7 +44,7 @@ class BeaconController {
     @ApiResponse(
             responseCode = "200", description = "Returns the answer to the specified question", content = @Content(
                     schema = @Schema(implementation = BeaconAlleleResponse.class)))
-    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = '[1-22]|X|Y/') @QueryValue String chromosome, @PositiveOrZero @QueryValue BigInteger startPosition,
+    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = '[1-9]|1[0-9]|2[0-3]|X|Y') @QueryValue String chromosome, @PositiveOrZero @QueryValue BigInteger startPosition,
                               @Pattern(regexp = '[ACTG]+') @QueryValue String reference, @Pattern(regexp = '[ACTG]+') @QueryValue String observed, @QueryValue String assemblyId){
         log.info("Beacon request for specified variant.")
         try {

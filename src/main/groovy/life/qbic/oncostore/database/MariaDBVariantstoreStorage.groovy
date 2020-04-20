@@ -3,6 +3,11 @@ package life.qbic.oncostore.database
 import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
+import groovy.util.logging.Log4j2
+import io.micronaut.context.annotation.Property
+import io.micronaut.context.annotation.Requires
+import io.micronaut.context.event.BeanCreatedEvent
+import io.micronaut.context.event.BeanCreatedEventListener
 import life.qbic.micronaututils.QBiCDataSource
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.MetadataContext
@@ -13,12 +18,14 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.inject.Inject
 import javax.inject.Singleton
 import javax.validation.constraints.NotNull
+import java.sql.Connection
 
+@Log4j2
 @Singleton
-class MariaDBVariantstoreStorage implements VariantstoreStorage{
+class MariaDBVariantstoreStorage implements VariantstoreStorage {
 
-    private QBiCDataSource dataSource
-    private Sql sql
+    QBiCDataSource dataSource
+    Sql sql
 
     /* Predefined queries for inserting db entries in junction tables */
     String insertVariantConsequenceJunction = "INSERT INTO Variant_has_Consequence (Variant_id, Consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE Variant_id=Variant_id"
@@ -36,7 +43,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
     @Override
     List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
-                                         String reference, String observed, String assemblyId) {
+                                                String reference, String observed, String assemblyId) {
         sql = new Sql(dataSource.connection)
         try {
             def variant = fetchVariantsForBeaconResponse(chromosome, start, reference, observed, assemblyId)
@@ -53,9 +60,9 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
     @Override
     List<Case> findCaseById(String id) {
         //TODO should we check for a specific type of identifier?
-        if (id?.trim()) {
-            throw new IllegalArgumentException("Invalid case identifier supplied.")
-        }
+        //if (id?.trim()) {
+        //    throw new IllegalArgumentException("Invalid case identifier supplied.")
+        //}
         sql = new Sql(dataSource.connection)
         try {
             def cases = fetchCaseForId(id)
@@ -109,7 +116,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
     /**
      * Find gene in store for given gene identifier (ENSEMBL)
      * @param id Gene identifier
-     * @return List<Gene> containing the found gene for specified identifier
+     * @return List<Gene>  containing the found gene for specified identifier
      */
     List<Gene> findGeneById(String id, ListingArguments args) {
         sql = new Sql(dataSource.connection)
@@ -143,10 +150,14 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
             if (args.getChromosome().isPresent() && args.getStartPosition().isPresent() && args.getEndPosition().isPresent()) {
                 return fetchCasesByChromosomeAndPositionRange(args.getChromosome().get(), args.getStartPosition().get(), args.getEndPosition().get())
             }
+
+            if (args.getChromosome().isPresent()) {
+                return fetchCasesByChromosome(args.getChromosome().get())
+            }
             return fetchCases()
         }
         catch (Exception e) {
-            throw new VariantstoreStorageException("Could not fetch cases.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch cases.", e.printStackTrace())
         }
         finally {
             sql.close()
@@ -230,7 +241,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
     private Integer fetchEnsemblVersion() {
         def result =
-                sql.firstRow("""SELECT MAX(version) AS version FROM Ensembl;""")
+                sql.firstRow("SELECT MAX(version) AS version FROM Ensembl")
         return result.version
     }
 
@@ -327,7 +338,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
             tryToStoreGenes(consGeneMap.values().toList().flatten() as List<String>)
 
             /* GET ids of genes */
-            def geneIdMap = tryToFindGenesByConsequence(consGeneMap)
+            def geneIdMap = tryToFindGenesByConsequence(consGeneMap as HashMap<Consequence, List<String>>)
 
             /* GET ids of variants */
             def variantIdMap = tryToFindVariants(variants)
@@ -358,7 +369,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
             tryToStoreJunctionBatch(rgId, variantIdMap.values().asList(), insertReferenceGenomeVariantJunction)
 
         } catch (Exception e) {
-            throw new VariantstoreStorageException("Could not store variants with metadata in store: $metadata", e)
+            throw new VariantstoreStorageException("Could not store variants with metadata in store: $metadata", e.printStackTrace())
         }
         finally {
             sql.close()
@@ -400,10 +411,10 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
         variants.each { var ->
             def result =
-                sql.firstRow("SELECT id FROM Variant WHERE Variant.chr=? and Variant.start=? and Variant.end=? and Variant.ref=? and Variant.obs=? and Variant.isSomatic=?",
-                        [var.chromosome, var.startPosition, var.endPosition, var.referenceAllele, var.observedAllele, var.isSomatic])
-                ids[var] = result.id
-            }
+                    sql.firstRow("SELECT id FROM Variant WHERE Variant.chr=? and Variant.start=? and Variant.end=? and Variant.ref=? and Variant.obs=? and Variant.isSomatic=?",
+                            [var.chromosome, var.startPosition, var.endPosition, var.referenceAllele, var.observedAllele, var.isSomatic])
+            ids[var] = result.id
+        }
         return ids
     }
 
@@ -411,7 +422,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
         def ids = [:]
         def consIdMap = [:]
 
-        variants.each {var ->
+        variants.each { var ->
             def consIds = []
             var.getConsequences().each { cons ->
                 def result = sql.firstRow("SELECT id FROM Consequence WHERE Consequence.allele=? and Consequence.codingChange=? and Consequence.transcriptId=? and Consequence.transcriptVersion=? and Consequence.type=? and Consequence.bioType=? and Consequence.canonical=? and Consequence.aaChange=? and Consequence.cdnaPosition=? and Consequence.cdsPosition=? and Consequence.proteinPosition=? and Consequence.proteinLength=? and Consequence.cdnaLength=? and Consequence.cdsLength=? and Consequence.impact=? and Consequence.exon=? and Consequence.intron=? and Consequence.strand=? and Consequence.geneSymbol=? and Consequence.featureType=? and Consequence.distance=? and Consequence.warnings=?",
@@ -436,32 +447,30 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
         return ids
     }
 
-    HashMap tryToFindGenesByConsequence(HashMap consequenceToGeneIds) {
+    private HashMap<Consequence, List<String>> tryToFindGenesByConsequence(HashMap<Consequence, List<String>> consequenceToGeneIds) {
         def ids = [:]
 
         consequenceToGeneIds.each { cons, geneIDs ->
             def geneDBids = []
             geneIDs.each { geneId ->
-                def result =
-                        sql.firstRow("SELECT id FROM Gene WHERE Gene.geneID=?",
-                                [geneId])
+                def result = sql.firstRow("SELECT id FROM Gene WHERE Gene.geneID=?", [geneId])
                 geneDBids.add(result.id)
             }
 
             ids[cons] = geneDBids
         }
-        return ids
+        return ids as HashMap<Consequence, List<String>>
     }
 
     private List<Case> fetchCaseForId(String id) {
         def result = sql.rows("""SELECT distinct Entity.id, Project_id FROM Entity WHERE Entity.id=$id;""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it)}
+        List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
 
     private List<Sample> fetchSampleForId(String id) {
         def result = sql.rows("""SELECT * FROM Sample WHERE Sample.identifier=$id;""")
-        List<Sample> sample = result.collect{ convertRowResultToSample(it)}
+        List<Sample> sample = result.collect { convertRowResultToSample(it) }
         return sample
     }
 
@@ -472,25 +481,25 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
     private List<Gene> fetchGeneForId(String id) {
         def result = sql.rows("""SELECT distinct * FROM Gene WHERE Gene.geneID=$id;""")
-        List<Gene> genes = result.collect{ convertRowResultToGene(it)}
+        List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
 
     private List<Gene> fetchGeneForIdWithEnsemblVersion(String id, Integer ensemblVersion) {
         def result = sql.rows("""SELECT distinct * FROM Gene INNER JOIN Ensembl_has_Gene ON Gene.id = Ensembl_has_Gene.Gene_id INNER JOIN Ensembl ON Ensembl_has_Gene.Ensembl_id = Ensembl.id WHERE Gene.geneID=$id and Ensembl.version=$ensemblVersion;""")
-        List<Gene> genes = result.collect{ convertRowResultToGene(it)}
+        List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
 
     private List<Case> fetchCases() {
         def result = sql.rows("""SELECT * FROM Entity;""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it)}
+        List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
 
     private List<Sample> fetchSamples() {
         def result = sql.rows("""SELECT * FROM Sample;""")
-        List<Sample> samples = result.collect{ convertRowResultToSample(it) }
+        List<Sample> samples = result.collect { convertRowResultToSample(it) }
         return samples
     }
 
@@ -501,25 +510,31 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
     private List<Gene> fetchGenes() {
         def result = sql.rows("""SELECT * FROM Gene;""")
-        List<Gene> genes = result.collect{ convertRowResultToGene(it) }
+        List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
 
     private List<Case> fetchCasesByConsequenceType(String consequenceType) {
-        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.identifier = Sample_has_Variant.Sample_identifier INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id INNER JOIN Variant_has_Consequence ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Consequence.type = $consequenceType""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it) }
+        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.identifier = Sample_has_Variant.Sample_identifier INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_id INNER JOIN Variant_has_Consequence ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id where Consequence.type = $consequenceType""")
+        List<Case> cases = result.collect { convertRowResultToCase(it) }
+        return cases
+    }
+
+    private List<Case> fetchCasesByChromosome(String chromosome) {
+        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.identifier = Sample_has_Variant.Sample_identifier INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_id where Variant.chr = $chromosome;""")
+        List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
 
     private List<Case> fetchCasesByChromosomeAndPositionRange(String chromosome, BigInteger startPosition, BigInteger endPosition) {
-        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.identifier = Sample_has_Variant.Sample_identifier INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_Id where Variant.chr = $chromosome AND Variant.start >= $startPosition AND Variant.end <= $endPosition;""")
-        List<Case> cases = result.collect{ convertRowResultToCase(it) }
+        def result = sql.rows("""select distinct Entity.id, Project_id from Entity INNER JOIN Sample ON Entity.id = Sample.Entity_id INNER JOIN Sample_has_Variant ON Sample.identifier = Sample_has_Variant.Sample_identifier INNER JOIN Variant ON Variant.id = Sample_has_Variant.Variant_id where Variant.chr = $chromosome AND Variant.start >= $startPosition AND Variant.end <= $endPosition;""")
+        List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
 
     private List<Sample> fetchSamplesByCancerEntity(String entity) {
         def result = sql.rows("""SELECT * FROM Sample WHERE Sample.cancerEntity=$entity;""")
-        List<Sample> samples = result.collect{ convertRowResultToSample(it) }
+        List<Sample> samples = result.collect { convertRowResultToSample(it) }
         return samples
     }
 
@@ -561,38 +576,38 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
     private List<Gene> fetchGenesBySample(String sampleId) {
         def result = sql.rows(""" SELECT Gene.*, Sample_has_Variant.* FROM Gene INNER JOIN Consequence_has_Gene ON Gene.id = Consequence_has_Gene.Gene_id INNER JOIN Consequence on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Variant_has_Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Variant ON Variant_has_Consequence.Variant_id = Variant.id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant.id WHERE Sample_identifier=$sampleId;""")
-        List<Gene> genes = result.collect{ convertRowResultToGene(it) }
+        List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
 
-    void tryToStoreJunctionBatch(Object id, List ids, String insertStatement){
-            sql.withBatch(insertStatement)
-                                {  ps ->
-                                    ids.each { key2 ->
-                                        if (id instanceof String)
-                                            id = (String) id
-                                        else
-                                            id = (Integer) id
+    void tryToStoreJunctionBatch(Object id, List ids, String insertStatement) {
+        sql.withBatch(insertStatement)
+                { ps ->
+                    ids.each { key2 ->
+                        if (id instanceof String)
+                            id = (String) id
+                        else
+                            id = (Integer) id
 
-                                        if (key2 instanceof String)
-                                            key2 = (String) key2
-                                        else
-                                            key2 = (Integer) key2
-                                        ps.addBatch([id, key2] as List<Object>)
-                            }
-                        }
+                        if (key2 instanceof String)
+                            key2 = (String) key2
+                        else
+                            key2 = (Integer) key2
+                        ps.addBatch([id, key2] as List<Object>)
+                    }
+                }
         sql.commit()
     }
 
-    void tryToStoreJunctionBatchFromMap(HashMap ids, HashMap connectorMap, String insertStatement){
+    void tryToStoreJunctionBatchFromMap(HashMap ids, HashMap connectorMap, String insertStatement) {
         sql.withBatch(insertStatement)
-                        {  ps ->
-                            ids.each { entry ->
-                                entry.value.each { cons ->
-                                    ps.addBatch([connectorMap.get(entry.key), cons] as List<Object>)
-                                }
-                            }
+                { ps ->
+                    ids.each { entry ->
+                        entry.value.each { cons ->
+                            ps.addBatch([connectorMap.get(entry.key), cons] as List<Object>)
                         }
+                    }
+                }
         sql.commit()
     }
 
@@ -600,14 +615,14 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
         def consequences = []
 
         sql.withBatch("INSERT INTO Variant (uuid, chr, start, end, ref, obs, isSomatic) values (?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
-            { ps ->
-                variants.each { v ->
-                    ps.addBatch([UUID.randomUUID().toString(), v.getChromosome(), v.getStartPosition(), v.getEndPosition(), v.getReferenceAllele(), v.getObservedAllele(), v.getIsSomatic()])
-                    v.getConsequences().each { cons ->
-                        consequences.add(cons)
+                { ps ->
+                    variants.each { v ->
+                        ps.addBatch([UUID.randomUUID().toString(), v.getChromosome(), v.getStartPosition(), v.getEndPosition(), v.getReferenceAllele(), v.getObservedAllele(), v.getIsSomatic()])
+                        v.getConsequences().each { cons ->
+                            consequences.add(cons)
+                        }
                     }
                 }
-        }
 
         sql.commit()
         return consequences
@@ -618,17 +633,16 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
 
 
         sql.withBatch("INSERT INTO Consequence (allele , codingChange , transcriptID , transcriptVersion , type , bioType , canonical , aaChange , cdnaPosition , cdsPosition , proteinPosition , proteinLength , cdnaLength , cdsLength , impact, exon, intron, strand, geneSymbol , featureType , distance , warnings) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
-            { ps ->
-                consequences.each { cons ->
-                    ps.addBatch([cons.allele, cons.codingChange, cons.transcriptId, cons.transcriptVersion, cons.type, cons.bioType, cons.canonical, cons.aaChange, cons.cdnaPosition, cons.cdsPosition, cons.proteinPosition, cons.proteinLength, cons.cdnaLength, cons.cdsLength, cons.impact,cons.exon, cons.intron, cons.strand, cons.geneSymbol, cons.featureType, cons.distance, cons.warnings])
-                    if (cons.geneId.contains("-")) {
-                        consGeneMap[cons] = cons.geneId.split("-")
-                    }
-                    else {
-                        consGeneMap[cons] = [cons.geneId]
+                { ps ->
+                    consequences.each { cons ->
+                        ps.addBatch([cons.allele, cons.codingChange, cons.transcriptId, cons.transcriptVersion, cons.type, cons.bioType, cons.canonical, cons.aaChange, cons.cdnaPosition, cons.cdsPosition, cons.proteinPosition, cons.proteinLength, cons.cdnaLength, cons.cdsLength, cons.impact, cons.exon, cons.intron, cons.strand, cons.geneSymbol, cons.featureType, cons.distance, cons.warnings])
+                        if (cons.geneId.contains("-")) {
+                            consGeneMap[cons] = cons.geneId.split("-")
+                        } else {
+                            consGeneMap[cons] = [cons.geneId]
+                        }
                     }
                 }
-            }
 
         sql.commit()
         return consGeneMap
@@ -705,6 +719,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
         sql.withBatch("insert INTO Gene (symbol, name, bioType, chr, start, end, synonyms, geneID, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=id")
                 { BatchingPreparedStatementWrapper ps ->
                     genes.each { gene ->
+                        log.info(gene.toString())
                         ps.addBatch([gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart, gene.geneEnd, gene.synonyms[0], gene.geneId, gene.description, gene.strand, gene.version])
                     }
                 }
@@ -735,7 +750,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
         return result.id
     }
 
-    private Integer tryToFindAnnotationSoftware(Annotation annotation){
+    private Integer tryToFindAnnotationSoftware(Annotation annotation) {
         def result =
                 sql.firstRow("SELECT id FROM AnnotationSoftware WHERE AnnotationSoftware.name=? and AnnotationSoftware.version=? and AnnotationSoftware.DOI=?",
                         [annotation.name, annotation.version, annotation.doi])
@@ -818,29 +833,28 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
         return consequence
     }
 
-    private static List<Variant> parseVariantQueryResult(List<GroovyRowResult> rows, Boolean withConsequence=true) {
-        Map<String, List<Variant>> variantsIdMap = rows.collect{ convertRowResultToVariant(it, withConsequence) }.groupBy{ it.identifier }
+    private static List<Variant> parseVariantQueryResult(List<GroovyRowResult> rows, Boolean withConsequence = true) {
+        Map<String, List<Variant>> variantsIdMap = rows.collect { convertRowResultToVariant(it, withConsequence) }.groupBy { it.identifier }
         List<Variant> variants = []
 
-        if(!withConsequence) {
-            return variantsIdMap.values().toList()
+        if (!withConsequence) {
+            return variantsIdMap.values().toList() as List<Variant>
         }
 
         variantsIdMap.each { key, value ->
-            def consequences = value*.getConsequences().collectMany{[it]}.flatten()
+            def consequences = value*.getConsequences().collectMany { [it] }.flatten()
 
             // in case of e.g. intergenic consequences, we have to join the corresponding identifiers of affected genes and report it as one consequence
             // @TODO investigate alternative to just set the annotated transcript ID as geneID in such cases...
-            def groupedConsequences = consequences.groupBy({it.codingChange}, {it.transcriptId})
+            def groupedConsequences = consequences.groupBy({ it.codingChange }, { it.transcriptId })
             def joinedConsequences = []
-            groupedConsequences.each {coding, values ->
+            groupedConsequences.each { coding, values ->
                 values.each {
                     transcript, cons ->
-                        if(cons.size > 1) {
+                        if (cons.size > 1) {
                             Consequence c = (Consequence) cons[0]
-                              joinedConsequences.add(c)
-                        }
-                        else {
+                            joinedConsequences.add(c)
+                        } else {
                             joinedConsequences.addAll(cons)
                         }
                 }
@@ -852,22 +866,26 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage{
     }
 }
 
-/*
-@Requires(env="test")
-@Requires(property="database.schema-uri")
+
+@Requires(env = "test")
+@Requires(property = "database.schema-uri")
 @Singleton
-class DatabaseInit implements BeanCreatedEventListener<OncostoreStorage> {
+class DatabaseInit implements BeanCreatedEventListener<VariantstoreStorage> {
 
     String schemaUri
+    String dataUri
 
-    DatabaseInit(@Property(name='database.schema-uri') schemaUri) {
+    DatabaseInit(@Property(name = 'database.schema-uri') schemaUri, @Property(name = 'database.data-uri') dataUri) {
         this.schemaUri = schemaUri
+        this.dataUri = dataUri
     }
 
-    OncostoreStorage onCreated(BeanCreatedEvent<OncostoreStorage> event) {
+    VariantstoreStorage onCreated(BeanCreatedEvent<VariantstoreStorage> event) {
         def sqlStatement = new File(schemaUri).text
-        MariaDBOncostoreStorage storage = event.bean as MariaDBOncostoreStorage
+        def insertStatements = new File(dataUri).text
+        MariaDBVariantstoreStorage storage = event.bean as MariaDBVariantstoreStorage
         setupDatabase(storage.dataSource.connection, sqlStatement)
+        setupDatabase(storage.dataSource.connection, insertStatements)
         return event.bean
     }
 
@@ -876,4 +894,3 @@ class DatabaseInit implements BeanCreatedEventListener<OncostoreStorage> {
         sql.execute(sqlStatement)
     }
 }
-*/

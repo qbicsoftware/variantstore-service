@@ -17,22 +17,22 @@ class EnsemblParser {
     EnsemblParser(String url) {
 
         FeatureList geneList = GFF3Reader.read(url).selectByAttribute("gene_id")
-        def versionMatch = (url =~ /(GRCh)\d+.\d+/)
+        //def versionMatch = (url =~ /(GRCh)\d+.\d+|\w+(v)\d+/)
 
+        def versionMatch = (url =~ /\w+(v)\d/)
         def referenceGenome = ""
         def ensemblVersion = 0
-        if (versionMatch.getCount() > 0) {
-            (referenceGenome, ensemblVersion) = versionMatch[0][0].toString().split("\\.")
+        if (versionMatch.find()) {
+            (referenceGenome, ensemblVersion) = versionMatch[0][0].toString().split("\\.|v")
         }
 
-        // Determine reference genome version from Ensembl file
         File fromFile = new File(url);
         String line
         def splittedLine = ""
         def updateDate = ""
         def firstFound = false
         def secondFound = false
-        BufferedReader bufferedReader = new BufferedReader(new FileReader(fromFile));
+        BufferedReader bufferedReader = new BufferedReader(new FileReader(fromFile))
         while ((line = bufferedReader.readLine()) != null)
         {
             if (line.startsWith("#!genome-build ")) {
@@ -48,10 +48,11 @@ class EnsemblParser {
             }
         }
 
-        def (referenceGenomeFromFile, referenceGenomeVersion) = splittedLine.split("\\.")
+        // Determine reference genome version from Ensembl file
+        def (referenceGenomeFromFile, referenceGenomeVersion) = splittedLine.split("v|\\.")
 
         try {
-            assert referenceGenome.equals(referenceGenomeFromFile)
+            assert referenceGenome == referenceGenomeFromFile
         } catch (AssertionError e) {
             println "Given reference genomes do not match: " + e.getMessage()
         }
@@ -73,11 +74,10 @@ class EnsemblParser {
             gene.synonyms = [synonym]
             gene.description = description.trim()
             gene.symbol = feat.getAttribute("Name")
-            gene.version = feat.getAttribute("version").toInteger()
+            gene.version = feat.getAttribute("version") != null ? feat.getAttribute("version").toInteger(): -1
             gene.strand = feat.location().bioStrand()
             genes.add(gene)
         }
-
         this.genes = genes
         this.referenceGenome = new ReferenceGenome("Genome Reference Consortium", referenceGenome,referenceGenomeVersion)
         this.version = ensemblVersion.toInteger()
