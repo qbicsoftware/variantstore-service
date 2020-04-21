@@ -16,6 +16,7 @@ import javax.inject.Inject
 @MicronautTest
 @Property(name= "micronaut.server.port", value = "-1")
 @Property(name= "micronaut.security.enabled", value = "true")
+@Property(name= "micronaut.security.oauth2.enabled", value = "false")
 class SecuritySpec extends Specification{
 
     @Inject
