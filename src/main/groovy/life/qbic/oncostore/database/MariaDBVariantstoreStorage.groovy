@@ -105,7 +105,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
             return variants
         }
         catch (Exception e) {
-            throw new VariantstoreStorageException("Could not fetch variant with identifier $id.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch variant with identifier $id.", e.printStackTrace())
         }
         finally {
             sql.close()
@@ -132,7 +132,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
             return fetchGeneForId(id)
         }
         catch (Exception e) {
-            throw new VariantstoreStorageException("Could not fetch gene with identifier $id.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch gene with identifier $id.", e.printStackTrace())
         }
         finally {
             sql.close()
@@ -440,7 +440,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
 
         genes.each { gene ->
             def result =
-                    sql.firstRow("SELECT id FROM Gene WHERE Gene.symbol=? and Gene.name=? and Gene.bioType=? and Gene.chr=? and Gene.start=? and Gene.end=? and Gene.synonyms=? and Gene.geneID=? and Gene.description=? and Gene.strand=? and Gene.version=?",
+                    sql.firstRow("SELECT id FROM Gene WHERE Gene.symbol=? and Gene.name=? and Gene.bioType=? and Gene.chr=? and Gene.start=? and Gene.end=? and Gene.synonyms=? and Gene.geneId=? and Gene.description=? and Gene.strand=? and Gene.version=?",
                             [gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart, gene.geneEnd, gene.synonyms[0], gene.geneId, gene.description, gene.strand, gene.version])
             ids[gene] = result.id
         }
@@ -453,7 +453,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
         consequenceToGeneIds.each { cons, geneIDs ->
             def geneDBids = []
             geneIDs.each { geneId ->
-                def result = sql.firstRow("SELECT id FROM Gene WHERE Gene.geneID=?", [geneId])
+                def result = sql.firstRow("SELECT id FROM Gene WHERE Gene.geneId=?", [geneId])
                 geneDBids.add(result.id)
             }
 
@@ -475,18 +475,18 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     }
 
     private List<Variant> fetchVariantForId(String id) {
-        def result = sql.rows("""SELECT * FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE Variant.uuid=$id;""")
-        return parseVariantQueryResult(result)
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.id as geneIndex, Gene.geneId as geneId FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE Variant.uuid=$id;""")
+        return parseVariantQueryResult(result, true)
     }
 
     private List<Gene> fetchGeneForId(String id) {
-        def result = sql.rows("""SELECT distinct * FROM Gene WHERE Gene.geneID=$id;""")
+        def result = sql.rows("""SELECT distinct * FROM Gene WHERE Gene.geneId=$id;""")
         List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
 
     private List<Gene> fetchGeneForIdWithEnsemblVersion(String id, Integer ensemblVersion) {
-        def result = sql.rows("""SELECT distinct * FROM Gene INNER JOIN Ensembl_has_Gene ON Gene.id = Ensembl_has_Gene.Gene_id INNER JOIN Ensembl ON Ensembl_has_Gene.Ensembl_id = Ensembl.id WHERE Gene.geneID=$id and Ensembl.version=$ensemblVersion;""")
+        def result = sql.rows("""SELECT distinct * FROM Gene INNER JOIN Ensembl_has_Gene ON Gene.id = Ensembl_has_Gene.Gene_id INNER JOIN Ensembl ON Ensembl_has_Gene.Ensembl_id = Ensembl.id WHERE Gene.geneId=$id and Ensembl.version=$ensemblVersion;""")
         List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
@@ -559,12 +559,12 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     }
 
     private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId) {
-        def result = sql.rows("""SELECT distinct Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.id as geneIndex, Gene.geneId as geneId FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id where Sample_identifier = $sampleId AND geneID=$geneId;""")
+        def result = sql.rows("""SELECT distinct Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.id as geneIndex, Gene.geneId as geneId FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Sample_has_Variant ON Sample_has_Variant.Variant_id = Variant_has_Consequence.Variant_id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id where Sample_identifier = $sampleId AND geneId=$geneId;""")
         return parseVariantQueryResult(result)
     }
 
     private List<Variant> fetchVariantsByGeneId(String geneId) {
-        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.id as geneIndex, Gene.geneId as geneId FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE geneID=$geneId;""")
+        def result = sql.rows("""SELECT Variant.id as varid, Variant.chr as varchr, Variant.start as varstart, Variant.end as varend, Variant.ref as varref, Variant.obs as varobs, Variant.issomatic as varsomatic, Variant.uuid as varuuid, Consequence.*, Gene.id as geneIndex, Gene.geneId as geneId FROM Variant INNER JOIN Variant_has_Consequence ON Variant.id = Variant_has_Consequence.Variant_id INNER JOIN Consequence on Variant_has_Consequence.Consequence_id = Consequence.id INNER JOIN Consequence_has_Gene on Consequence_has_Gene.Consequence_id = Consequence.id INNER JOIN Gene on Gene.id=Consequence_has_Gene.Gene_id WHERE geneId=$geneId;""")
         return parseVariantQueryResult(result)
     }
 
@@ -704,7 +704,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     }
 
     private List<String> tryToStoreGenes(List<String> genes) {
-        sql.withBatch("insert INTO Gene (geneID) values (?) ON DUPLICATE KEY UPDATE id=id")
+        sql.withBatch("insert INTO Gene (geneId) values (?) ON DUPLICATE KEY UPDATE id=id")
                 { BatchingPreparedStatementWrapper ps ->
                     genes.each { identifier ->
                         ps.addBatch([identifier])
@@ -716,7 +716,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     }
 
     private List<Gene> tryToStoreGeneObjects(List<Gene> genes) {
-        sql.withBatch("insert INTO Gene (symbol, name, bioType, chr, start, end, synonyms, geneID, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=id")
+        sql.withBatch("insert INTO Gene (symbol, name, bioType, chr, start, end, synonyms, geneId, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=id")
                 { BatchingPreparedStatementWrapper ps ->
                     genes.each { gene ->
                         log.info(gene.toString())

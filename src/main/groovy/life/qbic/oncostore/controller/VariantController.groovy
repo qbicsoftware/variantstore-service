@@ -42,11 +42,11 @@ class VariantController {
                     schema = @Schema(implementation = Variant.class)))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<Variant> getVariant(@PathVariable(name="id") String identifier) {
+    HttpResponse getVariant(@PathVariable(name="id") String identifier) {
         log.info("Resource request for variant: $identifier")
         try {
             List<Variant> variants = service.getVariantForVariantId(identifier)
-            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("Variant not found.")
+            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given identifier.")
         }
         catch (IllegalArgumentException e) {
             log.error(e)

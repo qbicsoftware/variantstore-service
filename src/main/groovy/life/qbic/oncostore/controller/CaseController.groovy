@@ -49,7 +49,7 @@ class CaseController {
         log.info("Resource request for case: $identifier")
         try {
             List<Case> cases = service.getCaseForCaseId(identifier)
-            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound()
+            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound("No case found for given identifier.")
         }
 
         catch (IllegalArgumentException e) {
