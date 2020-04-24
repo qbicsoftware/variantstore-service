@@ -35,12 +35,12 @@ class DatabaseSpec extends Specification {
         result
     }
 
-    def "confirm that the number of variants is five"() {
+    def "confirm that the number of variants is 14"() {
         given:
         Sql sql = new Sql(storage.dataSource.connection)
 
         when:
-        def result = sql.rows ("Select * from Variant")
+        def result = sql.rows ("Select * from variant")
 
         then:
         result.size() == 14
