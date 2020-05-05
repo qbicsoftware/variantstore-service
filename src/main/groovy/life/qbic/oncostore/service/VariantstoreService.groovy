@@ -1,11 +1,7 @@
 package life.qbic.oncostore.service
 
-import life.qbic.oncostore.model.Case
-import life.qbic.oncostore.model.Gene
-import life.qbic.oncostore.model.Variant
-import life.qbic.oncostore.model.Sample
-import life.qbic.oncostore.model.BeaconAlleleResponse
-
+import life.qbic.oncostore.model.*
+import life.qbic.oncostore.parser.EnsemblParser
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Singleton
@@ -34,7 +30,7 @@ interface VariantstoreService {
 
     String getVcfContentForVariants(List<Variant> variants)
 
-    void storeVariantsInStore(String url)
+    void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants)
 
-    void storeGeneInformationInStore(String url)
+    void storeGeneInformationInStore(EnsemblParser ensemblParser)
 }

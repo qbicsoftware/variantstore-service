@@ -3,7 +3,11 @@ package life.qbic.oncostore.controller
 import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.annotation.*
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.annotation.Post
+import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.swagger.v3.oas.annotations.Operation
@@ -11,11 +15,14 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.Gene
+import life.qbic.oncostore.parser.EnsemblParser
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
+import java.nio.file.Files
+import java.nio.file.Path
+import java.nio.file.Paths
 
 @Log4j2
 @Controller("/genes")
@@ -86,20 +93,26 @@ class GeneController {
         }
     }
 
-    @Secured(SecurityRule.IS_ANONYMOUS)
+
     @Operation(summary = "Upload gene information",
-            description = "Uploa Ensembl GFF3 file to add gene information to the store.",
+            description = "Upload Ensembl GFF3 file to add gene information to the store.",
             tags = "Gene")
-    @Post(uri = "/upload", consumes = MediaType.TEXT_PLAIN)
-    HttpResponse storeGeneInformation(@QueryValue("url") @NotNull String url) {
+    @Post(uri = "/upload", consumes = MediaType.MULTIPART_FORM_DATA)
+    HttpResponse storeGenes(CompletedFileUpload file) {
         try {
             log.info("Request for storing gene information.")
-            service.storeGeneInformationInStore(url)
 
-            return HttpResponse.ok()
-        }
-        catch (Exception e) {
-            log.error(e)
+            File tempFile = File.createTempFile(file.getFilename(), "temp");
+            Path path = Paths.get(tempFile.getAbsolutePath());
+            Files.write(path, file.getBytes());
+            //TODO ensembl POJO
+            EnsemblParser ensembl = new EnsemblParser(tempFile)
+            service.storeGeneInformationInStore(ensembl)
+
+            return HttpResponse.ok("Upload of gene information successful.")
+        } catch (IOException exception) {
+            log.error(exception)
+            return HttpResponse.badRequest("Upload of gene information failed.");
         }
     }
 }
