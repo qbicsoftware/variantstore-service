@@ -3,6 +3,8 @@ package life.qbic.oncostore.database
 import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
+import groovy.time.TimeCategory
+import groovy.time.TimeDuration
 import groovy.util.logging.Log4j2
 import io.micronaut.context.annotation.Property
 import io.micronaut.context.annotation.Requires
@@ -321,37 +323,73 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
             tryToStoreAnnotationSoftware(metadata.getVariantAnnotation())
             tryToStoreReferenceGenome(metadata.getReferenceGenome())
 
+            def timeStart = new Date()
+
+
             def vcId = tryToFindVariantCaller(metadata.getVariantCalling())
             def asId = tryToFindAnnotationSoftware(metadata.getVariantAnnotation())
             def rgId = tryToFindReferenceGenome(metadata.getReferenceGenome())
+            def timeStop = new Date()
+            TimeDuration duration = TimeCategory.minus(timeStop, timeStart)
+            println("Metadata insertion took..." + duration)
+
 
             sql.connection.autoCommit = false
             sql.setCacheStatements(true)
 
+            timeStart = new Date()
             /* INSERT variants and save consequences for import */
             def consequencesToInsert = tryToStoreVariantsBatch(variants)
+            timeStop = new Date()
+            duration = TimeCategory.minus(timeStop, timeStart)
+            println("Variant insertion took..." + duration)
 
+            timeStart = new Date()
             /* INSERT consequences */
             def consGeneMap = tryToStoreConsequencesBatch(consequencesToInsert)
+            timeStop = new Date()
+            duration = TimeCategory.minus(timeStop, timeStart)
+            println("Consequence insertion took..." + duration)
 
+            timeStart = new Date()
             /* INSERT genes */
             tryToStoreGenes(consGeneMap.values().toList().flatten() as List<String>)
+            timeStop = new Date()
+            duration = TimeCategory.minus(timeStop, timeStart)
+            println("Gene insertion took..." + duration)
 
+            timeStart = new Date()
             /* GET ids of genes */
             def geneIdMap = tryToFindGenesByConsequence(consGeneMap as HashMap<Consequence, List<String>>)
+            timeStop = new Date()
+            duration = TimeCategory.minus(timeStop, timeStart)
+            println("Gene lookup took..." + duration)
 
+            timeStart = new Date()
             /* GET ids of variants */
             def variantIdMap = tryToFindVariants(variants)
+            timeStop = new Date()
+            duration = TimeCategory.minus(timeStop, timeStart)
+            println("Variant lookup took..." + duration)
 
+
+            timeStart = new Date()
             /* GET ids of consequences */
             def findConsequenceMaps = tryToFindConsequences(variants)
             def variantConsequenceIdMap = findConsequenceMaps.first
+            timeStop = new Date()
+            duration = TimeCategory.minus(timeStop, timeStart)
+            println("Consequence lookup took..." + duration)
 
             /* consequence to consequence DB id map */
             def consIdMap = findConsequenceMaps.second
 
+            timeStart = new Date()
             /* INSERT variant and consequence junction */
             tryToStoreJunctionBatchFromMap(variantConsequenceIdMap, variantIdMap, insertVariantConsequenceJunction)
+            timeStop = new Date()
+            duration = TimeCategory.minus(timeStop, timeStart)
+            println("Variant Consequence Batch insertion took..." + duration)
 
             /* INSERT consequence and gene junction */
             tryToStoreJunctionBatchFromMap(geneIdMap, consIdMap, insertConsequenceGeneJunction)
@@ -392,14 +430,14 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
             tryToStoreGeneObjects(genes)
 
             /* GET ids of genes */
-            def geneIdMap = tryToFindgenes(genes)
+            def geneIdMap = tryToFindGenes(genes)
 
             /* INSERT genes and ensembl version in junction table */
             tryToStoreJunctionBatch(enId, geneIdMap.values().asList(), insertEnsemblGeneJunction)
 
 
         } catch (Exception e) {
-            throw new VariantstoreStorageException("Could not store genes in store: ", e)
+            throw new VariantstoreStorageException("Could not store genes in store: ", e.printStackTrace())
         }
         finally {
             sql.close()
@@ -410,10 +448,14 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
         def ids = [:]
 
         variants.each { var ->
+            if (ids[var]) {
+                return
+            } else {
             def result =
                     sql.firstRow("SELECT id FROM variant WHERE variant.chr=? and variant.start=? and variant.end=? and variant.ref=? and variant.obs=? and variant.issomatic=?",
                             [var.chromosome, var.startPosition, var.endPosition, var.referenceAllele, var.observedAllele, var.isSomatic])
             ids[var] = result.id
+            }
         }
         return ids
     }
@@ -425,36 +467,55 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
         variants.each { var ->
             def consIds = []
             var.getConsequences().each { cons ->
-                def result = sql.firstRow("SELECT id FROM consequence WHERE consequence.allele=? and consequence.codingchange=? and consequence.transcriptid=? and consequence.transcriptversion=? and consequence.type=? and consequence.biotype=? and consequence.canonical=? and consequence.aachange=? and consequence.cdnaposition=? and consequence.cdsposition=? and consequence.proteinposition=? and consequence.proteinlength=? and consequence.cdnalength=? and consequence.cdslength=? and consequence.impact=? and consequence.exon=? and consequence.intron=? and consequence.strand=? and consequence.genesymbol=? and consequence.featuretype=? and consequence.distance=? and consequence.warnings=?",
-                        [cons.allele, cons.codingChange, cons.transcriptId, cons.transcriptVersion, cons.type, cons.bioType, cons.canonical, cons.aaChange, cons.cdnaPosition, cons.cdsPosition, cons.proteinPosition, cons.proteinLength, cons.cdnaLength, cons.cdsLength, cons.impact, cons.exon, cons.intron, cons.strand, cons.geneSymbol, cons.featureType, cons.distance, cons.warnings])
-                consIds.add(result.id)
-                consIdMap[cons] = result.id
+                if (consIdMap[cons]) {
+                    consIds.add(consIdMap[cons])
+                }
+                else {
+                    def result = sql.firstRow("SELECT id FROM consequence WHERE consequence.allele=? and consequence.codingchange=? and consequence.transcriptid=? and consequence.transcriptversion=? and consequence.type=? and consequence.biotype=? and consequence.canonical=? and consequence.aachange=? and consequence.cdnaposition=? and consequence.cdsposition=? and consequence.proteinposition=? and consequence.proteinlength=? and consequence.cdnalength=? and consequence.cdslength=? and consequence.impact=? and consequence.exon=? and consequence.intron=? and consequence.strand=? and consequence.genesymbol=? and consequence.featuretype=? and consequence.distance=? and consequence.warnings=?",
+
+                            [cons.allele, cons.codingChange, cons.transcriptId, cons.transcriptVersion, cons.type, cons.bioType, cons.canonical, cons.aaChange, cons.cdnaPosition, cons.cdsPosition, cons.proteinPosition, cons.proteinLength, cons.cdnaLength, cons.cdsLength, cons.impact, cons.exon, cons.intron, cons.strand, cons.geneSymbol, cons.featureType, cons.distance, cons.warnings])
+                    consIds.add(result.id)
+                    consIdMap[cons] = result.id
+                }
             }
             ids[var] = consIds
         }
         return new Tuple2(ids, consIdMap)
     }
 
-    HashMap tryToFindgenes(List<Gene> genes) {
+    HashMap tryToFindGenes(List<Gene> genes) {
         def ids = [:]
 
         genes.each { gene ->
-            def result =
-                    sql.firstRow("SELECT id FROM gene WHERE gene.symbol=? and gene.name=? and gene.biotype=? and gene.chr=? and gene.start=? and gene.end=? and gene.synonyms=? and gene.geneid=? and gene.description=? and gene.strand=? and gene.version=?",
-                            [gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart, gene.geneEnd, gene.synonyms[0], gene.geneid, gene.description, gene.strand, gene.version])
-            ids[gene] = result.id
+            if(ids[gene]){
+                return
+            }
+            else {
+                def result =
+                        sql.firstRow("SELECT id FROM gene WHERE gene.symbol=? and gene.name=? and gene.biotype=? and gene.chr=? and gene.start=? and gene.end=? and gene.synonyms=? and gene.geneid=? and gene.description=? and gene.strand=? and gene.version=?",
+
+                                [gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart, gene.geneEnd, gene.synonyms[0], gene.geneId, gene.description, gene.strand, gene.version])
+                ids[gene] = result.id
+            }
         }
         return ids
     }
 
-    private HashMap<Consequence, List<String>> tryToFindGenesByConsequence(HashMap<Consequence, List<String>> consequenceToGeneids) {
+    private HashMap<Consequence, List<String>> tryToFindGenesByConsequence(HashMap<Consequence, List<String>> consequenceToGeneIds) {
         def ids = [:]
+        def foundIds = [:]
 
-        consequenceToGeneids.each { cons, geneIds ->
+        consequenceToGeneIds.each { cons, geneIds ->
             def geneDBids = []
             geneIds.each { geneId ->
-                def result = sql.firstRow("SELECT id FROM gene WHERE gene.geneid=?", [geneId])
-                geneDBids.add(result.id)
+                if(foundIds[geneId]){
+                    geneDBids.add(foundIds[geneId])
+                }
+                else {
+                    def result = sql.firstRow("SELECT id FROM gene WHERE gene.geneid=?", [geneId])
+                    geneDBids.add(result.id)
+                    foundIds[geneId] = result.id
+                }
             }
 
             ids[cons] = geneDBids
@@ -631,7 +692,6 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     private HashMap tryToStoreConsequencesBatch(List<Consequence> consequences) {
         def consGeneMap = [:]
 
-
         sql.withBatch("INSERT INTO consequence (allele , codingchange , transcriptid , transcriptversion , type , biotype , canonical , aachange , cdnaposition , cdsposition , proteinposition , proteinlength , cdnalength , cdslength , impact, exon, intron, strand, genesymbol , featuretype , distance , warnings) values (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?) ON DUPLICATE KEY UPDATE id=id")
                 { ps ->
                     consequences.each { cons ->
@@ -719,7 +779,6 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
         sql.withBatch("insert INTO gene (symbol, name, biotype, chr, start, end, synonyms, geneid, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=id")
                 { BatchingPreparedStatementWrapper ps ->
                     genes.each { gene ->
-                        log.info(gene.toString())
                         ps.addBatch([gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart, gene.geneEnd, gene.synonyms[0], gene.geneId, gene.description, gene.strand, gene.version])
                     }
                 }
