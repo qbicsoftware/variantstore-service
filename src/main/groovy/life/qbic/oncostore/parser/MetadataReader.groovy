@@ -18,6 +18,12 @@ class MetadataReader {
         this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent), parseVcfFiles(jsonContent))
     }
 
+    MetadataReader(String content) {
+        def slurper = new JsonSlurper()
+        def jsonContent = slurper.parseText(content)
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent), parseVcfFiles(jsonContent))
+    }
+
     MetadataContext getMetadataContext() {
         return metadataContext
     }

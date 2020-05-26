@@ -65,6 +65,6 @@ class VariantControllerSpec extends Specification{
 
         then:
         HttpClientResponseException t = thrown(HttpClientResponseException)
-        t.getStatus().code == 404
+        t.getStatus() == HttpStatus.NOT_FOUND
     }
 }

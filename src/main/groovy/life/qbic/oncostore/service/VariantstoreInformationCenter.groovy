@@ -1,12 +1,9 @@
 package life.qbic.oncostore.service
 
 import groovy.util.logging.Log4j2
-import htsjdk.samtools.util.CloseableIterator
-import htsjdk.variant.vcf.VCFFileReader
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.EnsemblParser
 import life.qbic.oncostore.parser.MetadataReader
-import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.util.AnnotationHandler
 import life.qbic.oncostore.util.ListingArguments
 import life.qbic.oncostore.util.VariantExporter
@@ -96,14 +93,20 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * Stores variants given in VCF file in the store.
      * @param url path to the VCF file
      */
-    @Override
-    void storeVariantsInStore(String url) {
-        MetadataReader meta = new MetadataReader(new File(url))
 
-        def vcfFiles = meta.getMetadataContext().getVcfFiles()
+    @Override
+    void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants) {
+        MetadataReader meta = new MetadataReader(metadata)
         def variantsToInsert = []
 
-        vcfFiles.each { filePath ->
+        variants.each { variant ->
+            AnnotationHandler.addAnnotationsToVariant(variant, meta.getMetadataContext().getVariantAnnotation())
+            variant.setIsSomatic(meta.getMetadataContext().getIsSomatic())
+            variantsToInsert.add(variant)
+        }
+
+        /*
+        variants.each { filePath ->
             SimpleVCFReader reader = new SimpleVCFReader((new VCFFileReader(new File(filePath), false)))
             CloseableIterator variants = reader.iterator()
 
@@ -113,8 +116,9 @@ class VariantstoreInformationCenter implements VariantstoreService{
                 variantsToInsert.add(variant)
             }
         }
+        */
 
-        log.info("Storing provided metadata and variants in store")
+        log.info("Storing provided metadata and variants in the store")
         storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), variantsToInsert)
         log.info("...done.")
     }
@@ -124,8 +128,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * @param url path to the GFF3 file
      */
     @Override
-    void storeGeneInformationInStore(String url) {
-        EnsemblParser ensembl = new EnsemblParser(url)
+    void storeGeneInformationInStore(EnsemblParser ensembl) {
         log.info("Storing provided gene information in store")
         storage.storeGenesWithMetadata(ensembl.version, ensembl.date, ensembl.referenceGenome, ensembl.genes)
         log.info("...done.")

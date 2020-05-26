@@ -1,7 +1,10 @@
 package life.qbic.oncostore.parser
 
 import htsjdk.samtools.util.CloseableIterator
+import htsjdk.variant.variantcontext.VariantContext
 import htsjdk.variant.vcf.VCFFileReader
+import htsjdk.variant.vcf.VCFIterator
+import htsjdk.variant.vcf.VCFIteratorBuilder
 import life.qbic.oncostore.model.SimpleVariantContext
 import life.qbic.oncostore.util.VariantIterator
 
@@ -28,6 +31,11 @@ class SimpleVCFReader implements VCFReader{
     public SimpleVCFReader(VCFFileReader reader) {
         this.reader = reader
         this.variantIterator = new VariantIterator(reader.iterator())
+    }
+
+    public SimpleVCFReader(InputStream inputStream) {
+        VCFIterator iter = new VCFIteratorBuilder().open(inputStream)
+        this.variantIterator = new VariantIterator((CloseableIterator<VariantContext>) iter.iterator())
     }
 
     @Override
