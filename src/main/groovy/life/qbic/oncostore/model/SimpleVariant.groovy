@@ -6,12 +6,20 @@ import htsjdk.variant.variantcontext.VariantContext
 class SimpleVariant implements SimpleVariantContext{
 
     final VariantContext context
+    final VcfInfo vcfInfo
+    final List<Genotype> genotypes
     String id
     Boolean isSomatic
     List<Consequence> consequences = []
 
     SimpleVariant(VariantContext context) {
         this.context = context
+        this.vcfInfo = new VcfInfo(context.getCommonInfo())
+        List<Genotype> genotypes = []
+        context.getGenotypes().each { genotype ->
+            genotypes.add(new Genotype(genotype))
+        }
+        this.genotypes = genotypes
     }
 
     @JsonProperty("chromosome")
@@ -38,18 +46,30 @@ class SimpleVariant implements SimpleVariantContext{
         context.reference.toString().replace("*", "")
     }
 
+    @JsonProperty("databaseId")
+    @Override
+    String getDatabaseId() {
+        context.getID()
+    }
+
     @JsonProperty("observedAllele")
     @Override
     String getObservedAllele() {
         //@TODO check that for release!
-        // this is a list, usually we would expect one observed allele, so we will just take the first one for now
-        context.alternateAlleles.get(0)
+        // this is a list, usually we would expect one observed allele, but it`s allowed to have multiple
+        context.alternateAlleles.toString()
     }
 
     @JsonProperty("consequences")
     @Override
     List<Consequence> getConsequences() {
         return consequences
+    }
+
+    @JsonProperty("info")
+    @Override
+    VcfInfo getVcfInfo() {
+        return vcfInfo
     }
 
     @Override
@@ -62,7 +82,6 @@ class SimpleVariant implements SimpleVariantContext{
         return isSomatic
     }
 
-    @Override
     List<Object> getAttribute(String key) {
         this.context.getAttributeAsList(key)
     }
@@ -70,6 +89,14 @@ class SimpleVariant implements SimpleVariantContext{
     @Override
     String getId() {
         return id
+    }
+
+    VariantContext getContext() {
+        return context
+    }
+
+    List<Genotype> getGenotypes() {
+        return genotypes
     }
 
     @Override

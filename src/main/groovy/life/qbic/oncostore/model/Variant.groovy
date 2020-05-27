@@ -7,6 +7,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 class Variant implements SimpleVariantContext, Comparable{
 
     String identifier
+    String databaseIdentifier
     String chromosome
     BigInteger startPosition
     BigInteger endPosition
@@ -15,6 +16,8 @@ class Variant implements SimpleVariantContext, Comparable{
     List<Consequence> consequences
     ReferenceGenome referenceGenome
     Boolean isSomatic
+    VcfInfo vcfInfo
+    List<Genotype> genotypes
 
     Variant() {
     }
@@ -56,6 +59,22 @@ class Variant implements SimpleVariantContext, Comparable{
 
     void setConsequences(List<Consequence> consequences) {
         this.consequences = consequences
+    }
+
+    void setVCF(VcfInfo vcfInfo) {
+        this.vcfInfo = vcfInfo
+    }
+
+    void setDatabaseIdentifier(String databaseIdentifier) {
+        this.databaseIdentifier = databaseIdentifier
+    }
+
+    void setVcfInfo(VcfInfo vcfInfo) {
+        this.vcfInfo = vcfInfo
+    }
+
+    void setGenotypes(List<Genotype> genotypes) {
+        this.genotypes = genotypes
     }
 
     @Schema(description="The chromosome")
@@ -107,6 +126,13 @@ class Variant implements SimpleVariantContext, Comparable{
         return referenceGenome
     }
 
+    @Schema(description="The database identifier of this variant")
+    @JsonProperty("databaseIdentifier")
+    @Override
+    String getDatabaseId() {
+        return databaseIdentifier
+    }
+
     @Schema(description="Is it a somatic variant?")
     @JsonProperty("isSomatic")
     @Override
@@ -114,16 +140,30 @@ class Variant implements SimpleVariantContext, Comparable{
         return isSomatic
     }
 
-    //@TODO needed?
-    List<Object> getAttribute(String key) {
-        return null
-    }
-
     @Schema(description="The variant identifier")
     @JsonProperty("identifier")
     @Override
     String getId() {
         return identifier
+    }
+
+    @Schema(description="The information given in the INFO column of a VCF file")
+    @JsonProperty("info")
+    @Override
+    VcfInfo getVcfInfo() {
+        return vcfInfo
+    }
+
+    @Schema(description="The database identifier of this variant (if available)")
+    @JsonProperty("databaseIdentifier")
+    String getDatabaseIdentifier() {
+        return databaseIdentifier
+    }
+
+    @Schema(description="The genotypes associated with this variant")
+    @JsonProperty("genotypes")
+    List<Genotype> getGenotypes() {
+        return genotypes
     }
 
     String toVcfFormat() {
