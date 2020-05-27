@@ -93,7 +93,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * Stores variants given in VCF file in the store.
      * @param url path to the VCF file
      */
-
     @Override
     void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants) {
         MetadataReader meta = new MetadataReader(metadata)
@@ -104,19 +103,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
             variant.setIsSomatic(meta.getMetadataContext().getIsSomatic())
             variantsToInsert.add(variant)
         }
-
-        /*
-        variants.each { filePath ->
-            SimpleVCFReader reader = new SimpleVCFReader((new VCFFileReader(new File(filePath), false)))
-            CloseableIterator variants = reader.iterator()
-
-            variants.each {SimpleVariantContext variant ->
-                AnnotationHandler.addAnnotationsToVariant(variant, meta.getMetadataContext().getVariantAnnotation())
-                variant.setIsSomatic(meta.getMetadataContext().getIsSomatic())
-                variantsToInsert.add(variant)
-            }
-        }
-        */
 
         log.info("Storing provided metadata and variants in the store")
         storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), variantsToInsert)
