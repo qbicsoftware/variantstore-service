@@ -79,3 +79,5 @@ endpoints:
   loggers:
     enabled: true
     sensitive: false
+userroles:
+  config: "src/main/resources/test.yml"

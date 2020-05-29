@@ -39,6 +39,7 @@ class BeaconControllerSpec extends Specification{
         def chr = 12
         def uri = "/beacon/query?assemblyId=GRCh37&chromosome=${chr}&startPosition=46601390&reference=C&observed=G"
         HttpResponse response = client.toBlocking().exchange(uri, BeaconAlleleResponse)
+        println(response.body())
 
         then:
         response.status == HttpStatus.OK
