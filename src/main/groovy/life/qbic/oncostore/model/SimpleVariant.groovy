@@ -19,6 +19,8 @@ class SimpleVariant implements SimpleVariantContext{
         context.getGenotypes().each { genotype ->
             genotypes.add(new Genotype(genotype))
         }
+
+        if (genotypes.empty) genotypes.add(new Genotype())
         this.genotypes = genotypes
     }
 

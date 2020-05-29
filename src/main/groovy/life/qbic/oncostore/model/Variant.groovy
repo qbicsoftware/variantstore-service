@@ -126,13 +126,6 @@ class Variant implements SimpleVariantContext, Comparable{
         return referenceGenome
     }
 
-    @Schema(description="The database identifier of this variant")
-    @JsonProperty("databaseIdentifier")
-    @Override
-    String getDatabaseId() {
-        return databaseIdentifier
-    }
-
     @Schema(description="Is it a somatic variant?")
     @JsonProperty("isSomatic")
     @Override
@@ -156,7 +149,7 @@ class Variant implements SimpleVariantContext, Comparable{
 
     @Schema(description="The database identifier of this variant (if available)")
     @JsonProperty("databaseIdentifier")
-    String getDatabaseIdentifier() {
+    String getDatabaseId() {
         return databaseIdentifier
     }
 

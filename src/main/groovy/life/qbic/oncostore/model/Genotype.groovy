@@ -39,6 +39,10 @@ class Genotype{
         setMappingQuality(genotype.getExtendedAttribute(VCFConstants.RMS_MAPPING_QUALITY_KEY, -1) as Integer)
     }
 
+    Genotype() {
+
+    }
+
     String getSampleName() {
         return sampleName
     }
