@@ -59,7 +59,7 @@ class SimpleVariant implements SimpleVariantContext{
     String getObservedAllele() {
         //@TODO check that for release!
         // this is a list, usually we would expect one observed allele, but it`s allowed to have multiple
-        context.alternateAlleles.toString()
+        context.alternateAlleles.join(',')
     }
 
     @JsonProperty("consequences")
