@@ -17,13 +17,17 @@ interface SimpleVariantContext {
 
     List<Consequence> getConsequences()
 
+    List<Genotype> getGenotypes()
+
     ReferenceGenome getReferenceGenome()
+
+    String getDatabaseId()
 
     Boolean getIsSomatic()
 
-    List<Object> getAttribute(String key)
-
     String getId()
+
+    VcfInfo getVcfInfo()
 
     void setId(String id)
 

@@ -1,7 +1,7 @@
 CREATE TABLE IF NOT EXISTS "gene" (
   "id" int(11) NOT NULL,
   "symbol" varchar(25) DEFAULT NULL,
-  "name" varchar(45) DEFAULT NULL,
+  "name" varchar(255) DEFAULT NULL,
   "biotype" varchar(45) DEFAULT NULL,
   "chr" varchar(15) DEFAULT NULL,
   "start" bigint(20) DEFAULT NULL,
@@ -25,6 +25,7 @@ CREATE TABLE IF NOT EXISTS "variant" (
   "obs" tinytext NOT NULL,
   "issomatic" tinyint(4) NOT NULL,
   "uuid" varchar(36) NOT NULL,
+  "databaseidentifier" varchar(45) DEFAULT NULL,
   PRIMARY KEY ("id"),
 
 );
@@ -51,7 +52,7 @@ CREATE TABLE IF NOT EXISTS "consequence" (
   "intron" varchar(45) DEFAULT NULL,
   "strand" int(11) DEFAULT NULL,
   "genesymbol" varchar(45) DEFAULT NULL,
-  "featuretype" varchar(128) DEFAULT NULL,
+  "featuretype" varchar(150) DEFAULT NULL,
   "distance" int(11) DEFAULT NULL,
   "warnings" varchar(255) DEFAULT NULL,
   PRIMARY KEY ("id"),
@@ -107,11 +108,11 @@ CREATE TABLE IF NOT EXISTS "variantcaller" (
 
 
 CREATE TABLE IF NOT EXISTS "sample" (
-  "identifier" varchar(15) NOT NULL,
+  "id" int(11) NOT NULL,
+  "identifier" varchar(15) DEFAULT NULL,
   "entity_id" varchar(15) DEFAULT NULL,
   "cancerentity" varchar(45) DEFAULT NULL,
-  PRIMARY KEY ("identifier"),
-  UNIQUE KEY "sample_index" ("identifier"),
+  PRIMARY KEY ("id"),
   UNIQUE KEY "fk_idx2" ("identifier","entity_id","cancerentity"),
   KEY "fk_sample_case_idx" ("entity_id"),
   CONSTRAINT "fk_Sample_Case1" FOREIGN KEY ("entity_id") REFERENCES "entity" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
@@ -127,6 +128,51 @@ CREATE TABLE IF NOT EXISTS "ensembl" (
   UNIQUE KEY "ensembl_index" ("version","date"),
   KEY "fk_ensembl_referencegenome_idx" ("referencegenome_id"),
   CONSTRAINT "fk_Ensembl_ReferenceGenome1" FOREIGN KEY ("referencegenome_id") REFERENCES "referencegenome" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+);
+
+
+CREATE TABLE IF NOT EXISTS "genotype" (
+  "id" int(11) NOT NULL,
+  "genotype" varchar(45) DEFAULT NULL,
+  "readdepth" int(11) DEFAULT NULL,
+  "filter" varchar(45) DEFAULT NULL,
+  "likelihoods" varchar(45) DEFAULT NULL,
+  "genotypelikelihoods" varchar(45) DEFAULT NULL,
+  "genotypelikelihoodshet" varchar(45) DEFAULT NULL,
+  "posteriorprobs" varchar(45) DEFAULT NULL,
+  "genotypequality" int(11) DEFAULT NULL,
+  "haplotypequalities" varchar(45) DEFAULT NULL,
+  "phaseset" varchar(45) DEFAULT NULL,
+  "phasingquality" int(11) DEFAULT NULL,
+  "alternateallelecounts" varchar(45) DEFAULT NULL,
+  "mappingquality" int(11) DEFAULT NULL,
+  PRIMARY KEY ("id"),
+  UNIQUE KEY "genotype_idx" ("genotype","readdepth","filter","likelihoods","genotypelikelihoods","genotypelikelihoodshet","genotypequality","haplotypequalities","phaseset","phasingquality","alternateallelecounts","mappingquality","posteriorprobs")
+);
+
+
+CREATE TABLE IF NOT EXISTS "vcfinfo" (
+  "id" int(11) NOT NULL,
+  "ancestralallele" varchar(45) DEFAULT NULL,
+  "allelecount" varchar(45) DEFAULT NULL,
+  "allelefreq" varchar(45) DEFAULT NULL,
+  "numberalleles" int(11) DEFAULT NULL,
+  "basequality" int(11) DEFAULT NULL,
+  "cigar" varchar(45) DEFAULT NULL,
+  "dbsnp" tinyint(4) DEFAULT NULL,
+  "hapmaptwo" tinyint(4) DEFAULT NULL,
+  "hapmapthree" tinyint(4) DEFAULT NULL,
+  "thousandgenomes" tinyint(4) DEFAULT NULL,
+  "combineddepth" int(11) DEFAULT NULL,
+  "endpos" int(11) DEFAULT NULL,
+  "rms" int(11) DEFAULT NULL,
+  "mqzero" int(11) DEFAULT NULL,
+  "strandbias" int(11) DEFAULT NULL,
+  "numbersamples" int(11) DEFAULT NULL,
+  "somatic" tinyint(4) DEFAULT NULL,
+  "validated" tinyint(4) DEFAULT NULL,
+  PRIMARY KEY ("id"),
+  UNIQUE KEY "info_idx" ("ancestralallele","allelecount","allelefreq","numberalleles","basequality","cigar","dbsnp","hapmaptwo","hapmapthree","thousandgenomes","combineddepth","endpos","rms","mqzero","strandbias","numbersamples","somatic","validated")
 );
 
 
@@ -201,14 +247,37 @@ CREATE TABLE IF NOT EXISTS "ensembl_has_gene" (
 
 
 CREATE TABLE IF NOT EXISTS "sample_has_variant" (
-  "sample_identifier" varchar(15) NOT NULL,
+  "sample_id" int(11) NOT NULL,
   "variant_id" int(11) NOT NULL,
-  PRIMARY KEY ("sample_identifier","variant_id"),
+  "vcfinfo_id" int(11) NOT NULL,
+  "genotype_id" int(11) NOT NULL,
+  PRIMARY KEY ("sample_id","variant_id","vcfinfo_id","genotype_id"),
+  UNIQUE KEY "idx_sample_has_variant" ("sample_id","variant_id","vcfinfo_id","genotype_id"),
   KEY "fk_sample_has_variant_variant_idx" ("variant_id"),
-  KEY "fk_sample_has_variant_sample_idx" ("sample_identifier"),
-  CONSTRAINT "fk_Sample_has_Variant_Sample1" FOREIGN KEY ("sample_identifier") REFERENCES "sample" ("identifier") ON DELETE NO ACTION ON UPDATE NO ACTION,
-  CONSTRAINT "fk_Sample_has_Variant_Variant1" FOREIGN KEY ("variant_id") REFERENCES "variant" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
+  KEY "fk_sample_has_variant_vcfinfo1_idx" ("vcfinfo_id"),
+  KEY "fk_sample_has_variant_genotype1_idx" ("genotype_id"),
+  KEY "fk_sample_has_variant_sample1_idx" ("sample_id"),
+  CONSTRAINT "fk_Sample_has_Variant_Variant1" FOREIGN KEY ("variant_id") REFERENCES "variant" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT "fk_sample_has_variant_genotype1" FOREIGN KEY ("genotype_id") REFERENCES "genotype" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT "fk_sample_has_variant_sample1" FOREIGN KEY ("sample_id") REFERENCES "sample" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION,
+  CONSTRAINT "fk_sample_has_variant_vcfinfo1" FOREIGN KEY ("vcfinfo_id") REFERENCES "vcfinfo" ("id") ON DELETE NO ACTION ON UPDATE NO ACTION
 );
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

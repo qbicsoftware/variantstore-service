@@ -1,16 +1,18 @@
 package life.qbic.oncostore.controller
 
 import groovy.util.logging.Log4j2
-import htsjdk.samtools.util.CloseableIterator
-import htsjdk.variant.variantcontext.VariantContext
-import htsjdk.variant.vcf.VCFIterator
-import htsjdk.variant.vcf.VCFIteratorBuilder
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.annotation.*
+import io.micronaut.http.annotation.Controller
+import io.micronaut.http.annotation.Get
+import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.annotation.Post
 import io.micronaut.http.multipart.CompletedFileUpload
+import io.micronaut.http.uri.UriBuilder
+import io.micronaut.http.uri.UriTemplate
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.web.router.RouteBuilder
 import io.reactivex.Flowable
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
@@ -20,21 +22,12 @@ import life.qbic.oncostore.model.SimpleVariantContext
 import life.qbic.oncostore.model.Variant
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.service.VariantstoreService
-import life.qbic.oncostore.util.AnnotationHandler
 import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
-import life.qbic.oncostore.util.VariantIterator
 import org.reactivestreams.Publisher
 
 import javax.annotation.Nullable
 import javax.inject.Inject
-import javax.validation.constraints.NotNull
-
-import org.apache.commons.io.FileUtils
-
-import java.nio.file.Files
-import java.nio.file.Path
-import java.nio.file.Paths
 
 @Log4j2
 @Controller("/variants")
@@ -107,7 +100,7 @@ class VariantController {
     @Operation(summary = "Add variants to the store",
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
-    @Post(uri = "/upload", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
     HttpResponse storeVariants(String metadata, Publisher<CompletedFileUpload> files) {
         try {
             log.info("Request for storing variant information.")
@@ -121,7 +114,7 @@ class VariantController {
                 }
             })
             service.storeVariantsInStore(metadata, variantsToAdd)
-            return HttpResponse.ok("Upload of variants successful.")
+            return HttpResponse.accepted()
         } catch (IOException exception) {
             log.error(exception)
             return HttpResponse.badRequest("Upload of variants failed.");

@@ -39,10 +39,12 @@ class VariantControllerSpec extends Specification{
         HttpResponse response = client.toBlocking().exchange("/variants", List)
 
         then:
+        println(response)
         response.status == HttpStatus.OK
         response.body().size() == 14
     }
 
+    /*
     @Unroll
     void "should return Http 200 for given variant identifier if available "() {
         when:
@@ -56,6 +58,8 @@ class VariantControllerSpec extends Specification{
         "04e1e278-3f46-45cc-9a50-458f76b73513"   ||   HttpStatus.OK
         "2f8fdbe9-12ec-4b98-9ce7-db2b6dfac780"   ||  HttpStatus.OK
     }
+
+*/
 
     @Unroll
     void "should return Http 404 for given variant identifier if not available "() {
