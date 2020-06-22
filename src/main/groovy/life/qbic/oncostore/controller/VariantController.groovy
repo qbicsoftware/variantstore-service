@@ -9,25 +9,30 @@ import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
 import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.http.uri.UriBuilder
-import io.micronaut.http.uri.UriTemplate
+import io.micronaut.runtime.server.EmbeddedServer
+import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
-import io.micronaut.web.router.RouteBuilder
 import io.reactivex.Flowable
+import io.reactivex.schedulers.Schedulers
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.SimpleVariantContext
+import life.qbic.oncostore.model.Status
+import life.qbic.oncostore.model.UploadStatus
+import life.qbic.oncostore.model.UploadStatusRepository
 import life.qbic.oncostore.model.Variant
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
-import org.reactivestreams.Publisher
 
 import javax.annotation.Nullable
 import javax.inject.Inject
+import javax.inject.Named
+import java.util.concurrent.ExecutorService
 
 @Log4j2
 @Controller("/variants")
@@ -35,18 +40,32 @@ import javax.inject.Inject
 class VariantController {
 
     private final VariantstoreService service
+    private final Map<String, List<UploadStatus>> runningUploads
+
 
     @Inject
     VariantController(VariantstoreService service) {
         this.service = service
+        this.runningUploads = new HashMap<Long, List<UploadStatus>>()
         //this.executor = Executors.newFixedThreadPool(1);
     }
+
+    @Inject
+    @Named(TaskExecutors.IO)
+    ExecutorService ioExecutorService
+
+    @Inject
+    EmbeddedServer server
+
+    @Inject
+    UploadStatusRepository repository
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a variant",
             description = "The variant with the specified identifier is returned.",
             tags = "Variant")
-    @ApiResponse(responseCode = "200", description = "Returns a variant", content = @Content(mediaType = "application/json",
+    @ApiResponse(responseCode = "200", description = "Returns a variant", content = @Content(mediaType =
+            "application/json",
 
             schema = @Schema(implementation = Variant.class)))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
@@ -55,7 +74,7 @@ class VariantController {
         log.info("Resource request for variant: $identifier")
         try {
             List<Variant> variants = service.getVariantForVariantId(identifier)
-            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given identifier.")
+            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given " + "identifier.")
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid variant identifier supplied.")
@@ -69,11 +88,13 @@ class VariantController {
     @Operation(summary = "Request a set of variants",
             description = "The variants matching the supplied properties are returned.",
             tags = "Variant")
-    @ApiResponse(responseCode = "200", description = "Returns a set of variants", content = @Content(mediaType = "application/json",
+    @ApiResponse(responseCode = "200", description = "Returns a set of variants", content = @Content(mediaType =
+            "application/json",
             schema = @Schema(implementation = Variant.class, type = "object")))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @Nullable Boolean withConsequences = false) {
+    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @Nullable
+            Boolean withConsequences = false) {
         log.info("Resource request for variants with filtering options.")
         try {
             List<Variant> variants = service.getVariantsForSpecifiedProperties(args)
@@ -83,57 +104,88 @@ class VariantController {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
                     return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<List<Variant>>
                 }
-                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants)).header("Content-Disposition", "attachment; filename=test.vcf").contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching provided attributes.") as HttpResponse<List<Variant>>
-                //return variants ? HttpResponse.ok("TEST").header("Content-Disposition", "attachment; filename=test.jpg").contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching provided attributes.") as HttpResponse<List<Variant>>
+                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants))
+                        .header ("Content-Disposition", "attachment; filename=test.vcf")
+                        .contentType(MediaType.TEXT_PLAIN_TYPE)
+                        : HttpResponse.notFound("No variants found matching provided attributes.") as HttpResponse<List<Variant>>
 
             }
-            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided attributes.") as HttpResponse<List<Variant>>
+            return variants ? HttpResponse.ok(variants)
+                    : HttpResponse.notFound("No variants found matching provided " + "attributes.") as HttpResponse<List<Variant>>
         }
 
         catch (Exception e) {
             log.error(e)
-            return HttpResponse.serverError("Unexpected error, resource could not be accessed.") as HttpResponse<List<Variant>>
+            return HttpResponse.serverError("Unexpected error, resource could not be accessed.") as
+                    HttpResponse<List<Variant>>
         }
     }
-
 
     @Operation(summary = "Add variants to the store",
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
     @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
-    HttpResponse storeVariants(String metadata, Publisher<CompletedFileUpload> files) {
+    HttpResponse storeVariants(String metadata, Flowable<CompletedFileUpload> files) {
         try {
             log.info("Request for storing variant information.")
+            def statusId = UUID.randomUUID().toString()
+            def status = []
+
+            // build location for response
+            def uri = UriBuilder.of("${server.getURI()}/variants/upload/status/${statusId}").build()
+            runningUploads.put(statusId, status)
 
             List<SimpleVariantContext> variantsToAdd = []
-            Flowable<CompletedFileUpload> flowable = Flowable.fromPublisher(files)
-            flowable.subscribe({ item ->
-                SimpleVCFReader reader = new SimpleVCFReader(item.inputStream)
-                reader.iterator().each {variant ->
-                    variantsToAdd.add(variant)
-                }
-            })
-            service.storeVariantsInStore(metadata, variantsToAdd)
-            return HttpResponse.accepted()
+
+            def newStatus = new UploadStatus()
+            newStatus.setUuid(statusId)
+            newStatus.setFileName("test")
+            newStatus.setFileSize(234234234)
+            newStatus.setStatus(Status.processing as String)
+            repository.save(newStatus)
+            files.subscribeOn(Schedulers.from(ioExecutorService))
+                    .subscribe { file ->
+                        variantsToAdd = []
+                        SimpleVCFReader reader = new SimpleVCFReader(file.inputStream)
+                        reader.iterator().each { variant -> variantsToAdd.add(variant)
+                        }
+
+                        newStatus = new UploadStatus()
+                        newStatus.setUuid(statusId)
+                        newStatus.setFileName(file.filename)
+                        newStatus.setFileSize(file.size)
+                        newStatus.setStatus(Status.processing as String)
+                        repository.save(newStatus)
+                        status.add(newStatus)
+                        //service.storeVariantsInStore(metadata, variantsToAdd)
+                        newStatus.setStatus(Status.finished as String)
+                    }
+
+            return HttpResponse.accepted(uri)
         } catch (IOException exception) {
             log.error(exception)
             return HttpResponse.badRequest("Upload of variants failed.");
         }
     }
-}
-/*
-public class MyRunnable implements Runnable {
-    private final String url;
-    private final OncostoreService service
 
-    MyRunnable(OncostoreService service, String url) {
-        this.service = service;
-        this.url = url;
-    }
+    @Get(uri = "/upload/status/{id}", produces = MediaType.APPLICATION_JSON)
+    @Operation(summary = "Request the variant upload status",
+            description = "The status for the requested variant upload is shown.",
+            tags = "Variant")
+    @ApiResponse(responseCode = "200", description = "Returns a status", content = @Content(mediaType =
+            "application/json"))
+    @ApiResponse(responseCode = "400", description = "Invalid upload identifier supplied")
+    @ApiResponse(responseCode = "404", description = "Upload not found")
+    HttpResponse getUploadStatus(@PathVariable(name = "id") String identifier) {
+        try {
 
-    @Override
-    public void run() {
-        service.storeVariantsInStore(url)
+            return HttpResponse.ok(runningUploads.get(identifier))
+        } catch (IllegalArgumentException e) {
+            log.error(e)
+            return HttpResponse.badRequest("Invalid upload identifier supplied.")
+        } catch (Exception e) {
+            log.error(e)
+            return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
+        }
     }
 }
-*/

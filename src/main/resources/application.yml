@@ -68,6 +68,11 @@ datasources:
     username: ${db-user}
     password: ${db-pwd}
     driverClassName: org.mariadb.jdbc.Driver
+  transactions:
+    url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
+    username: ${db-user}
+    password: ${db-pwd}
+    driverClassName: org.mariadb.jdbc.Driver
 endpoints:
   health:
     enabled: true
@@ -77,6 +82,9 @@ endpoints:
     enabled: true
     sensitive: false
   loggers:
+    enabled: true
+    sensitive: false
+  info:
     enabled: true
     sensitive: false
 userroles:
