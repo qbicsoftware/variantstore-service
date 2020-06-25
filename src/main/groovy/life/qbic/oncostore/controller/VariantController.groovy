@@ -21,8 +21,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.SimpleVariantContext
 import life.qbic.oncostore.model.Status
-import life.qbic.oncostore.model.UploadStatus
-import life.qbic.oncostore.model.UploadStatusRepository
+import life.qbic.oncostore.model.TransactionStatus
+import life.qbic.oncostore.model.TransactionStatusRepository
 import life.qbic.oncostore.model.Variant
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.service.VariantstoreService
@@ -32,6 +32,7 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.inject.Named
+import javax.transaction.Transactional
 import java.util.concurrent.ExecutorService
 
 @Log4j2
@@ -39,16 +40,15 @@ import java.util.concurrent.ExecutorService
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class VariantController {
 
-    private final VariantstoreService service
-    private final Map<String, List<UploadStatus>> runningUploads
 
+    //private final VariantstoreService service
 
     @Inject
-    VariantController(VariantstoreService service) {
-        this.service = service
-        this.runningUploads = new HashMap<Long, List<UploadStatus>>()
-        //this.executor = Executors.newFixedThreadPool(1);
-    }
+    VariantstoreService service
+
+    //VariantController(VariantstoreService service) {
+    //    this.service = service
+    //}
 
     @Inject
     @Named(TaskExecutors.IO)
@@ -58,7 +58,7 @@ class VariantController {
     EmbeddedServer server
 
     @Inject
-    UploadStatusRepository repository
+    TransactionStatusRepository repository
 
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a variant",
@@ -125,42 +125,35 @@ class VariantController {
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
     @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
+    @Transactional
     HttpResponse storeVariants(String metadata, Flowable<CompletedFileUpload> files) {
         try {
             log.info("Request for storing variant information.")
             def statusId = UUID.randomUUID().toString()
-            def status = []
 
             // build location for response
             def uri = UriBuilder.of("${server.getURI()}/variants/upload/status/${statusId}").build()
-            runningUploads.put(statusId, status)
 
             List<SimpleVariantContext> variantsToAdd = []
-
-            def newStatus = new UploadStatus()
-            newStatus.setUuid(statusId)
-            newStatus.setFileName("test")
-            newStatus.setFileSize(234234234)
-            newStatus.setStatus(Status.processing as String)
-            repository.save(newStatus)
             files.subscribeOn(Schedulers.from(ioExecutorService))
                     .subscribe { file ->
                         variantsToAdd = []
                         SimpleVCFReader reader = new SimpleVCFReader(file.inputStream)
-                        reader.iterator().each { variant -> variantsToAdd.add(variant)
+                        reader.iterator().each { variant ->
+                            variantsToAdd.add(variant)
                         }
 
-                        newStatus = new UploadStatus()
-                        newStatus.setUuid(statusId)
-                        newStatus.setFileName(file.filename)
-                        newStatus.setFileSize(file.size)
-                        newStatus.setStatus(Status.processing as String)
-                        repository.save(newStatus)
-                        status.add(newStatus)
-                        //service.storeVariantsInStore(metadata, variantsToAdd)
-                        newStatus.setStatus(Status.finished as String)
-                    }
+                        def newStatus = new TransactionStatus().tap {
+                            uuid = statusId
+                            fileName = file.filename
+                            fileSize = file.size
+                            status = Status.processing
+                        }
+                        def test = repository.save(newStatus)
 
+                        service.storeVariantsInStore(metadata, variantsToAdd)
+                        repository.updateStatus(test.getId(), Status.finished.toString())
+                    }
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {
             log.error(exception)
@@ -178,8 +171,7 @@ class VariantController {
     @ApiResponse(responseCode = "404", description = "Upload not found")
     HttpResponse getUploadStatus(@PathVariable(name = "id") String identifier) {
         try {
-
-            return HttpResponse.ok(runningUploads.get(identifier))
+            return HttpResponse.ok(repository.findAllByUuid(identifier))
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid upload identifier supplied.")

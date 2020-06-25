@@ -73,6 +73,7 @@ datasources:
     username: ${db-user}
     password: ${db-pwd}
     driverClassName: org.mariadb.jdbc.Driver
+    dialect: MYSQL
 endpoints:
   health:
     enabled: true

@@ -19,6 +19,7 @@ import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 import javax.validation.constraints.NotNull
 import java.sql.Connection
 
@@ -298,6 +299,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     }
 
     @Override
+    @Transactional
     void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variants) throws
             VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)

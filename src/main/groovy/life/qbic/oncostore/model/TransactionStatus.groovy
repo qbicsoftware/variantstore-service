@@ -1,24 +1,30 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.model.naming.NamingStrategies
 
-import javax.persistence.*
+import javax.persistence.Column
+import javax.persistence.GeneratedValue
+import javax.persistence.Id
 
-@Entity
-class UploadStatus {
+@MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
+class TransactionStatus{
 
     @Id
     @GeneratedValue
-    Long id
+    Integer id
     String uuid
+    @Column(name = "fileName")
     String fileName
-    Long fileSize
+    @Column(name = "fileSize")
+    Float fileSize
     String status
 
-    UploadStatus() {
+    TransactionStatus() {
     }
 
-    void setId(Long id) {
+    void setId(Integer id) {
         this.id = id
     }
 
@@ -30,7 +36,7 @@ class UploadStatus {
         this.fileName = fileName
     }
 
-    void setFileSize(Long fileSize) {
+    void setFileSize(Float fileSize) {
         this.fileSize = fileSize
     }
 
@@ -38,11 +44,11 @@ class UploadStatus {
         this.status = status
     }
 
-    Long getId() {
+    Integer getId() {
         return id
     }
 
-    @JsonProperty("UUID")
+    @JsonProperty("uuid")
     String getUuid() {
         return uuid
     }
@@ -53,7 +59,7 @@ class UploadStatus {
     }
 
     @JsonProperty("fileSize")
-    long getFileSize() {
+    Float getFileSize() {
         return fileSize
     }
 
