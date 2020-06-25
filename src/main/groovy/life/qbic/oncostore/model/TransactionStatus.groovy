@@ -15,9 +15,7 @@ class TransactionStatus{
     @GeneratedValue
     Integer id
     String uuid
-    @Column(name = "fileName")
     String fileName
-    @Column(name = "fileSize")
     Float fileSize
     String status
 
