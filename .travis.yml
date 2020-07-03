@@ -16,7 +16,7 @@ branches:
   - development
   - "/^[vV]?\\d+\\.\\d+\\.\\d+$/"
 before_install: unset _JAVA_OPTIONS
-script: mvn --quiet -e --activate-profiles !development-build,!release-build --settings
+script: mvn --quiet -X --activate-profiles !development-build,!release-build --settings
   .travis.settings.xml clean cobertura:cobertura package
 after_success:
 - bash <(curl -s https://codecov.io/bash)
