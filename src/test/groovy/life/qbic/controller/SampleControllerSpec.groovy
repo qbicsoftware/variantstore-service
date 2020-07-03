@@ -1,45 +1,42 @@
 package life.qbic.controller
 
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.annotation.Property
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.HttpClient
+import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
 import life.qbic.oncostore.controller.SampleController
-import life.qbic.oncostore.controller.VariantController
-import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.inject.Inject
 
+@MicronautTest(transactional = false)
+class SampleControllerSpec extends TestcontainerSpecification {
 
-@MicronautTest(environments=["test"])
-class SampleControllerSpec extends Specification{
     @Inject
-    ApplicationContext ctx
+    ApplicationContext applicationContext
 
     @Inject
     EmbeddedServer embeddedServer
 
     @Inject
     @Client('/')
-    HttpClient client
+    RxHttpClient httpClient
 
     def "verify SampleController bean exists"() {
         given:
-        ctx
+        applicationContext
 
         expect:
-        ctx.containsBean(SampleController)
+        applicationContext.containsBean(SampleController)
     }
 
     void "should be reachable and return all samples"() {
         when:
-        HttpResponse response = client.toBlocking().exchange("/samples", List)
+        HttpResponse response = httpClient.toBlocking().exchange("/samples", List)
 
         then:
         response.status == HttpStatus.OK
@@ -49,7 +46,7 @@ class SampleControllerSpec extends Specification{
     @Unroll
     void "should return Http 200 for given sample identifier if available "() {
         when:
-        HttpResponse response = client.toBlocking().exchange("/samples/${identifier}")
+        HttpResponse response = httpClient.toBlocking().exchange("/samples/${identifier}")
 
         then:
         response.status == status
@@ -63,7 +60,7 @@ class SampleControllerSpec extends Specification{
     void "should return Http 404 for given samples identifier if not available "() {
         when:
         def identifier = "QTEST001XX"
-        client.toBlocking().exchange("/samples/${identifier}", HttpResponse)
+        httpClient.toBlocking().exchange("/samples/${identifier}", HttpResponse)
 
         then:
         HttpClientResponseException t = thrown(HttpClientResponseException)

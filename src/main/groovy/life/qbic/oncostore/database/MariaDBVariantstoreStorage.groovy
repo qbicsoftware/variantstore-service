@@ -6,10 +6,6 @@ import groovy.sql.Sql
 import groovy.time.TimeCategory
 import groovy.time.TimeDuration
 import groovy.util.logging.Log4j2
-import io.micronaut.context.annotation.Property
-import io.micronaut.context.annotation.Requires
-import io.micronaut.context.event.BeanCreatedEvent
-import io.micronaut.context.event.BeanCreatedEventListener
 import life.qbic.micronaututils.QBiCDataSource
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.MetadataContext
@@ -19,9 +15,7 @@ import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.transaction.Transactional
 import javax.validation.constraints.NotNull
-import java.sql.Connection
 
 @Log4j2
 @Singleton
@@ -299,7 +293,6 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     }
 
     @Override
-    @Transactional
     void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variants) throws
             VariantstoreStorageException {
         this.sql = new Sql(dataSource.connection)
@@ -1156,6 +1149,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
 }
 
 
+/*
 @Requires(env = "test")
 @Requires(property = "database.schema-uri")
 @Singleton
@@ -1172,7 +1166,7 @@ class DatabaseInit implements BeanCreatedEventListener<VariantstoreStorage> {
     VariantstoreStorage onCreated(BeanCreatedEvent<VariantstoreStorage> event) {
         def sqlStatement = new File(schemaUri).text
         def insertStatements = new File(dataUri).text
-        MariaDBVariantstoreStorage storage = event.bean as MariaDBVariantstoreStorage
+        MariaDBVariantstoreStorage storage = event.bean
         setupDatabase(storage.dataSource.connection, sqlStatement)
         setupDatabase(storage.dataSource.connection, insertStatements)
         return event.bean
@@ -1182,4 +1176,8 @@ class DatabaseInit implements BeanCreatedEventListener<VariantstoreStorage> {
         Sql sql = new Sql(connection)
         sql.execute(sqlStatement)
     }
-}
+
+ */
+
+
+

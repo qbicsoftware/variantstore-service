@@ -1,6 +1,7 @@
 package life.qbic.oncostore.controller
 
 import groovy.util.logging.Log4j2
+import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
@@ -25,7 +26,8 @@ class SampleController {
 
     private final VariantstoreService service
 
-    @Inject SampleController(VariantstoreService service) {
+    @Inject
+    SampleController(VariantstoreService service) {
         this.service = service
     }
 

@@ -4,7 +4,6 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.model.naming.NamingStrategies
 
-import javax.persistence.Column
 import javax.persistence.GeneratedValue
 import javax.persistence.Id
 

@@ -5,14 +5,5 @@ micronaut:
         enabled: false
     server:
         port: -1
-database:
-    schema-uri: "src/test/resources/variantstore_test_schema.sql"
-    data-uri: "src/test/resources/variantstore_test_data.sql"
-datasources:
-    default:
-        url: jdbc:h2:mem:variantstore;DATABASE_TO_UPPER=false;MODE=MySQL
-        username: testuser
-        password: ""
-        driverClassName: org.h2.Driver
 userroles:
     config: "src/main/resources/test.yml"

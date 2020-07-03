@@ -4,6 +4,7 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
+import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
@@ -14,30 +15,30 @@ import spock.lang.Unroll
 
 import javax.inject.Inject
 
-@MicronautTest(environments=['test'])
-class CaseControllerSpec extends Specification{
+@MicronautTest(transactional = false)
+class CaseControllerSpec extends TestcontainerSpecification{
     @Inject
-    ApplicationContext ctx
+    ApplicationContext applicationContext
 
     @Inject
     EmbeddedServer embeddedServer
 
     @Inject
     @Client('/')
-    HttpClient client
+    RxHttpClient httpClient
 
     def "verify CaseController bean exists"() {
         given:
-        ctx
+        applicationContext
 
         expect:
-        ctx.containsBean(CaseController)
+        applicationContext.containsBean(CaseController)
     }
 
     @Unroll
     void "should be reachable and return all three cases"() {
         when:
-        HttpResponse response = client.toBlocking().exchange("/cases", List)
+        HttpResponse response = httpClient.toBlocking().exchange("/cases", List)
 
         then:
         response.status == HttpStatus.OK
@@ -47,7 +48,7 @@ class CaseControllerSpec extends Specification{
     @Unroll
     void "should return Http 200 for given case identifier if available "() {
         when:
-        HttpResponse response = client.toBlocking().exchange("/cases/${identifier}")
+        HttpResponse response = httpClient.toBlocking().exchange("/cases/${identifier}")
 
         then:
         response.status == status
@@ -62,7 +63,7 @@ class CaseControllerSpec extends Specification{
     void "should return Http 404 for given case identifier if not available "() {
         when:
         def identifier = "patientX"
-        client.toBlocking().exchange("/cases/${identifier}", HttpResponse)
+        httpClient.toBlocking().exchange("/cases/${identifier}", HttpResponse)
 
         then:
         HttpClientResponseException t = thrown(HttpClientResponseException)
@@ -72,7 +73,7 @@ class CaseControllerSpec extends Specification{
     @Unroll
     void "should return the right number of cases dependent of filtering for chromosome"() {
         when:
-        HttpResponse response = client.toBlocking().exchange("/cases?chromosome=${chr}", List)
+        HttpResponse response = httpClient.toBlocking().exchange("/cases?chromosome=${chr}", List)
 
         then:
         response.status == HttpStatus.OK

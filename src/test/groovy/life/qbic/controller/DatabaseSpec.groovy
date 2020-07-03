@@ -7,8 +7,8 @@ import life.qbic.oncostore.service.VariantstoreStorage
 import spock.lang.Specification
 import javax.inject.Inject
 
-@MicronautTest(environments=['test'])
-class DatabaseSpec extends Specification {
+@MicronautTest(transactional = false)
+class DatabaseSpec extends TestcontainerSpecification {
 
     @Inject
     VariantstoreStorage storage
