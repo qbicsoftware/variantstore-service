@@ -16,7 +16,7 @@ import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 @Property(name= "micronaut.server.port", value = "-1")
-class SwaggerSpec extends Specification{
+class SwaggerSpec extends TestcontainerSpecification{
 
     @Inject
     ApplicationContext applicationContext

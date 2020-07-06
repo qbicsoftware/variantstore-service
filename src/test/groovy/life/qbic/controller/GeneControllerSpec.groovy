@@ -4,7 +4,6 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
-import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
@@ -24,7 +23,7 @@ class GeneControllerSpec extends TestcontainerSpecification{
 
     @Inject
     @Client('/')
-    RxHttpClient httpClient
+    HttpClient httpClient
 
     def "verify GeneController bean exists"() {
         given:

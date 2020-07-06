@@ -17,6 +17,7 @@ import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 class BeaconControllerSpec extends TestcontainerSpecification{
+
     @Inject
     ApplicationContext applicationContext
 
@@ -27,6 +28,7 @@ class BeaconControllerSpec extends TestcontainerSpecification{
     @Client('/')
     RxHttpClient httpClient
 
+
     void "verify BeaconController bean exists"() {
         given:
         applicationContext
@@ -34,6 +36,7 @@ class BeaconControllerSpec extends TestcontainerSpecification{
         expect:
         applicationContext.containsBean(BeaconController)
     }
+
 
     void "beacon should respond that genotype exists"() {
         when:

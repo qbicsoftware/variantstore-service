@@ -1,6 +1,7 @@
 package life.qbic.oncostore.service
 
 import groovy.util.logging.Log4j2
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.EnsemblParser
 import life.qbic.oncostore.parser.MetadataReader
@@ -25,25 +26,25 @@ class VariantstoreInformationCenter implements VariantstoreService{
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Case> getCaseForCaseId(String caseId) {
         return storage.findCaseById(caseId)
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Variant> getVariantForVariantId(String variantId) {
         return storage.findVariantById(variantId)
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Gene> getGeneForGeneId(String geneId, @NotNull ListingArguments args) {
         return storage.findGeneById(geneId, args)
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
                                         String reference, String observed, String assemblyId) {
 
@@ -64,36 +65,37 @@ class VariantstoreInformationCenter implements VariantstoreService{
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Sample> getSampleForSampleId(String sampleId) {
         return storage.findSampleById(sampleId)
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Case> getCasesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findCases(args)
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Sample> getSamplesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findSamples(args)
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findVariants(args)
     }
 
     @Override
-    @Transactional
+    @TransactionalAdvice
     List<Gene> getGenesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findGenes(args)
     }
 
     @Override
+    @TransactionalAdvice
     String getVcfContentForVariants(List<Variant> variants) {
         // order variants by contig and position in order to get valid VCF file
         return VariantExporter.exportVariantsToVCF(variants.sort { it.startPosition })
@@ -104,6 +106,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * @param url path to the VCF file
      */
     @Override
+    @TransactionalAdvice
     void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants) {
         MetadataReader meta = new MetadataReader(metadata)
         def variantsToInsert = []
@@ -124,6 +127,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * @param url path to the GFF3 file
      */
     @Override
+    @TransactionalAdvice
     void storeGeneInformationInStore(EnsemblParser ensembl) {
         log.info("Storing provided gene information in store")
         storage.storeGenesWithMetadata(ensembl.version, ensembl.date, ensembl.referenceGenome, ensembl.genes)

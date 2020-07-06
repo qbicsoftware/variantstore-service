@@ -16,8 +16,9 @@ import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 class VariantControllerSpec extends TestcontainerSpecification{
+
     @Inject
-    ApplicationContext applicationContext
+    private ApplicationContext applicationContext
 
     @Inject
     EmbeddedServer embeddedServer

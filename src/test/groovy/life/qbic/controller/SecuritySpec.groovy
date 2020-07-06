@@ -7,6 +7,7 @@ import io.micronaut.context.ApplicationContext
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
+import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
 import spock.lang.Specification
 
@@ -16,13 +17,16 @@ import javax.inject.Inject
 @Property(name= "micronaut.server.port", value = "-1")
 @Property(name= "micronaut.security.enabled", value = "true")
 @Property(name= "micronaut.security.oauth2.enabled", value = "false")
-class SecuritySpec extends Specification{
+class SecuritySpec extends TestcontainerSpecification{
 
     @Inject
     ApplicationContext applicationContext
 
     @Inject
-    @Client("/")
+    EmbeddedServer embeddedServer
+
+    @Inject
+    @Client('/')
     RxHttpClient httpClient
 
     def "/cases is secured"() {

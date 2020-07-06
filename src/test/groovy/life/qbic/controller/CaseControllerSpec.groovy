@@ -3,20 +3,19 @@ package life.qbic.controller
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
 import life.qbic.oncostore.controller.CaseController
-import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 class CaseControllerSpec extends TestcontainerSpecification{
+
     @Inject
     ApplicationContext applicationContext
 

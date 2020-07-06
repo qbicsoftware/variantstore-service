@@ -1,9 +1,0 @@
-micronaut:
-    application:
-        name: variantstore
-    security:
-        enabled: false
-    server:
-        port: -1
-userroles:
-    config: "src/main/resources/test.yml"
