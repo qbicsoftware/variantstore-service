@@ -9,7 +9,6 @@ import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
-import spock.lang.Specification
 
 import javax.inject.Inject
 
@@ -17,7 +16,7 @@ import javax.inject.Inject
 @Property(name= "micronaut.server.port", value = "-1")
 @Property(name= "micronaut.security.enabled", value = "true")
 @Property(name= "micronaut.security.oauth2.enabled", value = "false")
-class SecuritySpec extends TestcontainerSpecification{
+class SecuritySpec extends TestContainerSpecification{
 
     @Inject
     ApplicationContext applicationContext
@@ -29,7 +28,7 @@ class SecuritySpec extends TestcontainerSpecification{
     @Client('/')
     RxHttpClient httpClient
 
-    def "/cases is secured"() {
+    def "cases is secured"() {
         when:
         httpClient.toBlocking().exchange(HttpRequest.GET("/cases"))
 
@@ -38,7 +37,7 @@ class SecuritySpec extends TestcontainerSpecification{
         e.response.status() == HttpStatus.UNAUTHORIZED
     }
 
-    def "/genes is secured"() {
+    def "genes is secured"() {
         when:
         httpClient.toBlocking().exchange(HttpRequest.GET("/genes"))
 
@@ -47,7 +46,7 @@ class SecuritySpec extends TestcontainerSpecification{
         e.response.status() == HttpStatus.UNAUTHORIZED
     }
 
-    def "/samples is secured"() {
+    def "samples is secured"() {
         when:
         httpClient.toBlocking().exchange(HttpRequest.GET("/samples"))
 
@@ -56,7 +55,7 @@ class SecuritySpec extends TestcontainerSpecification{
         e.response.status() == HttpStatus.UNAUTHORIZED
     }
 
-    def "/variants is secured"() {
+    def "variants is secured"() {
         when:
         httpClient.toBlocking().exchange(HttpRequest.GET("/variants"))
 

@@ -3,7 +3,6 @@ package life.qbic.controller
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
@@ -15,7 +14,7 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-class VariantControllerSpec extends TestcontainerSpecification{
+class VariantControllerSpec extends TestContainerSpecification{
 
     @Inject
     private ApplicationContext applicationContext

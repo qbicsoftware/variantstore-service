@@ -14,7 +14,7 @@ import spock.lang.Unroll
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-class CaseControllerSpec extends TestcontainerSpecification{
+class CaseControllerSpec extends TestContainerSpecification{
 
     @Inject
     ApplicationContext applicationContext

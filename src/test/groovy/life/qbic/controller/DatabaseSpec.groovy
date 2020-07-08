@@ -2,16 +2,13 @@ package life.qbic.controller
 
 import groovy.sql.Sql
 import io.micronaut.test.annotation.MicronautTest
-import io.micronaut.transaction.TransactionDefinition
 import life.qbic.micronaututils.QBiCDataSource
 import life.qbic.oncostore.service.VariantstoreStorage
-import io.micronaut.transaction.annotation.TransactionalAdvice
 
 import javax.inject.Inject
-import javax.transaction.Transactional
 
 @MicronautTest(transactional = false)
-class DatabaseSpec extends TestcontainerSpecification {
+class DatabaseSpec extends TestContainerSpecification {
 
     @Inject
     VariantstoreStorage storage
@@ -19,12 +16,12 @@ class DatabaseSpec extends TestcontainerSpecification {
     def "confirm that storage connection is alive"() {
         when:
         QBiCDataSource dataSource = storage.dataSource
-        println(dataSource)
 
         then:
         dataSource
         dataSource.connection
     }
+
 
 /*
     def "confirm that database was setup"() {
@@ -48,6 +45,6 @@ class DatabaseSpec extends TestcontainerSpecification {
         then:
         result.size() == 14
     }
-     */
+*/
 }
 

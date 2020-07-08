@@ -6,7 +6,7 @@ import io.micronaut.test.annotation.MicronautTest
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-class PropertyValueSpec  extends TestcontainerSpecification{
+class PropertyValueSpec extends TestContainerSpecification{
     @Inject
     ApplicationContext applicationContext
 

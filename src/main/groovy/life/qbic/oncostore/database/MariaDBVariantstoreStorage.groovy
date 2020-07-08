@@ -6,7 +6,6 @@ import groovy.sql.Sql
 import groovy.time.TimeCategory
 import groovy.time.TimeDuration
 import groovy.util.logging.Log4j2
-import io.micronaut.transaction.annotation.TransactionalAdvice
 import life.qbic.micronaututils.QBiCDataSource
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.MetadataContext
@@ -16,7 +15,6 @@ import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.transaction.Transactional
 import javax.validation.constraints.NotNull
 
 @Log4j2

@@ -4,7 +4,7 @@ import io.micronaut.test.support.TestPropertyProvider
 import org.testcontainers.containers.MariaDBContainer
 import spock.lang.Specification
 
-abstract class TestcontainerSpecification extends Specification implements TestPropertyProvider{
+abstract class TestContainerSpecification extends Specification implements TestPropertyProvider{
 
     static MariaDBContainer<?> mariaDBContainer = new MariaDBContainer<>("mariadb:10.4")
             .withInitScript('variantstore_test_db.sql')

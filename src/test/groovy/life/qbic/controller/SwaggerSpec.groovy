@@ -8,15 +8,13 @@ import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.runtime.server.EmbeddedServer
-import io.micronaut.http.client.HttpClient
 import io.micronaut.test.annotation.MicronautTest
-import spock.lang.*
 
 import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 @Property(name= "micronaut.server.port", value = "-1")
-class SwaggerSpec extends TestcontainerSpecification{
+class SwaggerSpec extends TestContainerSpecification{
 
     @Inject
     ApplicationContext applicationContext
