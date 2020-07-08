@@ -65,14 +65,14 @@
     </dependencyManagement>
     <dependencies>
         <dependency>
+        <groupId>org.codehaus.groovy</groupId>
+        <artifactId>groovy</artifactId>
+        </dependency>
+        <dependency>
             <groupId>io.micronaut</groupId>
             <artifactId>micronaut-inject</artifactId>
             <version>${micronaut.version}</version>
             <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>org.codehaus.groovy</groupId>
-            <artifactId>groovy</artifactId>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
