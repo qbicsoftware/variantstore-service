@@ -3,43 +3,44 @@ package life.qbic.controller
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.HttpClient
+import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
 import life.qbic.oncostore.controller.BeaconController
 import life.qbic.oncostore.model.BeaconAlleleResponse
-import spock.lang.Specification
 
 import javax.inject.Inject
 
-@MicronautTest(environments=['test'])
-class BeaconControllerSpec extends Specification{
+@MicronautTest(transactional = false)
+class BeaconControllerSpec extends TestContainerSpecification{
+
     @Inject
-    ApplicationContext ctx
+    ApplicationContext applicationContext
 
     @Inject
     EmbeddedServer embeddedServer
 
     @Inject
     @Client('/')
-    HttpClient client
+    RxHttpClient httpClient
+
 
     void "verify BeaconController bean exists"() {
         given:
-        ctx
+        applicationContext
 
         expect:
-        ctx.containsBean(BeaconController)
+        applicationContext.containsBean(BeaconController)
     }
+
 
     void "beacon should respond that genotype exists"() {
         when:
         def chr = 12
         def uri = "/beacon/query?assemblyId=GRCh37&chromosome=${chr}&startPosition=46601390&reference=C&observed=G"
-        HttpResponse response = client.toBlocking().exchange(uri, BeaconAlleleResponse)
-        println(response.body())
+        HttpResponse response = httpClient.toBlocking().exchange(uri, BeaconAlleleResponse)
 
         then:
         response.status == HttpStatus.OK
@@ -50,7 +51,7 @@ class BeaconControllerSpec extends Specification{
         when:
         def chr = 12
         def uri = "/beacon/query?assemblyId=GRCh37&chromosome=${chr}&startPosition=46601391&reference=C&observed=G"
-        HttpResponse response = client.toBlocking().exchange(uri, BeaconAlleleResponse)
+        HttpResponse response = httpClient.toBlocking().exchange(uri, BeaconAlleleResponse)
 
         then:
         response.status == HttpStatus.OK
@@ -61,7 +62,7 @@ class BeaconControllerSpec extends Specification{
         when:
         def chr = 12
         def uri = "/beacon/query?chromosome=${chr}&startPosition=46601391&reference=C&observed=G"
-        HttpResponse response = client.toBlocking().exchange(uri, BeaconAlleleResponse)
+        HttpResponse response = httpClient.toBlocking().exchange(uri, BeaconAlleleResponse)
 
         then:
         HttpClientResponseException t = thrown(HttpClientResponseException)

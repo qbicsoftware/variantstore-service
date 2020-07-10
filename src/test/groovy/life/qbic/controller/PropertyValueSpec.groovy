@@ -1,17 +1,22 @@
 package life.qbic.controller
 
 import io.micronaut.context.ApplicationContext
-import spock.lang.AutoCleanup
-import spock.lang.Shared
-import spock.lang.Specification
+import io.micronaut.test.annotation.MicronautTest
 
-class PropertyValueSpec  extends Specification{
-    @AutoCleanup
-    @Shared
-    ApplicationContext ctx =  ApplicationContext.run()
+import javax.inject.Inject
+
+@MicronautTest(transactional = false)
+class PropertyValueSpec extends TestContainerSpecification{
+    @Inject
+    ApplicationContext applicationContext
 
     def "application name is variantstore"() {
         expect:
-        ctx.getProperty('micronaut.application.name', String).get() == 'variantstore'
+        applicationContext.getProperty('micronaut.application.name', String).get() == 'variantstore'
+    }
+
+    def "test database user is root"() {
+        expect:
+        applicationContext.getProperty('datasources.default.username', String).get() == 'root'
     }
 }

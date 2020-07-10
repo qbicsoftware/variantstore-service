@@ -1,7 +1,6 @@
 package life.qbic.controller
 
 import io.micronaut.context.ApplicationContext
-import io.micronaut.context.annotation.Property
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.HttpClient
@@ -10,35 +9,33 @@ import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
 import life.qbic.oncostore.controller.GeneController
-import life.qbic.oncostore.controller.VariantController
-import spock.lang.Specification
 import spock.lang.Unroll
 
 import javax.inject.Inject
 
-@MicronautTest
-class GeneControllerSpec extends Specification{
+@MicronautTest(transactional = false)
+class GeneControllerSpec extends TestContainerSpecification{
     @Inject
-    ApplicationContext ctx
+    ApplicationContext applicationContext
 
     @Inject
     EmbeddedServer embeddedServer
 
     @Inject
     @Client('/')
-    HttpClient client
+    HttpClient httpClient
 
     def "verify GeneController bean exists"() {
         given:
-        ctx
+        applicationContext
 
         expect:
-        ctx.containsBean(GeneController)
+        applicationContext.containsBean(GeneController)
     }
 
     void "should be reachable and return all genes"() {
         when:
-        HttpResponse response = client.toBlocking().exchange("/genes", List)
+        HttpResponse response = httpClient.toBlocking().exchange("/genes", List)
 
         then:
         response.status == HttpStatus.OK
@@ -48,7 +45,7 @@ class GeneControllerSpec extends Specification{
     @Unroll
     void "should return Http 200 for given gene identifier if available "() {
         when:
-        HttpResponse response = client.toBlocking().exchange("/genes/${identifier}")
+        HttpResponse response = httpClient.toBlocking().exchange("/genes/${identifier}")
 
         then:
         response.status == status
@@ -63,7 +60,7 @@ class GeneControllerSpec extends Specification{
     void "should return Http 404 for given gene identifier if not available "() {
         when:
         def identifier = "ENSG00000150499"
-        client.toBlocking().exchange("/genes/${identifier}", HttpResponse)
+        httpClient.toBlocking().exchange("/genes/${identifier}", HttpResponse)
 
         then:
         HttpClientResponseException t = thrown(HttpClientResponseException)

@@ -10,6 +10,7 @@ import life.qbic.oncostore.util.VariantExporter
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import javax.transaction.Transactional
 import javax.validation.constraints.NotNull
 
 @Log4j2
@@ -24,21 +25,25 @@ class VariantstoreInformationCenter implements VariantstoreService{
     }
 
     @Override
+    @Transactional
     List<Case> getCaseForCaseId(String caseId) {
         return storage.findCaseById(caseId)
     }
 
     @Override
+    @Transactional
     List<Variant> getVariantForVariantId(String variantId) {
         return storage.findVariantById(variantId)
     }
 
     @Override
+    @Transactional
     List<Gene> getGeneForGeneId(String geneId, @NotNull ListingArguments args) {
         return storage.findGeneById(geneId, args)
     }
 
     @Override
+    @Transactional
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
                                         String reference, String observed, String assemblyId) {
 
@@ -59,31 +64,37 @@ class VariantstoreInformationCenter implements VariantstoreService{
     }
 
     @Override
+    @Transactional
     List<Sample> getSampleForSampleId(String sampleId) {
         return storage.findSampleById(sampleId)
     }
 
     @Override
+    @Transactional
     List<Case> getCasesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findCases(args)
     }
 
     @Override
+    @Transactional
     List<Sample> getSamplesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findSamples(args)
     }
 
     @Override
+    @Transactional
     List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findVariants(args)
     }
 
     @Override
+    @Transactional
     List<Gene> getGenesForSpecifiedProperties(@NotNull ListingArguments args) {
         return storage.findGenes(args)
     }
 
     @Override
+    @Transactional
     String getVcfContentForVariants(List<Variant> variants) {
         // order variants by contig and position in order to get valid VCF file
         return VariantExporter.exportVariantsToVCF(variants.sort { it.startPosition })
@@ -94,6 +105,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * @param url path to the VCF file
      */
     @Override
+    @Transactional
     void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants) {
         MetadataReader meta = new MetadataReader(metadata)
         def variantsToInsert = []
@@ -114,6 +126,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * @param url path to the GFF3 file
      */
     @Override
+    @Transactional
     void storeGeneInformationInStore(EnsemblParser ensembl) {
         log.info("Storing provided gene information in store")
         storage.storeGenesWithMetadata(ensembl.version, ensembl.date, ensembl.referenceGenome, ensembl.genes)

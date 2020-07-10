@@ -32,7 +32,6 @@ import life.qbic.oncostore.util.ListingArguments
 import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.inject.Named
-import javax.transaction.Transactional
 import java.util.concurrent.ExecutorService
 
 @Log4j2
@@ -40,15 +39,12 @@ import java.util.concurrent.ExecutorService
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class VariantController {
 
-
-    //private final VariantstoreService service
+    private final VariantstoreService service
 
     @Inject
-    VariantstoreService service
-
-    //VariantController(VariantstoreService service) {
-    //    this.service = service
-    //}
+    VariantController(VariantstoreService service) {
+        this.service = service
+    }
 
     @Inject
     @Named(TaskExecutors.IO)
@@ -125,7 +121,6 @@ class VariantController {
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
     @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
-    @Transactional
     HttpResponse storeVariants(String metadata, Flowable<CompletedFileUpload> files) {
         try {
             log.info("Request for storing variant information.")
