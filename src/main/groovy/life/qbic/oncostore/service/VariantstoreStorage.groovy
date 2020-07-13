@@ -33,7 +33,7 @@ interface VariantstoreStorage {
 
     List<Sample> findSamples(@NotNull ListingArguments args)
 
-    List<Variant> findVariants(@NotNull ListingArguments args)
+    List<Variant> findVariants(@NotNull ListingArguments args, Boolean withConsequences)
 
     List<Gene> findGenes(@NotNull ListingArguments args)
 

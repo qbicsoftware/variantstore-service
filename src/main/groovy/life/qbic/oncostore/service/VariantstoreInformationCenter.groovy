@@ -81,10 +81,11 @@ class VariantstoreInformationCenter implements VariantstoreService{
         return storage.findSamples(args)
     }
 
+
     @Override
     @Transactional
-    List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args) {
-        return storage.findVariants(args)
+    List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args, Boolean withConsequences) {
+        return storage.findVariants(args, withConsequences)
     }
 
     @Override

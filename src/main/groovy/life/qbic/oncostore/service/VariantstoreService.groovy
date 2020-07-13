@@ -21,7 +21,7 @@ interface VariantstoreService {
 
     List<Sample> getSamplesForSpecifiedProperties(ListingArguments args)
 
-    List<Variant> getVariantsForSpecifiedProperties(ListingArguments args)
+    List<Variant> getVariantsForSpecifiedProperties(ListingArguments args, Boolean withConsequences)
 
     List<Gene> getGenesForSpecifiedProperties(ListingArguments args)
 

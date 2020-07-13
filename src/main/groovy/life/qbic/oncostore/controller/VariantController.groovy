@@ -7,6 +7,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
+import io.micronaut.http.annotation.QueryValue
 import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.http.uri.UriBuilder
 import io.micronaut.runtime.server.EmbeddedServer
@@ -89,11 +90,13 @@ class VariantController {
             schema = @Schema(implementation = Variant.class, type = "object")))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @Nullable
-            Boolean withConsequences = false) {
+    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @QueryValue(defaultValue = "false") @Nullable
+            Boolean withConsequences) {
         log.info("Resource request for variants with filtering options.")
         try {
-            List<Variant> variants = service.getVariantsForSpecifiedProperties(args)
+            println(withConsequences)
+            println(withConsequences.class)
+            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, withConsequences)
             //@TODO provide option to get output in VCF format
             //@TODO add parameter to specify whether consequences should be included
             if (format) {

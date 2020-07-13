@@ -4,7 +4,6 @@ import life.qbic.oncostore.model.Variant
 
 class VariantExporter {
 
-    //TODO keep different version?
     private static Map<String, String> vcfHeaders = [:]
 
     /**
