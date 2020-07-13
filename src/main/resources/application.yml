@@ -23,15 +23,15 @@ micronaut:
   security:
     enabled: ${variantstore-security-enabled:true}
     intercept-url-map:
-      - pattern: /swagger/*
+      - pattern: /swagger/**
         http-method: GET
         access:
           - isAnonymous()
-      - pattern: /swagger-ui/*
+      - pattern: /swagger-ui/**
         http-method: GET
         access:
           - isAnonymous()
-      - pattern: /rapidoc/*
+      - pattern: /rapidoc/**
         http-method: GET
         access:
           - isAnonymous()
