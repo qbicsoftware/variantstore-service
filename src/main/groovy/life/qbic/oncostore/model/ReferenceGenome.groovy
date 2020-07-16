@@ -29,4 +29,9 @@ class ReferenceGenome {
     String getVersion() {
         return version
     }
+
+    @Override
+    String toString() {
+        return "${build}.${version}"
+    }
 }

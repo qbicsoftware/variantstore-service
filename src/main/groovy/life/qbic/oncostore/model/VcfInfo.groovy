@@ -2,6 +2,7 @@ package life.qbic.oncostore.model
 
 import htsjdk.variant.variantcontext.CommonInfo
 import htsjdk.variant.vcf.VCFConstants
+import life.qbic.oncostore.util.VcfConstants
 
 class VcfInfo {
 
@@ -9,7 +10,7 @@ class VcfInfo {
     // http://samtools.github.io/hts-specs/ (VCF 4.1 and 4.2)
     String ancestralAllele
     List<Integer> alleleCount
-    List<Float> alleleFreq
+    List<Float> alleleFrequency
     Integer numberAlleles
     Integer baseQuality // RMS base quality
     String cigar
@@ -26,11 +27,13 @@ class VcfInfo {
     Boolean somatic
     Boolean validated
 
+    VcfInfo() {}
+
     VcfInfo(CommonInfo commonInfo) {
         //TODO check if that isn`t AA (amino acid) annotation?
         this.ancestralAllele = commonInfo.getAttributeAsString(VCFConstants.ANCESTRAL_ALLELE_KEY,"")
         this.alleleCount = commonInfo.getAttributeAsIntList(VCFConstants.ALLELE_COUNT_KEY, -1)
-        this.alleleFreq = commonInfo.getAttribute(VCFConstants.ALLELE_FREQUENCY_KEY) as List<Float>
+        this.alleleFrequency = commonInfo.getAttribute(VCFConstants.ALLELE_FREQUENCY_KEY) as List<Float>
         this.numberAlleles = commonInfo.getAttributeAsInt(VCFConstants.ALLELE_NUMBER_KEY, -1)
         this.baseQuality = commonInfo.getAttributeAsInt(VCFConstants.RMS_BASE_QUALITY_KEY, -1)
         this.cigar = commonInfo.getAttributeAsString(VCFConstants.CIGAR_KEY, "")
@@ -56,8 +59,8 @@ class VcfInfo {
         return alleleCount
     }
 
-    float getAlleleFreq() {
-        return alleleFreq
+    float getAlleleFrequency() {
+        return alleleFrequency
     }
 
     Integer getNumberAlleles() {
@@ -119,4 +122,16 @@ class VcfInfo {
     Boolean getValidated() {
         return validated
     }
+
+    String toVcfFormat() {
+        def vcfInfoString = new StringJoiner(VcfConstants.PROPERTY_DELIMITER)
+        this.properties.each { it ->
+            if (it.key != "class" & it.value != null) {
+                def name = it.key.toString().toUpperCase() as VcfConstants.VcfInfoAbbreviations
+                vcfInfoString.add("${name.getTag()}${VcfConstants.PROPERTY_DEFINITION_STRING}${it.value.toString()}")
+            }
+        }
+        return vcfInfoString
+    }
+
 }

@@ -8,13 +8,15 @@ import life.qbic.oncostore.model.Sample
 
 class MetadataContext {
 
-    final boolean isSomatic
-    final VariantCaller variantCalling
-    final Annotation variantAnnotation
-    final ReferenceGenome referenceGenome
-    final Case patient
-    final Sample sample
-    final List<String> vcfFiles
+    boolean isSomatic
+    VariantCaller variantCalling
+    Annotation variantAnnotation
+    ReferenceGenome referenceGenome
+    Case patient
+    Sample sample
+    List<String> vcfFiles
+
+    MetadataContext() {}
 
     MetadataContext(boolean isSomatic, VariantCaller variantCalling, Annotation variantAnnotation, ReferenceGenome referenceGenome, Case patient, Sample sample, List<String> vcfFiles) {
         this.isSomatic = isSomatic

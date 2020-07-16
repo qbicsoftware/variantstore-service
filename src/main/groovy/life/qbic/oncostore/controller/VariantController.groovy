@@ -71,7 +71,8 @@ class VariantController {
         log.info("Resource request for variant: $identifier")
         try {
             List<Variant> variants = service.getVariantForVariantId(identifier)
-            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given " + "identifier.")
+            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given "
+                    + "identifier.")
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid variant identifier supplied.")
@@ -90,27 +91,28 @@ class VariantController {
             schema = @Schema(implementation = Variant.class, type = "object")))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @QueryValue(defaultValue = "false") @Nullable
-            Boolean withConsequences) {
+    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @QueryValue
+            (defaultValue = "false") @Nullable
+            Boolean withConsequences, @QueryValue(defaultValue = "false") @Nullable
+                                                    Boolean withGenotypes) {
         log.info("Resource request for variants with filtering options.")
         try {
-            println(withConsequences)
-            println(withConsequences.class)
-            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, withConsequences)
-            //@TODO provide option to get output in VCF format
-            //@TODO add parameter to specify whether consequences should be included
+            //@TODO add option to get genotype information in exported VCF file
             if (format) {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
                     return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<List<Variant>>
                 }
-                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants))
-                        .header ("Content-Disposition", "attachment; filename=test.vcf")
-                        .contentType(MediaType.TEXT_PLAIN_TYPE)
-                        : HttpResponse.notFound("No variants found matching provided attributes.") as HttpResponse<List<Variant>>
+                def (variants, metadata) = service.getVariantsAndMetadataForExport(args, withConsequences, withGenotypes)
+                def time = new Date().format("yyyy-MM-dd_HH-mm")
+
+                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences, metadata))
+                        .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
+                        .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching "
+                        + "provided attributes.") as HttpResponse<List<Variant>>
 
             }
-            return variants ? HttpResponse.ok(variants)
-                    : HttpResponse.notFound("No variants found matching provided " + "attributes.") as HttpResponse<List<Variant>>
+            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, withConsequences)
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "attributes.") as HttpResponse<List<Variant>>
         }
 
         catch (Exception e) {
@@ -137,8 +139,7 @@ class VariantController {
                     .subscribe { file ->
                         variantsToAdd = []
                         SimpleVCFReader reader = new SimpleVCFReader(file.inputStream)
-                        reader.iterator().each { variant ->
-                            variantsToAdd.add(variant)
+                        reader.iterator().each { variant -> variantsToAdd.add(variant)
                         }
 
                         def newStatus = new TransactionStatus().tap {

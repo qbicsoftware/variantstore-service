@@ -3,6 +3,7 @@ package life.qbic.oncostore.service
 import groovy.util.logging.Log4j2
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.EnsemblParser
+import life.qbic.oncostore.parser.MetadataContext
 import life.qbic.oncostore.parser.MetadataReader
 import life.qbic.oncostore.util.AnnotationHandler
 import life.qbic.oncostore.util.ListingArguments
@@ -85,7 +86,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
     @Override
     @Transactional
     List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args, Boolean withConsequences) {
-        return storage.findVariants(args, withConsequences)
+        return storage.findVariants(args, withConsequences, false, false)
     }
 
     @Override
@@ -96,9 +97,25 @@ class VariantstoreInformationCenter implements VariantstoreService{
 
     @Override
     @Transactional
-    String getVcfContentForVariants(List<Variant> variants) {
-        // order variants by contig and position in order to get valid VCF file
-        return VariantExporter.exportVariantsToVCF(variants.sort { it.startPosition })
+    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, MetadataContext metadata) {
+        // order variants by position in order to get valid VCF file
+        return VariantExporter.exportVariantsToVCF(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
+                .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
+                .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, metadata) }
+
+    @Override
+    @Transactional
+    List getVariantsAndMetadataForExport(ListingArguments args, Boolean withConsequences, Boolean withGenotypes) {
+        def variants = storage.findVariants(args, withConsequences, true, withGenotypes)
+        def metadata = new MetadataContext()
+        def referenceGenome = storage.findReferenceGenomeByVariant(variants.get(0))
+        metadata.referenceGenome = referenceGenome
+
+        if (withConsequences) {
+            def annotationSoftware = storage.findAnnotationSoftwareByConsequence(variants.get(0).consequences.get(0))
+            metadata.variantAnnotation = annotationSoftware
+        }
+        return [variants, metadata]
     }
 
     /**

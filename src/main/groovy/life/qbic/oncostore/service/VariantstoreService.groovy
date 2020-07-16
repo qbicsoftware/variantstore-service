@@ -2,6 +2,7 @@ package life.qbic.oncostore.service
 
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.EnsemblParser
+import life.qbic.oncostore.parser.MetadataContext
 import life.qbic.oncostore.util.ListingArguments
 
 import javax.inject.Singleton
@@ -23,12 +24,14 @@ interface VariantstoreService {
 
     List<Variant> getVariantsForSpecifiedProperties(ListingArguments args, Boolean withConsequences)
 
+    List getVariantsAndMetadataForExport(ListingArguments args, Boolean withConsequences, Boolean withGenotypes)
+
     List<Gene> getGenesForSpecifiedProperties(ListingArguments args)
 
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
                                                  String reference, String observed, String assemblyId)
 
-    String getVcfContentForVariants(List<Variant> variants)
+    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, MetadataContext metadata)
 
     void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants)
 
