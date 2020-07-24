@@ -34,7 +34,8 @@ interface VariantstoreStorage {
 
     List<Sample> findSamples(@NotNull ListingArguments args)
 
-    List<Variant> findVariants(@NotNull ListingArguments args, Boolean withConsequences, Boolean withVcfInfo, Boolean withGenotypes)
+    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
 
     Annotation findAnnotationSoftwareByConsequence(Consequence consequence)
 

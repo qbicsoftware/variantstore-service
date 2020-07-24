@@ -3,11 +3,7 @@ package life.qbic.oncostore.controller
 import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.PathVariable
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.*
 import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.http.uri.UriBuilder
 import io.micronaut.runtime.server.EmbeddedServer
@@ -20,11 +16,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import life.qbic.oncostore.model.SimpleVariantContext
-import life.qbic.oncostore.model.Status
-import life.qbic.oncostore.model.TransactionStatus
-import life.qbic.oncostore.model.TransactionStatusRepository
-import life.qbic.oncostore.model.Variant
+import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.IdValidator
@@ -92,9 +84,9 @@ class VariantController {
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
     HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @QueryValue
-            (defaultValue = "false") @Nullable
-            Boolean withConsequences, @QueryValue(defaultValue = "false") @Nullable
-                                                    Boolean withGenotypes) {
+            (defaultValue = "GRCh37") @Nullable String referenceGenome, @QueryValue(defaultValue = "false") @Nullable
+            Boolean withConsequences, @QueryValue(defaultValue = "snpeff") @Nullable String annotationSoftware,
+                                            @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes) {
         log.info("Resource request for variants with filtering options.")
         try {
             //@TODO add option to get genotype information in exported VCF file
@@ -102,17 +94,20 @@ class VariantController {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
                     return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<List<Variant>>
                 }
-                def (variants, metadata) = service.getVariantsAndMetadataForExport(args, withConsequences, withGenotypes)
+                def variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
+                        withConsequences, annotationSoftware, true, withGenotypes)
                 def time = new Date().format("yyyy-MM-dd_HH-mm")
 
-                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences, metadata))
+                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences,
+                        referenceGenome, annotationSoftware))
                         .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
                         .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching "
                         + "provided attributes.") as HttpResponse<List<Variant>>
-
             }
-            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, withConsequences)
-            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "attributes.") as HttpResponse<List<Variant>>
+
+            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
+                    withConsequences, annotationSoftware, false, withGenotypes)
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "attributes.") as HttpResponse<List<Variant>>
         }
 
         catch (Exception e) {

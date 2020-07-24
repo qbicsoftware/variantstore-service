@@ -82,13 +82,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
         return storage.findSamples(args)
     }
 
-
-    @Override
-    @Transactional
-    List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args, Boolean withConsequences) {
-        return storage.findVariants(args, withConsequences, false, false)
-    }
-
     @Override
     @Transactional
     List<Gene> getGenesForSpecifiedProperties(@NotNull ListingArguments args) {
@@ -97,25 +90,18 @@ class VariantstoreInformationCenter implements VariantstoreService{
 
     @Override
     @Transactional
-    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, MetadataContext metadata) {
+    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome, String annotationSoftware) {
         // order variants by position in order to get valid VCF file
         return VariantExporter.exportVariantsToVCF(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
                 .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
-                .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, metadata) }
+                .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, referenceGenome, annotationSoftware) }
 
     @Override
     @Transactional
-    List getVariantsAndMetadataForExport(ListingArguments args, Boolean withConsequences, Boolean withGenotypes) {
-        def variants = storage.findVariants(args, withConsequences, true, withGenotypes)
-        def metadata = new MetadataContext()
-        def referenceGenome = storage.findReferenceGenomeByVariant(variants.get(0))
-        metadata.referenceGenome = referenceGenome
-
-        if (withConsequences) {
-            def annotationSoftware = storage.findAnnotationSoftwareByConsequence(variants.get(0).consequences.get(0))
-            metadata.variantAnnotation = annotationSoftware
-        }
-        return [variants, metadata]
+    List<Variant> getVariantsForSpecifiedProperties(ListingArguments args, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
+        def variants = storage.findVariants(args, referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes)
+        return variants
     }
 
     /**

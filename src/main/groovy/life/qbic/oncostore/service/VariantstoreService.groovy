@@ -22,16 +22,15 @@ interface VariantstoreService {
 
     List<Sample> getSamplesForSpecifiedProperties(ListingArguments args)
 
-    List<Variant> getVariantsForSpecifiedProperties(ListingArguments args, Boolean withConsequences)
-
-    List getVariantsAndMetadataForExport(ListingArguments args, Boolean withConsequences, Boolean withGenotypes)
+    List<Variant> getVariantsForSpecifiedProperties(ListingArguments args, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
 
     List<Gene> getGenesForSpecifiedProperties(ListingArguments args)
 
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
                                                  String reference, String observed, String assemblyId)
 
-    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, MetadataContext metadata)
+    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome, String annotationSoftware)
 
     void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants)
 

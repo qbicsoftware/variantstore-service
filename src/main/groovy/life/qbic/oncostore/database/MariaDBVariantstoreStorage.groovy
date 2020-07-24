@@ -35,36 +35,58 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
 
     String insertEnsemblGeneJunction = "INSERT INTO ensembl_has_gene (ensembl_id, gene_id) VALUES (?,?) ON DUPLICATE " + "" + "KEY UPDATE ensembl_id=ensembl_id"
     String insertConsequenceGeneJunction = "INSERT INTO consequence_has_gene (consequence_id, gene_id) VALUES (?,?) "+ "ON DUPLICATE KEY UPDATE consequence_id=consequence_id"
-    String selectVariantsWithConsequencesAndGenotypes = """SELECT variant.id as varid, variant.chr as varchr, variant.start as varstart, 
+    String selectVariantsWithConsequencesAndGenotypes = """SELECT variant.id as varid, variant.chr as varchr, variant
+.start as varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
- varuuid, variant.databaseidentifier as vardbid, consequence.*,vcfinfo.*, gene.id as geneindex, gene.geneid as geneid FROM 
+ varuuid, variant.databaseidentifier as vardbid, consequence.*,vcfinfo.*, gene.id as geneindex, gene.geneid as geneid
+  FROM 
  variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
- .vcfinfo_id INNER JOIN variant_has_consequence 
- ON variant.id = variant_has_consequence.variant_id INNER JOIN genotype ON genotype.id=sample_has_variant.genotype_id
+ .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
+ ON variant.id = variant_has_consequence.variant_id INNER JOIN annotationsoftware_has_consequence ON 
+ annotationsoftware_has_consequence.consequence_id = consequence.id INNER JOIN annotationsoftware ON 
+ annotationsoftware.id = annotationsoftware_has_consequence.annotationsoftware_id INNER JOIN genotype ON genotype
+ .id=sample_has_variant.genotype_id
   JOIN consequence on variant_has_consequence.consequence_id 
  = consequence.id INNER JOIN consequence_has_gene on consequence_has_gene.consequence_id = consequence.id INNER JOIN 
  gene on gene.id=consequence_has_gene.gene_id;"""
 
-    String selectVariantsWithConsequencesAndVcfInfo = """SELECT variant.id as varid, variant.chr as varchr, variant.start as varstart, 
+    String selectVariantsWithConsequencesAndVcfInfo = """SELECT variant.id as varid, variant.chr as varchr, variant
+.start as varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
- varuuid, variant.databaseidentifier as vardbid, consequence.*, vcfinfo.*, gene.id as geneindex, gene.geneid as geneid FROM 
+ varuuid, variant.databaseidentifier as vardbid, consequence.*, vcfinfo.*, gene.id as geneindex, gene.geneid as 
+ geneid FROM 
  variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
- .vcfinfo_id INNER JOIN variant_has_consequence 
+ .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
  ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
- = consequence.id INNER JOIN consequence_has_gene on consequence_has_gene.consequence_id = consequence.id INNER JOIN 
+ = consequence.id INNER JOIN annotationsoftware_has_consequence ON annotationsoftware_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware ON annotationsoftware.id = annotationsoftware_has_consequence
+ .annotationsoftware_id INNER JOIN  consequence_has_gene on consequence_has_gene.consequence_id = consequence.id 
+ INNER JOIN 
  gene on gene.id=consequence_has_gene.gene_id;"""
 
-    String selectVariantsWithConsequences = """SELECT variant.id as varid, variant.chr as varchr, variant.start as varstart, 
+    String selectVariantsWithConsequences = """SELECT variant.id as varid, variant.chr as varchr, variant.start as 
+varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
  varuuid, variant.databaseidentifier as vardbid, consequence.*, gene.id as geneindex, gene.geneid as geneid FROM 
- variant INNER JOIN variant_has_consequence 
+ variant INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
  ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
- = consequence.id INNER JOIN consequence_has_gene on consequence_has_gene.consequence_id = consequence.id INNER JOIN 
+ = consequence.id INNER JOIN annotationsoftware_has_consequence ON annotationsoftware_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware ON annotationsoftware.id = annotationsoftware_has_consequence
+ .annotationsoftware_id INNER JOIN  consequence_has_gene on consequence_has_gene.consequence_id = consequence.id 
+ INNER JOIN 
  gene on gene.id=consequence_has_gene.gene_id;"""
 
     String selectVariants = """SELECT variant.id as varid, variant.chr as varchr, variant.start as varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
- varuuid, variant.databaseidentifier as vardbid FROM variant;"""
+ varuuid, variant.databaseidentifier as vardbid FROM variant INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id;"""
 
 
     @Inject
@@ -201,34 +223,42 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
     }
 
     @Override
-    List<Variant> findVariants(@NotNull ListingArguments args, Boolean withConsequences, Boolean withVcfInfo, Boolean withGenotypes) {
+    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
         sql = new Sql(dataSource.connection)
         try {
             if (args.getChromosome().isPresent() && args.getStartPosition().isPresent()) {
                 return fetchVariantsByChromosomeAndStartPosition(args.getChromosome().get(), args.getStartPosition()
-                        .get(), withConsequences, withVcfInfo, withGenotypes)
+                        .get(), referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes)
             }
 
             if (args.getStartPosition().isPresent()) {
-                return fetchVariantsByStartPosition(args.getStartPosition().get(), withConsequences, withVcfInfo, withGenotypes)
+                return fetchVariantsByStartPosition(args.getStartPosition().get(), referenceGenome, withConsequences,
+                        annotationSoftware, withVcfInfo,
+                        withGenotypes)
             }
 
             if (args.getChromosome().isPresent()) {
-                return fetchVariantsByChromosome(args.getChromosome().get(), withConsequences, withVcfInfo, withGenotypes)
+                return fetchVariantsByChromosome(args.getChromosome().get(), referenceGenome, withConsequences,
+                        annotationSoftware, withVcfInfo,
+                        withGenotypes)
             }
 
             if (args.getSampleId().isPresent() && args.getGeneId().isPresent()) {
-                return fetchVariantsBySampleAndGeneId(args.getSampleId().get(), args.getGeneId().get(), withConsequences, withVcfInfo, withGenotypes)
+                return fetchVariantsBySampleAndGeneId(args.getSampleId().get(), args.getGeneId().get(), referenceGenome,
+                        withConsequences, annotationSoftware, withVcfInfo, withGenotypes)
             }
 
             if (args.getSampleId().isPresent()) {
-                return fetchVariantsBySample(args.getSampleId().get(), withConsequences, withVcfInfo, withGenotypes)
+                return fetchVariantsBySample(args.getSampleId().get(), referenceGenome, withConsequences,
+                        annotationSoftware, withVcfInfo, withGenotypes)
             }
 
             if (args.getGeneId().isPresent()) {
-                return fetchVariantsByGeneId(args.getGeneId().get(), withConsequences, withVcfInfo, withGenotypes)
+                return fetchVariantsByGeneId(args.getGeneId().get(), referenceGenome, withConsequences,
+                        annotationSoftware, withVcfInfo, withGenotypes)
             }
-            return fetchVariants(withConsequences, withVcfInfo, withGenotypes)
+            return fetchVariants(referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes)
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch variants.", e.printStackTrace())
         } finally {
@@ -756,20 +786,21 @@ ensembl.version=$ensemblVersion;""")
         return samples
     }
 
-    private List<Variant> fetchVariants(withConsequences, withVcInfo, withGenotypes) {
+    private List<Variant> fetchVariants(referenceGenome,withConsequences, annotationSoftware, withVcInfo, withGenotypes) {
         def result
 
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes)
+            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}';"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo)
+                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}';"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences)
+                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}';"))
             }
         } else {
-            result = sql.rows(selectVariants)
+            //result = sql.rows(selectVariants)
+            result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}';"))
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
@@ -814,110 +845,152 @@ $startPosition AND variant.end <= $endPosition;""")
         return samples
     }
 
-    private List<Variant> fetchVariantsByChromosomeAndStartPosition(String chromosome, BigInteger start, Boolean withConsequences, Boolean withVcInfo, Boolean withGenotypes) {
+    private List<Variant> fetchVariantsByChromosomeAndStartPosition(String chromosome, BigInteger start, String
+            referenceGenome, Boolean withConsequences, String annotationSoftware, Boolean withVcInfo, Boolean
+            withGenotypes) {
         def result
 
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE variant.chr='${chromosome}' AND variant.start=$start;"))
+            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome" + "" +
+                    ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND variant" + "" + ".chr='${chromosome}' AND variant.start=$start;"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE variant.chr='${chromosome}' AND variant.start=$start;"))
+                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome" + ""
+                        + ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND " +
+                        "variant.chr='${chromosome}' AND variant.start=$start;"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE variant.chr='${chromosome}' AND variant.start=$start;"))
+                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome" + """.build='
+${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND variant.chr='${chromosome}' AND variant
+.start=$start;"""))
             }
         } else {
-            result = sql.rows(selectVariants.replace(";", " WHERE variant.chr='${chromosome}' AND variant.start=$start;"))
+            result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " +
+                    "annotationsoftware.name='${annotationSoftware}' AND variant.chr='${chromosome}' AND variant" + "" + ".start=$start;"))
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
 
-    private List<Variant> fetchVariantsByChromosome(String chromosome, Boolean withConsequences, Boolean withVcInfo, Boolean withGenotypes) {
+    private List<Variant> fetchVariantsByChromosome(String chromosome, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes) {
         def result
 
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE variant.chr='${chromosome}';"))
+            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome" + "" +
+                    ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND variant" + "" + ".chr='${chromosome}';"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE variant.chr='${chromosome}';"))
+                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome" + ""
+                        + ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND " +
+                        "variant.chr='${chromosome}';"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE variant.chr='${chromosome}';"))
+                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome" + """.build='
+${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND variant.chr='${chromosome}';"""))
             }
         } else {
-            result = sql.rows(selectVariants.replace(";", " WHERE variant.chr='${chromosome}';"))
+            result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " +
+                    "annotationsoftware.name='${annotationSoftware}' AND variant.chr='${chromosome}';"))
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
 
-    private List<Variant> fetchVariantsByStartPosition(BigInteger start, Boolean withConsequences, Boolean withVcInfo, Boolean withGenotypes) {
+    private List<Variant> fetchVariantsByStartPosition(BigInteger start, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes) {
         def result
 
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " variant.start=$start;"))
+            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome" + "" +
+                    ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND variant" + "" + ".start=$start;"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " variant.start=$start;"))
+                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome" + ""
+                        + ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND " +
+                        "variant.start=$start;"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", " variant.start=$start;"))
+                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome" + """.build='
+${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND variant.start=$start;"""))
             }
         } else {
-            result = sql.rows(selectVariants.replace(";", " variant.start=$start;"))
+            result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " +
+                    "annotationsoftware.name='${annotationSoftware}' AND variant.start=$start;"))
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
 
-    private List<Variant> fetchVariantsBySample(String sampleId, withConsequences, withVcInfo, withGenotypes) {
+    private List<Variant> fetchVariantsBySample(String sampleId, String referenceGenome, Boolean withConsequences,
+                                                String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes) {
         def result
 
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE Sample_identifier='${sampleId}';"))
+            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome" + "" +
+                    ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND " +
+                    "Sample_identifier='${sampleId}';"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE Sample_identifier='${sampleId}';"))
+                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome" + ""
+                        + ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND " +
+                        "Sample_identifier='${sampleId}';"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE Sample_identifier='${sampleId}';"))
+                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome" + """.build='
+${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier='${sampleId}';"""))
             }
         } else {
-            result = sql.rows(selectVariants.replace(";", " WHERE Sample_identifier='${sampleId}';"))
+            result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " +
+                    "annotationsoftware.name='${annotationSoftware}' AND Sample_identifier='${sampleId}';"))
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
 
-    private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId, Boolean withConsequences, Boolean withVcInfo, Boolean withGenotypes) {
+    private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId, String referenceGenome,
+                                                         Boolean withConsequences, String annotationSoftware, Boolean
+                                                                 withVcInfo, Boolean withGenotypes) {
         def result
 
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " where Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome" + "" +
+                    ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND " +
+                    "Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " where Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome" + ""
+                        + ".build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND " +
+                        "Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", " where Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome" + """.build='
+${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND 
+geneid='${geneId}';"""))
             }
         } else {
-            result = sql.rows(selectVariants.replace(";", " where Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+            result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " +
+                    "annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND " +
+                    "geneid='${geneId}';"))
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
 
-    private List<Variant> fetchVariantsByGeneId(String geneId, Boolean withConsequences, Boolean withVcInfo, Boolean withGenotypes) {
+    private List<Variant> fetchVariantsByGeneId(String geneId, String referenceGenome, Boolean withConsequences,
+                                                String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes) {
         def result
 
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", """ WHERE geneid='${geneId}';"""))
+            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", """ WHERE referencegenome
+.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", """ WHERE geneid='${geneId}';"""))
+                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", """ WHERE referencegenome
+.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", """ WHERE geneid='${geneId}';"""))
+                result = sql.rows(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome
+.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
             }
         } else {
-            result = sql.rows(selectVariants.replace(";", """ WHERE geneid='${geneId}';"""))
+            result = sql.rows(selectVariants.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND 
+annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
