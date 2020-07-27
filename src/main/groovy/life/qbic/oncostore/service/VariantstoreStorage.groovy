@@ -2,6 +2,7 @@ package life.qbic.oncostore.service
 
 import life.qbic.oncostore.database.VariantstoreStorageException
 import life.qbic.oncostore.model.Case
+import life.qbic.oncostore.model.Consequence
 import life.qbic.oncostore.model.Gene
 import life.qbic.oncostore.model.ReferenceGenome
 import life.qbic.oncostore.model.Sample
@@ -33,7 +34,12 @@ interface VariantstoreStorage {
 
     List<Sample> findSamples(@NotNull ListingArguments args)
 
-    List<Variant> findVariants(@NotNull ListingArguments args, Boolean withConsequences)
+    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
+
+    Annotation findAnnotationSoftwareByConsequence(Consequence consequence)
+
+    ReferenceGenome findReferenceGenomeByVariant(Variant variant)
 
     List<Gene> findGenes(@NotNull ListingArguments args)
 

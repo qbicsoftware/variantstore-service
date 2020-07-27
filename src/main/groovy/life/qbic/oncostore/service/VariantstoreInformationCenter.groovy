@@ -3,6 +3,7 @@ package life.qbic.oncostore.service
 import groovy.util.logging.Log4j2
 import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.EnsemblParser
+import life.qbic.oncostore.parser.MetadataContext
 import life.qbic.oncostore.parser.MetadataReader
 import life.qbic.oncostore.util.AnnotationHandler
 import life.qbic.oncostore.util.ListingArguments
@@ -81,13 +82,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
         return storage.findSamples(args)
     }
 
-
-    @Override
-    @Transactional
-    List<Variant> getVariantsForSpecifiedProperties(@NotNull ListingArguments args, Boolean withConsequences) {
-        return storage.findVariants(args, withConsequences)
-    }
-
     @Override
     @Transactional
     List<Gene> getGenesForSpecifiedProperties(@NotNull ListingArguments args) {
@@ -96,9 +90,18 @@ class VariantstoreInformationCenter implements VariantstoreService{
 
     @Override
     @Transactional
-    String getVcfContentForVariants(List<Variant> variants) {
-        // order variants by contig and position in order to get valid VCF file
-        return VariantExporter.exportVariantsToVCF(variants.sort { it.startPosition })
+    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome, String annotationSoftware) {
+        // order variants by position in order to get valid VCF file
+        return VariantExporter.exportVariantsToVCF(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
+                .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
+                .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, referenceGenome, annotationSoftware) }
+
+    @Override
+    @Transactional
+    List<Variant> getVariantsForSpecifiedProperties(ListingArguments args, String referenceGenome, Boolean
+            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
+        def variants = storage.findVariants(args, referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes)
+        return variants
     }
 
     /**

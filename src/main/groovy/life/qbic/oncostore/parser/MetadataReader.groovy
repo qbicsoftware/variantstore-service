@@ -6,6 +6,7 @@ import life.qbic.oncostore.model.Case
 import life.qbic.oncostore.model.ReferenceGenome
 import life.qbic.oncostore.model.VariantCaller
 import life.qbic.oncostore.model.Sample
+import life.qbic.oncostore.util.AnnotationHandler
 
 
 class MetadataReader {
@@ -15,13 +16,13 @@ class MetadataReader {
     MetadataReader(File file) {
         def slurper = new JsonSlurper()
         def jsonContent = slurper.parse(file)
-        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent), parseVcfFiles(jsonContent))
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent))
     }
 
     MetadataReader(String content) {
         def slurper = new JsonSlurper()
         def jsonContent = slurper.parseText(content)
-        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent), parseVcfFiles(jsonContent))
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent))
     }
 
     MetadataContext getMetadataContext() {
@@ -33,7 +34,12 @@ class MetadataReader {
     }
 
     static Annotation parseAnnotationSoftware(jsonContent) {
-        return new Annotation(jsonContent.variant_annotation.name, jsonContent.variant_annotation.version, jsonContent.variant_annotation.doi)
+        def name = jsonContent.variant_annotation.name as String
+        def version = jsonContent.variant_annotation.version
+        def doi = jsonContent.variant_annotation.doi
+
+        assert name.toUpperCase() in AnnotationHandler.AnnotationTools.values().collect{value -> value.name()}
+        return new Annotation(name, version, doi)
     }
 
     static VariantCaller parseCallingSoftware(jsonContent) {
@@ -50,9 +56,5 @@ class MetadataReader {
 
     static Sample parseSample(jsonContent) {
         return new Sample(jsonContent.sample.identifier, jsonContent.sample.cancerEntity)
-    }
-
-    static List<String> parseVcfFiles(jsonContent) {
-        return jsonContent.vcf_files
     }
 }

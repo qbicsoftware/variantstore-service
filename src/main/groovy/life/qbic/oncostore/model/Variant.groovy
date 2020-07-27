@@ -160,7 +160,10 @@ class Variant implements SimpleVariantContext, Comparable{
     }
 
     String toVcfFormat() {
-        return new StringBuilder().append(chromosome + "\t").append(startPosition + "\t").append(referenceAllele + "\t").append(observedAllele + "\t")
+        def vcfInfo = vcfInfo.toVcfFormat() ?: '.'
+        return new StringBuilder().append(chromosome + "\t").append(startPosition + "\t").append(databaseIdentifier +
+                "\t").append(referenceAllele + "\t").append(observedAllele + "\t").append("." + "\t").append("." +
+                "\t").append(vcfInfo)
     }
 
 }

@@ -3,11 +3,7 @@ package life.qbic.oncostore.controller
 import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
-import io.micronaut.http.annotation.Controller
-import io.micronaut.http.annotation.Get
-import io.micronaut.http.annotation.PathVariable
-import io.micronaut.http.annotation.Post
-import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.annotation.*
 import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.http.uri.UriBuilder
 import io.micronaut.runtime.server.EmbeddedServer
@@ -20,11 +16,7 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import life.qbic.oncostore.model.SimpleVariantContext
-import life.qbic.oncostore.model.Status
-import life.qbic.oncostore.model.TransactionStatus
-import life.qbic.oncostore.model.TransactionStatusRepository
-import life.qbic.oncostore.model.Variant
+import life.qbic.oncostore.model.*
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.IdValidator
@@ -71,7 +63,8 @@ class VariantController {
         log.info("Resource request for variant: $identifier")
         try {
             List<Variant> variants = service.getVariantForVariantId(identifier)
-            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given " + "identifier.")
+            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given "
+                    + "identifier.")
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid variant identifier supplied.")
@@ -90,27 +83,31 @@ class VariantController {
             schema = @Schema(implementation = Variant.class, type = "object")))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @QueryValue(defaultValue = "false") @Nullable
-            Boolean withConsequences) {
+    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @QueryValue
+            (defaultValue = "GRCh37") @Nullable String referenceGenome, @QueryValue(defaultValue = "false") @Nullable
+            Boolean withConsequences, @QueryValue(defaultValue = "snpeff") @Nullable String annotationSoftware,
+                                            @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes) {
         log.info("Resource request for variants with filtering options.")
         try {
-            println(withConsequences)
-            println(withConsequences.class)
-            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, withConsequences)
-            //@TODO provide option to get output in VCF format
-            //@TODO add parameter to specify whether consequences should be included
+            //@TODO add option to get genotype information in exported VCF file
             if (format) {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
                     return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<List<Variant>>
                 }
-                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants))
-                        .header ("Content-Disposition", "attachment; filename=test.vcf")
-                        .contentType(MediaType.TEXT_PLAIN_TYPE)
-                        : HttpResponse.notFound("No variants found matching provided attributes.") as HttpResponse<List<Variant>>
+                def variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
+                        withConsequences, annotationSoftware, true, withGenotypes)
+                def time = new Date().format("yyyy-MM-dd_HH-mm")
 
+                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences,
+                        referenceGenome, annotationSoftware))
+                        .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
+                        .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching "
+                        + "provided attributes.") as HttpResponse<List<Variant>>
             }
-            return variants ? HttpResponse.ok(variants)
-                    : HttpResponse.notFound("No variants found matching provided " + "attributes.") as HttpResponse<List<Variant>>
+
+            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
+                    withConsequences, annotationSoftware, false, withGenotypes)
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "attributes.") as HttpResponse<List<Variant>>
         }
 
         catch (Exception e) {
@@ -137,20 +134,19 @@ class VariantController {
                     .subscribe { file ->
                         variantsToAdd = []
                         SimpleVCFReader reader = new SimpleVCFReader(file.inputStream)
-                        reader.iterator().each { variant ->
-                            variantsToAdd.add(variant)
+                        reader.iterator().each { variant -> variantsToAdd.add(variant)
                         }
 
                         def newStatus = new TransactionStatus().tap {
                             uuid = statusId
                             fileName = file.filename
                             fileSize = file.size
-                            status = Status.processing
+                            status = life.qbic.oncostore.model.Status.processing
                         }
                         def test = repository.save(newStatus)
 
                         service.storeVariantsInStore(metadata, variantsToAdd)
-                        repository.updateStatus(test.getId(), Status.finished.toString())
+                        repository.updateStatus(test.getId(), life.qbic.oncostore.model.Status.finished.toString())
                     }
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {
