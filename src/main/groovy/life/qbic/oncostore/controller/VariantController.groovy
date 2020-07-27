@@ -141,12 +141,12 @@ class VariantController {
                             uuid = statusId
                             fileName = file.filename
                             fileSize = file.size
-                            status = Status.processing
+                            status = life.qbic.oncostore.model.Status.processing
                         }
                         def test = repository.save(newStatus)
 
                         service.storeVariantsInStore(metadata, variantsToAdd)
-                        repository.updateStatus(test.getId(), Status.finished.toString())
+                        repository.updateStatus(test.getId(), life.qbic.oncostore.model.Status.finished.toString())
                     }
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {

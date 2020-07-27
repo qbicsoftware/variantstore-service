@@ -14,18 +14,14 @@ class MetadataContext {
     final ReferenceGenome referenceGenome
     final Case patient
     final Sample sample
-    final List<String> vcfFiles
 
-    MetadataContext() {}
-
-    MetadataContext(boolean isSomatic, VariantCaller variantCalling, Annotation variantAnnotation, ReferenceGenome referenceGenome, Case patient, Sample sample, List<String> vcfFiles) {
+    MetadataContext(boolean isSomatic, VariantCaller variantCalling, Annotation variantAnnotation, ReferenceGenome referenceGenome, Case patient, Sample sample) {
         this.isSomatic = isSomatic
         this.variantCalling = variantCalling
         this.variantAnnotation = variantAnnotation
         this.referenceGenome = referenceGenome
         this.sample = sample
         this.patient = patient
-        this.vcfFiles = vcfFiles
     }
 
     boolean getIsSomatic() {
@@ -50,9 +46,5 @@ class MetadataContext {
 
     Sample getSample() {
         return sample
-    }
-
-    List<String> getVcfFiles() {
-        return vcfFiles
     }
 }
