@@ -96,11 +96,13 @@ class VariantExporter {
         }
 
         def containedVariants = []
+        def variantReferences = []
 
         variants.each { variant ->
             def variantObservation = new Observation().tap {
                 //@TODO which id ?
                 id = variant.identifier
+                variantReferences.add(new Reference("#${variant.identifier}"))
                 meta = new Meta().tap {
                     profile = [new CanonicalType("http://hl7.org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
                 }
@@ -113,7 +115,7 @@ class VariantExporter {
                 // @TODO needed?
                 // method = new CodeableConcept(new Coding("http://loinc.org", "LA26398-0", "Sequencing"))
                 // @TODO valid?
-                subject = patientReference
+                // subject = patientReference
             }
 
             def variantObservationComponents = []
@@ -210,7 +212,6 @@ class VariantExporter {
             })
 
             if (variant.vcfInfo.alleleFrequency.isEmpty()) {
-                println("LALALA")
             } else {
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
                     code = new CodeableConcept(new Coding("http://loinc.org", "81258-6", "Sample variant allelic " +
@@ -241,16 +242,14 @@ class VariantExporter {
 
             variantObservation.component = variantObservationComponents
             containedVariants.add(variantObservation)
-            //println(FhirContext.forR4().newJsonParser().encodeResourceToString(variantObservation))
         }
         diagnosticReport.contained = containedVariants
+        diagnosticReport.result = variantReferences
 
-
-        // Create a context for R4
-        FhirContext contextR4 = FhirContext.forR4();
-
+        // Create a context for R4, do we need other versions?
+        FhirContext contextR4 = FhirContext.forR4()
         def fhirContent = contextR4.newJsonParser().setPrettyPrint(true).encodeResourceToString(diagnosticReport)
-        println(fhirContent)
 
+        return fhirContent
     }
 }
