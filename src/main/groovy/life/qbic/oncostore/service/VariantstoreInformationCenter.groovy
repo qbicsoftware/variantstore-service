@@ -98,6 +98,14 @@ class VariantstoreInformationCenter implements VariantstoreService{
 
     @Override
     @Transactional
+    String getFhirContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome) {
+        // order variants by position in order to get valid JSON FHIR
+        return VariantExporter.exportVariantsToFHIR(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
+                .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
+                .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, referenceGenome) }
+
+    @Override
+    @Transactional
     List<Variant> getVariantsForSpecifiedProperties(ListingArguments args, String referenceGenome, Boolean
             withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
         def variants = storage.findVariants(args, referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes)

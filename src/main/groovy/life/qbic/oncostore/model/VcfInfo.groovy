@@ -59,7 +59,7 @@ class VcfInfo {
         return alleleCount
     }
 
-    float getAlleleFrequency() {
+    List<Float> getAlleleFrequency() {
         return alleleFrequency
     }
 

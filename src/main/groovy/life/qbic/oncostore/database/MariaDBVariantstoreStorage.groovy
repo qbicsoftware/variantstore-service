@@ -1,5 +1,6 @@
 package life.qbic.oncostore.database
 
+import groovy.json.JsonSlurper
 import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
@@ -38,7 +39,7 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     String selectVariantsWithConsequencesAndGenotypes = """SELECT variant.id as varid, variant.chr as varchr, variant
 .start as varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
- varuuid, variant.databaseidentifier as vardbid, consequence.*,vcfinfo.*, gene.id as geneindex, gene.geneid as geneid
+ varuuid, variant.databaseidentifier as vardbid, consequence.*, vcfinfo.*, gene.id as geneindex, gene.geneid as geneid
   FROM 
  variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
  .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
@@ -88,6 +89,12 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
  variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
    variant_has_referencegenome.referencegenome_id;"""
 
+    String selectVariantsWithVcfInfo = """SELECT variant.id as varid, variant.chr as varchr, variant.start as varstart, 
+variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
+ varuuid, variant.databaseidentifier as vardbid, vcfinfo.* FROM variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
+ .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id;"""
 
     @Inject
     MariaDBVariantstoreStorage(QBiCDataSource dataSource) {
@@ -799,8 +806,11 @@ ensembl.version=$ensemblVersion;""")
                 result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}';"))
             }
         } else {
-            //result = sql.rows(selectVariants)
-            result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}';"))
+            if (withVcInfo) {
+                result = sql.rows(selectVariantsWithVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}';"))
+            } else {
+                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}';"))
+            }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
     }
@@ -1341,6 +1351,23 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     private static VcfInfo convertRowResultToVcfInfo(GroovyRowResult row) {
         def vcfInfo = new VcfInfo()
         vcfInfo.ancestralAllele = row.get("ancestralallele") as String
+        vcfInfo.alleleCount = row.get("allelecount") as List<Integer>
+        vcfInfo.alleleFrequency = new JsonSlurper().parseText(row.get("allelefreq"))
+        vcfInfo.numberAlleles = row.get("numberalleles") as Integer
+        vcfInfo.baseQuality = row.get("basequality") as Integer
+        vcfInfo.cigar = row.get("cigar") as String
+        vcfInfo.dbSnp = row.get("dbsnp") as Boolean
+        vcfInfo.hapmapTwo = row.get("hapmaptwo") as Boolean
+        vcfInfo.hapmapThree = row.get("hapmapthree") as Boolean
+        vcfInfo.thousandGenomes = row.get("thousandgenomes") as Boolean
+        vcfInfo.combinedDepth = row.get("combineddepth") as Integer
+        vcfInfo.endPos = row.get("endpos") as Integer
+        vcfInfo.rms = row.get("rms") as Integer
+        vcfInfo.mqZero = row.get("mqzero") as Integer
+        vcfInfo.strandBias = row.get("strandbias") as Integer
+        vcfInfo.numberSamples = row.get("numbersamples") as Integer
+        vcfInfo.somatic = row.get("somatic") as Boolean
+        vcfInfo.validated = row.get("validated") as Boolean
         return vcfInfo
     }
 

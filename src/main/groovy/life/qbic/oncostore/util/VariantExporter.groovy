@@ -1,7 +1,27 @@
 package life.qbic.oncostore.util
 
+import ca.uhn.fhir.context.FhirContext
 import life.qbic.oncostore.model.Variant
-import life.qbic.oncostore.parser.MetadataContext
+import org.hl7.fhir.r4.model.CanonicalType
+import org.hl7.fhir.r4.model.CodeableConcept
+import org.hl7.fhir.r4.model.Coding
+import org.hl7.fhir.r4.model.DateType
+import org.hl7.fhir.r4.model.DecimalType
+import org.hl7.fhir.r4.model.DiagnosticReport
+import org.hl7.fhir.r4.model.Identifier
+import org.hl7.fhir.r4.model.IntegerType
+import org.hl7.fhir.r4.model.Meta
+import org.hl7.fhir.r4.model.Observation
+import org.hl7.fhir.r4.model.Patient
+import org.hl7.fhir.r4.model.Quantity
+import org.hl7.fhir.r4.model.Range
+import org.hl7.fhir.r4.model.Reference
+import org.hl7.fhir.r4.model.StringType
+import org.hl7.fhir.r4.model.Type
+import org.hl7.fhir.r4.model.UriType
+import org.hl7.fhir.r4.model.codesystems.ObservationCategory
+
+import java.time.Instant
 
 class VariantExporter {
 
@@ -10,8 +30,10 @@ class VariantExporter {
     /**
      * headers for different Variant Call Format versions*/
     static {
-        vcfHeaders['4.1'] = "##fileformat=VCFv4.1 " + "\n##fileDate=%s\n##source=%s\n##reference=%s\nCHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
-        vcfHeaders["4.2"] = "##fileformat=VCFv4.2 " + "\n##fileDate=%s\n##source=%s\n##reference=%s\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        vcfHeaders['4.1'] = "##fileformat=VCFv4.1 " +
+                "\n##fileDate=%s\n##source=%s\n##reference=%s\nCHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+        vcfHeaders["4.2"] = "##fileformat=VCFv4.2 " +
+                "\n##fileDate=%s\n##source=%s\n##reference=%s\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
     }
 
     /**
@@ -44,5 +66,191 @@ class VariantExporter {
             vcfContent.append("\n")
         }
         return vcfContent
+    }
+
+    /**
+     * Generates JSON content in FHIR format from list of variants
+     * @param variants the variants to export in FHIR
+     * @return a FHIR content
+     */
+    static String exportVariantsToFHIR(List<Variant> variants, Boolean withConsequences, String referenceGenome) {
+        /*
+        contained_uid = uuid4().hex[:13]
+        variant_reference = reference.FHIRReference({"reference": "#rs-"+contained_uid})
+        */
+
+        // @TODO get patient ID if needed
+        def patientReference = new Reference(new Patient().setIdentifier([new Identifier().setValue("#")]))
+
+        // initialize diagnostic report
+        DiagnosticReport diagnosticReport = new DiagnosticReport().tap {
+            meta = new Meta().tap {
+                profile = [new CanonicalType(new URI("http://hl7" + ".org/fhir/uv/genomics-reporting/StructureDefinition/diagnosticreport"))]
+            }
+            id = ""
+            code = new CodeableConcept(new Coding("http://loinc.org", "81247-9", "Master HL7 genetic " +
+                    "variant reporting panel"))
+            status = DiagnosticReport.DiagnosticReportStatus.FINAL
+            issued = Date.from(Instant.now())
+            subject = patientReference
+        }
+
+        def containedVariants = []
+
+        variants.each { variant ->
+            def variantObservation = new Observation().tap {
+                //@TODO which id ?
+                id = variant.identifier
+                meta = new Meta().tap {
+                    profile = [new CanonicalType("http://hl7.org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
+                }
+                status = Observation.ObservationStatus.FINAL
+                category = [new CodeableConcept(new Coding(ObservationCategory.LABORATORY.system,
+                        ObservationCategory.LABORATORY.toCode(), ObservationCategory.LABORATORY.display))]
+                code = new CodeableConcept(new Coding("http://loinc.org", "69548-6", "Genetic variant assessment"))
+                value = new CodeableConcept(new Coding("http://loinc.org", "LA9633-4", "Present"))
+
+                // @TODO needed?
+                // method = new CodeableConcept(new Coding("http://loinc.org", "LA26398-0", "Sequencing"))
+                // @TODO valid?
+                subject = patientReference
+            }
+
+            def variantObservationComponents = []
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "92822-6", "Genomic coordinate system [Type]"))
+                value = new CodeableConcept(new Coding("http://loinc.org", "LA30102-0", "1-based character counting"))
+            })
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://hl7.org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes", "exact-start-end", "Variant exact start and end"))
+                value = new Range().tap {
+                    low = new Quantity(variant.startPosition.longValue())
+                    high = new Quantity(variant.endPosition.longValue())
+                }
+            })
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "69547-8", "Genomic ref allele [ID]"))
+                value = new StringType(variant.referenceAllele)
+            })
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                value = new CodeableConcept(new Coding("http://loinc.org", "69551-0", "Genomic alt allele [ID]"))
+                value = new StringType(variant.observedAllele)
+            })
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "48018-6", "Gene studied ID"))
+                // @TODO how to get gene HGNC?
+                value = new CodeableConcept(new Coding("http://www.genenames.org/geneId", "TODO", "TODO"))
+            })
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "48001-2", "Cytogenetic (chromosome) location"))
+                value = new StringType(variant.chromosome)
+            })
+
+            def referenceGenomeComponent = new Observation.ObservationComponentComponent()
+            // determine whether UCSC or Ensembl reference genome
+            if (referenceGenome.contains("hg")) {
+                referenceGenomeComponent.code = new CodeableConcept(new Coding("http://loinc.org", "62373-6", "Human" + " reference assembly release, UCSC version [Identifier]"))
+                if (referenceGenome.contains("hg18")) {
+                    referenceGenomeComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA14026-1",
+                            "hg18"))
+                } else if (referenceGenome.contains("hg19")) {
+                    referenceGenomeComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA14025-3",
+                            "hg19"))
+                }
+            } else {
+                referenceGenomeComponent.code = new CodeableConcept(new Coding("http://loinc.org", "62374-4", "Human" + " reference sequence assembly version"))
+                if (referenceGenome.contains("GRCh37")) {
+                    referenceGenomeComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA14029-5",
+                            "GRCh37"))
+                } else if (referenceGenome.contains("GRCh38")) {
+                    referenceGenomeComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA26806-2",
+                            "GRCh38"))
+                }
+            }
+            variantObservationComponents.add(referenceGenomeComponent)
+
+            def genomicSourceComponent = new Observation.ObservationComponentComponent()
+            genomicSourceComponent.code = new CodeableConcept(new Coding("http://loinc.org", "48002-0", "Genomic " +
+                    "source class"))
+            // do we need any other type?
+            if (variant.isSomatic) {
+                genomicSourceComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA6684-0",
+                        "Somatic"))
+            } else {
+                genomicSourceComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA6683-2",
+                        "Germline"))
+            }
+            variantObservationComponents.add(genomicSourceComponent)
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "48005-3", "Amino acid change (pHGVS)"))
+                value = new CodeableConcept(new Coding("http://varnomen.hgvs.org", variant.getConsequences().get(0)
+                        .aaChange, variant.getConsequences().get(0).aaChange))
+            })
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "48006-1", "Amino acid change type"))
+                // @TODO mapping from consequence type to LOINC Preferred Answer List
+                value = new CodeableConcept(new Coding("http://loinc.org", "LA6698-0", variant.getConsequences().get
+                (0).type))
+            })
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "51958-7", "Transcript reference sequence "
+                        + "[ID]"))
+                // @TODO ensembl?
+                value = new CodeableConcept(new Coding("http://www.ncbi.nlm.nih.gov/refseq", variant.getConsequences
+                ().get(0).transcriptId, variant.getConsequences().get(0).transcriptId))
+            })
+
+            if (variant.vcfInfo.alleleFrequency.isEmpty()) {
+                println("LALALA")
+            } else {
+                variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                    code = new CodeableConcept(new Coding("http://loinc.org", "81258-6", "Sample variant allelic " +
+                            "frequency [NFr]"))
+                    value = new DecimalType(variant.vcfInfo.alleleFrequency.get(0))
+                })
+            }
+
+            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                code = new CodeableConcept(new Coding("http://loinc.org", "82121-5",
+                        "Allelic read depth"))
+                value = new Quantity().tap {
+                    value = variant.vcfInfo.combinedDepth.longValue()
+                    system = "http://unitsofmeasure.org"
+                    code = "{reads}/{base}"
+                    unit = "reads per base pair"
+                }
+            })
+
+            // @TODO needed?
+            /*
+            def observation_dv_component3 = new Observation.ObservationComponentComponent()
+            observation_dv_component3.code = new CodeableConcept(new Coding("http://loinc.org", "53034-5", "Allelic
+            state"))
+            observation_dv_component3.value = new CodeableConcept(new Coding("http://loinc.org",alleles.at[index,
+            'CODE'], alleles.at[index,'ALLELE']))
+             */
+
+            variantObservation.component = variantObservationComponents
+            containedVariants.add(variantObservation)
+            //println(FhirContext.forR4().newJsonParser().encodeResourceToString(variantObservation))
+        }
+        diagnosticReport.contained = containedVariants
+
+
+        // Create a context for R4
+        FhirContext contextR4 = FhirContext.forR4();
+
+        def fhirContent = contextR4.newJsonParser().setPrettyPrint(true).encodeResourceToString(diagnosticReport)
+        println(fhirContent)
+
     }
 }
