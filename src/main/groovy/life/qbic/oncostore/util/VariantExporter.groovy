@@ -57,7 +57,6 @@ class VariantExporter {
      * @param variants the variants to export in FHIR
      * @return a FHIR content
      */
-    // @TODO how to deal with multiple consequences?
     static String exportVariantsToFHIR(List<Variant> variants, Boolean withConsequences, String referenceGenome) {
 
         // @TODO get patient ID if needed
@@ -81,9 +80,9 @@ class VariantExporter {
 
         variants.each { variant ->
             def variantObservation = new Observation().tap {
-                //@TODO which id ?
                 id = variant.identifier
                 variantReferences.add(new Reference("#${variant.identifier}"))
+
                 meta = new Meta().tap {
                     profile = [new CanonicalType("http://hl7.org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
                 }
@@ -99,7 +98,6 @@ class VariantExporter {
             }
 
             def variantObservationComponents = []
-
             variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
                 code = new CodeableConcept(new Coding("http://loinc.org", "92822-6", "Genomic coordinate system [Type]"))
                 value = new CodeableConcept(new Coding("http://loinc.org", "LA30102-0", "1-based character counting"))
@@ -170,28 +168,29 @@ class VariantExporter {
             }
             variantObservationComponents.add(genomicSourceComponent)
 
-            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://loinc.org", "48005-3", "Amino acid change (pHGVS)"))
-                value = new CodeableConcept(new Coding("http://varnomen.hgvs.org", variant.getConsequences().get(0)
-                        .aaChange, variant.getConsequences().get(0).aaChange))
-            })
+            // variant annotation dependent components
+            // @TODO how to deal with multiple consequences? Can we just add multiple components?
+            variant.getConsequences().each { consequence ->
+                variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                    code = new CodeableConcept(new Coding("http://loinc.org", "48005-3", "Amino acid change (pHGVS)"))
+                    value = new CodeableConcept(new Coding("http://varnomen.hgvs.org", consequence.aaChange, consequence.aaChange))
+                })
 
-            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://loinc.org", "48006-1", "Amino acid change type"))
-                // @TODO mapping from consequence type to LOINC Preferred Answer List
-                value = new CodeableConcept(new Coding("http://loinc.org", "LA6698-0", variant.getConsequences().get
-                (0).type))
-            })
+                variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                    code = new CodeableConcept(new Coding("http://loinc.org", "48006-1", "Amino acid change type"))
+                    // @TODO mapping from consequence type to LOINC Preferred Answer List
+                    value = new CodeableConcept(new Coding("http://loinc.org", "LA6698-0", consequence.type))
+                })
 
-            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://loinc.org", "51958-7", "Transcript reference sequence "
-                        + "[ID]"))
-                // @TODO ensembl?
-                value = new CodeableConcept(new Coding("http://www.ncbi.nlm.nih.gov/refseq", variant.getConsequences
-                ().get(0).transcriptId, variant.getConsequences().get(0).transcriptId))
-            })
+                variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                    code = new CodeableConcept(new Coding("http://loinc.org", "51958-7", "Transcript reference sequence " + "[ID]"))
+                    // @TODO ensembl?
+                    value = new CodeableConcept(new Coding("http://www.ncbi.nlm.nih.gov/refseq", consequence.transcriptId, consequence.transcriptId))
+                })
 
-            if (variant.vcfInfo.alleleFrequency.isEmpty()) {
+            }
+
+            if (!variant.vcfInfo.alleleFrequency.isEmpty()) {
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
                     code = new CodeableConcept(new Coding("http://loinc.org", "81258-6", "Sample variant allelic " +
                             "frequency [NFr]"))
@@ -199,16 +198,18 @@ class VariantExporter {
                 })
             }
 
-            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://loinc.org", "82121-5",
-                        "Allelic read depth"))
-                value = new Quantity().tap {
-                    value = variant.vcfInfo.combinedDepth.longValue()
-                    system = "http://unitsofmeasure.org"
-                    code = "{reads}/{base}"
-                    unit = "reads per base pair"
-                }
-            })
+            if (variant.vcfInfo.combinedDepth) {
+                variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                    code = new CodeableConcept(new Coding("http://loinc.org", "82121-5",
+                            "Allelic read depth"))
+                    value = new Quantity().tap {
+                        value = variant.vcfInfo.combinedDepth.longValue()
+                        system = "http://unitsofmeasure.org"
+                        code = "{reads}/{base}"
+                        unit = "reads per base pair"
+                    }
+                })
+            }
 
             // @TODO needed?
             /*
