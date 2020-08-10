@@ -2,23 +2,7 @@ package life.qbic.oncostore.util
 
 import ca.uhn.fhir.context.FhirContext
 import life.qbic.oncostore.model.Variant
-import org.hl7.fhir.r4.model.CanonicalType
-import org.hl7.fhir.r4.model.CodeableConcept
-import org.hl7.fhir.r4.model.Coding
-import org.hl7.fhir.r4.model.DateType
-import org.hl7.fhir.r4.model.DecimalType
-import org.hl7.fhir.r4.model.DiagnosticReport
-import org.hl7.fhir.r4.model.Identifier
-import org.hl7.fhir.r4.model.IntegerType
-import org.hl7.fhir.r4.model.Meta
-import org.hl7.fhir.r4.model.Observation
-import org.hl7.fhir.r4.model.Patient
-import org.hl7.fhir.r4.model.Quantity
-import org.hl7.fhir.r4.model.Range
-import org.hl7.fhir.r4.model.Reference
-import org.hl7.fhir.r4.model.StringType
-import org.hl7.fhir.r4.model.Type
-import org.hl7.fhir.r4.model.UriType
+import org.hl7.fhir.r4.model.*
 import org.hl7.fhir.r4.model.codesystems.ObservationCategory
 
 import java.time.Instant
@@ -73,14 +57,11 @@ class VariantExporter {
      * @param variants the variants to export in FHIR
      * @return a FHIR content
      */
+    // @TODO how to deal with multiple consequences?
     static String exportVariantsToFHIR(List<Variant> variants, Boolean withConsequences, String referenceGenome) {
-        /*
-        contained_uid = uuid4().hex[:13]
-        variant_reference = reference.FHIRReference({"reference": "#rs-"+contained_uid})
-        */
 
         // @TODO get patient ID if needed
-        def patientReference = new Reference(new Patient().setIdentifier([new Identifier().setValue("#")]))
+        def patientReference = new Reference(new Patient().setIdentifier([new Identifier().setValue("#patient")]))
 
         // initialize diagnostic report
         DiagnosticReport diagnosticReport = new DiagnosticReport().tap {
@@ -111,9 +92,8 @@ class VariantExporter {
                         ObservationCategory.LABORATORY.toCode(), ObservationCategory.LABORATORY.display))]
                 code = new CodeableConcept(new Coding("http://loinc.org", "69548-6", "Genetic variant assessment"))
                 value = new CodeableConcept(new Coding("http://loinc.org", "LA9633-4", "Present"))
+                method = new CodeableConcept(new Coding("http://loinc.org", "LA26398-0", "Sequencing"))
 
-                // @TODO needed?
-                // method = new CodeableConcept(new Coding("http://loinc.org", "LA26398-0", "Sequencing"))
                 // @TODO valid?
                 // subject = patientReference
             }
@@ -212,7 +192,6 @@ class VariantExporter {
             })
 
             if (variant.vcfInfo.alleleFrequency.isEmpty()) {
-            } else {
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
                     code = new CodeableConcept(new Coding("http://loinc.org", "81258-6", "Sample variant allelic " +
                             "frequency [NFr]"))
