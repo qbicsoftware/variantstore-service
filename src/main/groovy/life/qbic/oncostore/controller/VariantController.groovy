@@ -90,24 +90,33 @@ class VariantController {
         log.info("Resource request for variants with filtering options.")
         try {
             //@TODO add option to get genotype information in exported VCF file
+            def variants
             if (format) {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
                     return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<List<Variant>>
                 }
-                def variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
+                variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
                         withConsequences, annotationSoftware, true, withGenotypes)
                 def time = new Date().format("yyyy-MM-dd_HH-mm")
 
-                return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences,
-                        referenceGenome, annotationSoftware))
-                        .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
-                        .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching "
-                        + "provided attributes.") as HttpResponse<List<Variant>>
+                if (format == IdValidator.VariantFormats.VCF.toString()) {
+                    return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences,
+                            referenceGenome, annotationSoftware))
+                            .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
+                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
+                            "matching " + "provided attributes.") as HttpResponse<List<Variant>>
+                } else {
+                    return variants ? HttpResponse.ok(service.getFhirContentForVariants(variants, withConsequences,
+                            referenceGenome))
+                            .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.json")
+                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
+                            "matching " + "provided attributes.") as HttpResponse<List<Variant>>
+                }
             }
 
-            List<Variant> variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
+            variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
                     withConsequences, annotationSoftware, false, withGenotypes)
-            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "attributes.") as HttpResponse<List<Variant>>
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "" + "attributes.") as HttpResponse<List<Variant>>
         }
 
         catch (Exception e) {

@@ -2,6 +2,9 @@ package life.qbic.oncostore.util
 
 class VcfConstants {
 
+    static final String PROPERTY_DELIMITER = ";"
+    static final String PROPERTY_DEFINITION_STRING = "="
+
     enum VcfInfoAbbreviations{
         ANCESTRALALLELE("AA"),
         ALLELECOUNT("AC"),
@@ -30,7 +33,4 @@ class VcfConstants {
             tag
         }
     }
-
-    static final String PROPERTY_DELIMITER = ";"
-    static final String PROPERTY_DEFINITION_STRING = "="
 }

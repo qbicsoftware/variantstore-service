@@ -32,6 +32,8 @@ interface VariantstoreService {
 
     String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome, String annotationSoftware)
 
+    String getFhirContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome)
+
     void storeVariantsInStore(String metadata, List<SimpleVariantContext> variants)
 
     void storeGeneInformationInStore(EnsemblParser ensemblParser)

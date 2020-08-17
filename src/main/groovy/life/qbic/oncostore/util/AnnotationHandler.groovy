@@ -23,6 +23,7 @@ public class AnnotationHandler {
             this.tag = tag
         }
         private final String tag
+
         String getTag() {
             tag
         }

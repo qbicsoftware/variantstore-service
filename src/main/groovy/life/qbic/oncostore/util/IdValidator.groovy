@@ -10,7 +10,7 @@ class IdValidator {
     private static final Pattern VALID_UUID = Pattern.compile('([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$)', Pattern.CASE_INSENSITIVE)
 
     enum VariantFormats{
-        VCF("VCF")
+        VCF("VCF"), FHIR("FHIR")
 
         VariantFormats(String tag) {
             this.tag = tag
