@@ -65,11 +65,11 @@ class VariantExporter {
         // initialize diagnostic report
         DiagnosticReport diagnosticReport = new DiagnosticReport().tap {
             meta = new Meta().tap {
-                profile = [new CanonicalType(new URI("http://hl7" + ".org/fhir/uv/genomics-reporting/StructureDefinition/diagnosticreport"))]
+                profile = [new CanonicalType(new URI("http://hl7" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/diagnosticreport"))]
             }
             id = ""
-            code = new CodeableConcept(new Coding("http://loinc.org", "81247-9", "Master HL7 genetic " +
-                    "variant reporting panel"))
+            code = new CodeableConcept(new Coding("http://loinc.org", "81247-9", "Master HL7 genetic " + "variant " +
+                    "reporting panel"))
             status = DiagnosticReport.DiagnosticReportStatus.FINAL
             issued = Date.from(Instant.now())
             subject = patientReference
@@ -78,13 +78,14 @@ class VariantExporter {
         def containedVariants = []
         def variantReferences = []
 
+        // one observation for each variant
         variants.each { variant ->
             def variantObservation = new Observation().tap {
                 id = variant.identifier
                 variantReferences.add(new Reference("#${variant.identifier}"))
 
                 meta = new Meta().tap {
-                    profile = [new CanonicalType("http://hl7.org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
+                    profile = [new CanonicalType("http://hl7" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
                 }
                 status = Observation.ObservationStatus.FINAL
                 category = [new CodeableConcept(new Coding(ObservationCategory.LABORATORY.system,
@@ -92,19 +93,17 @@ class VariantExporter {
                 code = new CodeableConcept(new Coding("http://loinc.org", "69548-6", "Genetic variant assessment"))
                 value = new CodeableConcept(new Coding("http://loinc.org", "LA9633-4", "Present"))
                 method = new CodeableConcept(new Coding("http://loinc.org", "LA26398-0", "Sequencing"))
-
-                // @TODO valid?
-                // subject = patientReference
             }
 
             def variantObservationComponents = []
             variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://loinc.org", "92822-6", "Genomic coordinate system [Type]"))
+                code = new CodeableConcept(new Coding("http://loinc.org", "92822-6", "Genomic coordinate system " +
+                        "[Type]"))
                 value = new CodeableConcept(new Coding("http://loinc.org", "LA30102-0", "1-based character counting"))
             })
 
             variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://hl7.org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes", "exact-start-end", "Variant exact start and end"))
+                code = new CodeableConcept(new Coding("http://hl7" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes", "exact-start-end", "Variant exact start and end"))
                 value = new Range().tap {
                     low = new Quantity(variant.startPosition.longValue())
                     high = new Quantity(variant.endPosition.longValue())
@@ -121,21 +120,29 @@ class VariantExporter {
                 value = new StringType(variant.observedAllele)
             })
 
-            variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://loinc.org", "48018-6", "Gene studied ID"))
-                // @TODO how to get gene HGNC?
-                value = new CodeableConcept(new Coding("http://www.genenames.org/geneId", "TODO", "TODO"))
-            })
+
+            if (variant.consequences.get(0)) {
+                variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                    code = new CodeableConcept(new Coding("http://loinc.org", "48018-6", "Gene studied [ID]"))
+                    // @TODO how to get gene HGNC? For now lets us the available identifier
+                    // @TODO should we collect all gene Ids ?
+                    // the HGNC gene symbol as the display text and HGNC gene ID
+                    value = new CodeableConcept(new Coding("http://www.genenames.org/geneId", variant.consequences
+                            .get(0).geneId, variant.consequences.get(0).geneSymbol))
+                })
+            }
 
             variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://loinc.org", "48001-2", "Cytogenetic (chromosome) location"))
+                code = new CodeableConcept(new Coding("http://loinc.org", "48001-2", "Cytogenetic (chromosome) " +
+                        "location"))
                 value = new StringType(variant.chromosome)
             })
 
             def referenceGenomeComponent = new Observation.ObservationComponentComponent()
             // determine whether UCSC or Ensembl reference genome
             if (referenceGenome.contains("hg")) {
-                referenceGenomeComponent.code = new CodeableConcept(new Coding("http://loinc.org", "62373-6", "Human" + " reference assembly release, UCSC version [Identifier]"))
+                referenceGenomeComponent.code = new CodeableConcept(new Coding("http://loinc.org", "62373-6", "Human"
+                        + " reference assembly release, UCSC version [Identifier]"))
                 if (referenceGenome.contains("hg18")) {
                     referenceGenomeComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA14026-1",
                             "hg18"))
@@ -144,7 +151,8 @@ class VariantExporter {
                             "hg19"))
                 }
             } else {
-                referenceGenomeComponent.code = new CodeableConcept(new Coding("http://loinc.org", "62374-4", "Human" + " reference sequence assembly version"))
+                referenceGenomeComponent.code = new CodeableConcept(new Coding("http://loinc.org", "62374-4", "Human"
+                        + " reference sequence assembly version"))
                 if (referenceGenome.contains("GRCh37")) {
                     referenceGenomeComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA14029-5",
                             "GRCh37"))
@@ -171,23 +179,37 @@ class VariantExporter {
             // variant annotation dependent components
             // @TODO how to deal with multiple consequences? Can we just add multiple components?
             variant.getConsequences().each { consequence ->
+
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                    code = new CodeableConcept(new Coding("http://loinc.org", "48005-3", "Amino acid change (pHGVS)"))
-                    value = new CodeableConcept(new Coding("http://varnomen.hgvs.org", consequence.aaChange, consequence.aaChange))
+                    code = new CodeableConcept(new Coding("http://loinc.org", "48004-6", "DNA change (c.HGVS)"))
+                    value = new CodeableConcept(new Coding("http://varnomen.hgvs.org", consequence.codingChange,
+                            consequence.codingChange))
                 })
 
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                    code = new CodeableConcept(new Coding("http://loinc.org", "48006-1", "Amino acid change type"))
-                    // @TODO mapping from consequence type to LOINC Preferred Answer List
-                    value = new CodeableConcept(new Coding("http://loinc.org", "LA6698-0", consequence.type))
+                    code = new CodeableConcept(new Coding("http://loinc.org", "48005-3", "Amino acid change " + "" +
+                            "(pHGVS)"))
+                    value = new CodeableConcept(new Coding("http://varnomen.hgvs.org", consequence.aaChange,
+                            consequence.aaChange))
                 })
 
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                    code = new CodeableConcept(new Coding("http://loinc.org", "51958-7", "Transcript reference sequence " + "[ID]"))
+                    code = new CodeableConcept(new Coding("http://loinc.org", "48006-1", "Amino acid change " + "type"))
+                    // @TODO mapping from consequence type to LOINC Preferred Answer List, possible to use
+                    //  Sequence Ontology?
+                    // for now we will just use the given type
+                    //def type = ConsequenceTypes.getLoincMapping(consequence.type)
+                    //value = new CodeableConcept(new Coding("http://loinc.org", type.tag, type.toString()))
+                    value = new CodeableConcept(new Coding("http://sequenceontology.org", consequence.type.toString(), consequence.type.toString()))
+                })
+
+                variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
+                    code = new CodeableConcept(new Coding("http://loinc.org", "51958-7", "Transcript " + "reference "
+                            + "sequence " + "[ID]"))
                     // @TODO ensembl?
-                    value = new CodeableConcept(new Coding("http://www.ncbi.nlm.nih.gov/refseq", consequence.transcriptId, consequence.transcriptId))
+                    value = new CodeableConcept(new Coding("http://www.ncbi.nlm.nih.gov/refseq", consequence
+                            .transcriptId, consequence.transcriptId))
                 })
-
             }
 
             if (!variant.vcfInfo.alleleFrequency.isEmpty()) {

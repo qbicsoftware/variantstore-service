@@ -99,23 +99,24 @@ class VariantController {
                         withConsequences, annotationSoftware, true, withGenotypes)
                 def time = new Date().format("yyyy-MM-dd_HH-mm")
 
-                if(format == IdValidator.VariantFormats.VCF.toString()) {
+                if (format == IdValidator.VariantFormats.VCF.toString()) {
                     return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences,
                             referenceGenome, annotationSoftware))
                             .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
-                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching " + "provided attributes.") as HttpResponse<List<Variant>>
-                }
-                else {
+                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
+                            "matching " + "provided attributes.") as HttpResponse<List<Variant>>
+                } else {
                     return variants ? HttpResponse.ok(service.getFhirContentForVariants(variants, withConsequences,
                             referenceGenome))
                             .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.json")
-                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found matching " + "provided attributes.") as HttpResponse<List<Variant>>
+                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
+                            "matching " + "provided attributes.") as HttpResponse<List<Variant>>
                 }
             }
 
             variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
                     withConsequences, annotationSoftware, false, withGenotypes)
-            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "attributes.") as HttpResponse<List<Variant>>
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "" + "attributes.") as HttpResponse<List<Variant>>
         }
 
         catch (Exception e) {
