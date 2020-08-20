@@ -30,7 +30,8 @@ interface VariantstoreService {
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
                                                  String reference, String observed, String assemblyId)
 
-    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome, String annotationSoftware)
+    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, Boolean withGenotypes, String
+            referenceGenome, String annotationSoftware)
 
     String getFhirContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome)
 

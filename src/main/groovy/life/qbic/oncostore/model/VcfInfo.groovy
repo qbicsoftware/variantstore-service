@@ -31,7 +31,7 @@ class VcfInfo {
 
     VcfInfo(CommonInfo commonInfo) {
         //TODO check if that isn`t AA (amino acid) annotation?
-        this.ancestralAllele = commonInfo.getAttributeAsString(VCFConstants.ANCESTRAL_ALLELE_KEY,"")
+        this.ancestralAllele = commonInfo.getAttributeAsString(VCFConstants.ANCESTRAL_ALLELE_KEY, "")
         this.alleleCount = commonInfo.getAttributeAsIntList(VCFConstants.ALLELE_COUNT_KEY, -1)
         this.alleleFrequency = commonInfo.getAttribute(VCFConstants.ALLELE_FREQUENCY_KEY) as List<Float>
         this.numberAlleles = commonInfo.getAttributeAsInt(VCFConstants.ALLELE_NUMBER_KEY, -1)
@@ -126,12 +126,12 @@ class VcfInfo {
     String toVcfFormat() {
         def vcfInfoString = new StringJoiner(VcfConstants.PROPERTY_DELIMITER)
         this.properties.each { it ->
-            if (it.key != "class" & it.value != null) {
+            if (it.key != "class" & it.value != null & it.value != -1 & it.value != false & it.value != [] & it.value
+                    != "") {
                 def name = it.key.toString().toUpperCase() as VcfConstants.VcfInfoAbbreviations
                 vcfInfoString.add("${name.getTag()}${VcfConstants.PROPERTY_DEFINITION_STRING}${it.value.toString()}")
             }
         }
         return vcfInfoString
     }
-
 }

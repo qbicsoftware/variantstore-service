@@ -15,9 +15,9 @@ class VariantExporter {
      * headers for different Variant Call Format versions*/
     static {
         vcfHeaders['4.1'] = "##fileformat=VCFv4.1 " +
-                "\n##fileDate=%s\n##source=%s\n##reference=%s\nCHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+                "\n##fileDate=%s\n##source=%s\n##reference=%s\nCHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
         vcfHeaders["4.2"] = "##fileformat=VCFv4.2 " +
-                "\n##fileDate=%s\n##source=%s\n##reference=%s\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO\n"
+                "\n##fileDate=%s\n##source=%s\n##reference=%s\n#CHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
     }
 
     /**
@@ -25,14 +25,23 @@ class VariantExporter {
      * @param variants the variants to export in VCF
      * @return a VCF content
      */
-    static String exportVariantsToVCF(List<Variant> variants, Boolean withConsequences, String referenceGenome,
+    static String exportVariantsToVCF(List<Variant> variants, Boolean withConsequences, Boolean withGenotypes, String
+            referenceGenome,
                                       String annotationSoftware) {
         def vcfContent = new StringBuilder()
         def date = new Date().format('yyyyMMdd')
 
-        // allow to choose VCF version
+        //@TODO allow to choose VCF version
+        // in this case, we have to add the given sample identifiers to the header
         def vcfHeader = String.format(vcfHeaders["4.1"], date, 'variantstore', referenceGenome)
-        vcfContent.append(vcfHeader)
+        List<String> genotypeSamples = []
+
+        if (withGenotypes) {
+            genotypeSamples = variants*.getGenotypes().collectMany { [it.sampleName] }.flatten().unique()
+            vcfHeader += "\tFORMAT\t"
+            vcfHeader += genotypeSamples.join("\t")
+        }
+        vcfContent.append(vcfHeader + "\n")
 
         //determine if SnpEff or VEP
         variants.each { var ->
@@ -46,6 +55,20 @@ class VariantExporter {
                     vcfContent.append("${AnnotationHandler.AnnotationTools.VEP.tag}=")
                     vcfContent.append(var.consequences.collect { AnnotationHandler.toVep(it) }.join(","))
                 }
+            }
+            if (withGenotypes) {
+                def genotypeStrings = [''] * genotypeSamples.size()
+                def formatString = ""
+                var.getGenotypes().each { genotype ->
+                    // make sure we write the genotype information for the sample in the header
+                    def genotypeIdx = genotypeSamples.findIndexOf { it == genotype.sampleName}
+                    assert genotype.sampleName == genotypeSamples[genotypeIdx]
+                    def genotypeVcf =  genotype.toVcfFormat()
+                    genotypeStrings.add(genotypeIdx, genotypeVcf.get(1))
+                    formatString = genotypeVcf.get(0)
+                }
+                vcfContent.append(formatString)
+                vcfContent.append(genotypeStrings.join("\t"))
             }
             vcfContent.append("\n")
         }
@@ -65,7 +88,7 @@ class VariantExporter {
         // initialize diagnostic report
         DiagnosticReport diagnosticReport = new DiagnosticReport().tap {
             meta = new Meta().tap {
-                profile = [new CanonicalType(new URI("http://hl7" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/diagnosticreport"))]
+                profile = [new CanonicalType(new URI("http://hl7" + "" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/diagnosticreport"))]
             }
             id = ""
             code = new CodeableConcept(new Coding("http://loinc.org", "81247-9", "Master HL7 genetic " + "variant " +
@@ -85,7 +108,7 @@ class VariantExporter {
                 variantReferences.add(new Reference("#${variant.identifier}"))
 
                 meta = new Meta().tap {
-                    profile = [new CanonicalType("http://hl7" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
+                    profile = [new CanonicalType("http://hl7" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
                 }
                 status = Observation.ObservationStatus.FINAL
                 category = [new CodeableConcept(new Coding(ObservationCategory.LABORATORY.system,
@@ -103,7 +126,7 @@ class VariantExporter {
             })
 
             variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://hl7" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes", "exact-start-end", "Variant exact start and end"))
+                code = new CodeableConcept(new Coding("http://hl7" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes", "exact-start-end", "Variant exact start and end"))
                 value = new Range().tap {
                     low = new Quantity(variant.startPosition.longValue())
                     high = new Quantity(variant.endPosition.longValue())
@@ -200,7 +223,8 @@ class VariantExporter {
                     // for now we will just use the given type
                     //def type = ConsequenceTypes.getLoincMapping(consequence.type)
                     //value = new CodeableConcept(new Coding("http://loinc.org", type.tag, type.toString()))
-                    value = new CodeableConcept(new Coding("http://sequenceontology.org", consequence.type.toString(), consequence.type.toString()))
+                    value = new CodeableConcept(new Coding("http://sequenceontology.org", consequence.type.toString()
+                            , consequence.type.toString()))
                 })
 
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {

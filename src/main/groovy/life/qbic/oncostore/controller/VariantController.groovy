@@ -99,8 +99,8 @@ class VariantController {
                         withConsequences, annotationSoftware, true, withGenotypes)
                 def time = new Date().format("yyyy-MM-dd_HH-mm")
 
-                if (format == IdValidator.VariantFormats.VCF.toString()) {
-                    return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences,
+                if (format.toUpperCase() == IdValidator.VariantFormats.VCF.toString()) {
+                    return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences, withGenotypes,
                             referenceGenome, annotationSoftware))
                             .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
                             .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +

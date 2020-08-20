@@ -2,6 +2,7 @@ package life.qbic.oncostore.model
 
 import groovy.transform.EqualsAndHashCode
 import htsjdk.variant.vcf.VCFConstants
+import life.qbic.oncostore.util.VcfConstants
 
 @EqualsAndHashCode(includes = 'genotype, readDepth, filter, likelihoods, genotypeLikelihoods, genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities, phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality')
 class Genotype{
@@ -153,5 +154,21 @@ class Genotype{
 
     void setMappingQuality(Integer mappingQuality) {
         this.mappingQuality = mappingQuality
+    }
+
+    List<String> toVcfFormat() {
+        def formatString = new StringJoiner(VcfConstants.GENOTYPE_DELIMITER)
+        def genotypeString = new StringJoiner(VcfConstants.GENOTYPE_DELIMITER)
+
+        this.properties.each { it ->
+            if (it.key != "class" & it.key != "sampleName" & it.value != -1 & it.value != false & it.value != "") {
+                def name = it.key.toString().toUpperCase() as VcfConstants.VcfGenotypeAbbreviations
+                if (it.value != null) {
+                    formatString.add(name.getTag())
+                    genotypeString.add(it.value.toString())
+                }
+            }
+        }
+        return [formatString.toString(), genotypeString.toString()]
     }
 }

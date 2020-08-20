@@ -90,16 +90,15 @@ class VariantstoreInformationCenter implements VariantstoreService{
 
     @Override
     @Transactional
-    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome, String annotationSoftware) {
+    String getVcfContentForVariants(List<Variant> variants, Boolean withConsequences, Boolean withGenotypes, String referenceGenome, String annotationSoftware) {
         // order variants by position in order to get valid VCF file
         return VariantExporter.exportVariantsToVCF(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
                 .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
-                .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, referenceGenome, annotationSoftware) }
+                .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, withGenotypes, referenceGenome, annotationSoftware) }
 
     @Override
     @Transactional
     String getFhirContentForVariants(List<Variant> variants, Boolean withConsequences, String referenceGenome) {
-        // order variants by position in order to get valid JSON FHIR
         return VariantExporter.exportVariantsToFHIR(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
                 .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
                 .chromosome) ?: a.startPosition <=> b.startPosition }, withConsequences, referenceGenome) }

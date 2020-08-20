@@ -39,18 +39,17 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     String selectVariantsWithConsequencesAndGenotypes = """SELECT variant.id as varid, variant.chr as varchr, variant
 .start as varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
- varuuid, variant.databaseidentifier as vardbid, consequence.*, vcfinfo.*, gene.id as geneindex, gene.geneid as geneid
+ varuuid, variant.databaseidentifier as vardbid, consequence.*, sample.identifier, genotype.*, vcfinfo.*, gene.id as geneindex, gene.geneid as geneid
   FROM 
- variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
+ variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN sample ON sample_has_variant.sample_id = sample.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
  .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
  variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
    variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
- ON variant.id = variant_has_consequence.variant_id INNER JOIN annotationsoftware_has_consequence ON 
+ ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware_has_consequence ON 
  annotationsoftware_has_consequence.consequence_id = consequence.id INNER JOIN annotationsoftware ON 
  annotationsoftware.id = annotationsoftware_has_consequence.annotationsoftware_id INNER JOIN genotype ON genotype
- .id=sample_has_variant.genotype_id
-  JOIN consequence on variant_has_consequence.consequence_id 
- = consequence.id INNER JOIN consequence_has_gene on consequence_has_gene.consequence_id = consequence.id INNER JOIN 
+ .id=sample_has_variant.genotype_id INNER JOIN consequence_has_gene on consequence_has_gene.consequence_id = consequence.id INNER JOIN 
  gene on gene.id=consequence_has_gene.gene_id;"""
 
     String selectVariantsWithConsequencesAndVcfInfo = """SELECT variant.id as varid, variant.chr as varchr, variant
@@ -1333,11 +1332,15 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         variant.setObservedAllele(row.get("varobs") as String)
         variant.setIsSomatic(row.get("varsomatic") as Boolean)
         variant.setDatabaseIdentifier(row.get("vardbid") as String)
+
         if (withConsequences) {
             variant.setConsequences([convertRowResultToConsequence(row)])
         }
         if (withVcfInfo) {
             variant.setVcfInfo(convertRowResultToVcfInfo(row))
+        }
+        if (withGenotypes) {
+            variant.setGenotypes([convertRowResultToGenotype(row)])
         }
         return variant
     }
@@ -1373,7 +1376,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     private static VcfInfo convertRowResultToVcfInfo(GroovyRowResult row) {
         def vcfInfo = new VcfInfo()
         vcfInfo.ancestralAllele = row.get("ancestralallele") as String
-        vcfInfo.alleleCount = row.get("allelecount") as List<Integer>
+        vcfInfo.alleleCount = new JsonSlurper().parseText(row.get("allelecount"))
         vcfInfo.alleleFrequency = new JsonSlurper().parseText(row.get("allelefreq"))
         vcfInfo.numberAlleles = row.get("numberalleles") as Integer
         vcfInfo.baseQuality = row.get("basequality") as Integer
@@ -1391,6 +1394,25 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         vcfInfo.somatic = row.get("somatic") as Boolean
         vcfInfo.validated = row.get("validated") as Boolean
         return vcfInfo
+    }
+
+    private static Genotype convertRowResultToGenotype(GroovyRowResult row) {
+        def genotype = new Genotype()
+        genotype.sampleName = row.get("identifier") as String
+        genotype.genotype = row.get("genotype") as String
+        genotype.readDepth = row.get("readdepth") as Integer
+        genotype.filter = row.get("filter") as String
+        genotype.likelihoods = row.get("likelihoods") as String
+        genotype.genotypeLikelihoods = row.get("genotypelikelihoods") as String
+        genotype.genotypeLikelihoodsHet = row.get("genotypelikelihoodshet") as String
+        genotype.posteriorProbs = row.get("posteriorprobs") as String
+        genotype.genotypeQuality = row.get("genotypequality") as Integer
+        genotype.haplotypeQualities = row.get("haplotypequalities") as String
+        genotype.phaseSet = row.get("phaseset") as String
+        genotype.phasingQuality = row.get("phasingquality") as Integer
+        genotype.alternateAlleleCounts = row.get("alternatealleleCounts") as String
+        genotype.mappingQuality = row.get("mappingquality") as Integer
+        return genotype
     }
 
     private static List<Variant> parseVariantQueryResult(List<GroovyRowResult> rows, Boolean withConsequence = true, withVcfInfo = false, Boolean withGenotypes = false) {
@@ -1420,6 +1442,12 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
                     }
                 }
             }
+
+            if (withGenotypes) {
+                def genotypes = value*.getGenotypes().collectMany{ [it]}.flatten().unique()
+                value[0].genotypes = genotypes
+            }
+
             value[0].consequences = joinedConsequences
             variants.add(value[0])
         }
