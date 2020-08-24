@@ -19,12 +19,12 @@ Features
 - Import variants (VCF files, annotated using `SnpEff <http://snpeff.sourceforge.net>`_ or `VEP <https://www.ensembl.org/info/docs/tools/vep/index.html>`_)
 - Import gene information (Ensembl, GFF3 files)  
 - Query variant information via (secured) REST endpoints
-- Export variants as Variant Call Format (VCF) and `FHIR <https://www.hl7.org/fhir/>`
+- Export variants as Variant Call Format (VCF) and `FHIR <https://www.hl7.org/fhir/>`_
 
 
 Documentation
 -------------
-Please visit the `Documentation <https://oncostore-proto-project.readthedocs.io/en/latest/>`_ for detailed installation, run and configuration instructions.
+Please visit the `Documentation <https://oncostore-proto-project.readthedocs.io/en/development/>`_ for detailed installation, run and configuration instructions.
 
 Detailed documentation of the RESTful API is additionally available on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.6>`_.
 
