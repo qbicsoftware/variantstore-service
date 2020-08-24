@@ -36,7 +36,7 @@ make sure to specify the database model, set up the datasource in the ``applicat
 
 The database model expected by the **Variantstore** is the following: 
 
-.. image:: images/oncostore-model-diagram.png
+.. image:: images/variantstore-model-diagram.png
     :alt: Variantstore model diagram
 
 We are currently working on the support of `PostgreSQL <https://www.postgresql.org/>`_. 
