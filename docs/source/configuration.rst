@@ -15,8 +15,14 @@ The configuration of the Variantstore instance is done by setting the environmen
         username: ${db-user}
         password: ${db-pwd}
         driverClassName: org.mariadb.jdbc.Driver
+    transactions:
+        url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
+        username: ${db-user}
+        password: ${db-pwd}
+        driverClassName: org.mariadb.jdbc.Driver
 
 If you want to use a port other than 8080, set the optional environment variable ``VARIANTSTORE_PORT``. The default data source can be configured by the following environment variables: ``DB_HOST`` (database host address), ``DB_NAME`` (database name), ``DB_USER`` (database user) and ``DB_PWD`` (database password).
+It is expected that the ``default``and ```transactions`` data sources run on the same host and use the same credentials. Please change the `application.yml` accordingly if this is not the case.
 
 
 Authentication and Authorization
