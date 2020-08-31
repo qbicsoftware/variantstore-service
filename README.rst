@@ -24,7 +24,7 @@ Features
 
 Documentation
 -------------
-Please visit the `Documentation <https://oncostore-proto-project.readthedocs.io/en/development/>`_ for detailed installation, run and configuration instructions.
+Please visit the `Documentation <https://oncostore-proto-project.readthedocs.io/en/latest/>`_ for detailed installation, run and configuration instructions.
 
 Detailed documentation of the RESTful API is additionally available on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.6>`_.
 
