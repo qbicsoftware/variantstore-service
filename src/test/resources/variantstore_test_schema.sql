@@ -1,3 +1,10 @@
+-- -----------------------------------------------------
+-- Schema transactions
+-- -----------------------------------------------------
+DROP SCHEMA IF EXISTS `variantstore ` ;
+
+USE `variantstore` ;
+
 CREATE TABLE IF NOT EXISTS "gene" (
   "id" int(11) NOT NULL,
   "symbol" varchar(25) DEFAULT NULL,

@@ -88,4 +88,4 @@ endpoints:
     enabled: true
     sensitive: false
 userroles:
-  config: "src/main/resources/test.yml"
+  config: ${userrole-config:src/main/resources/test.yml}
