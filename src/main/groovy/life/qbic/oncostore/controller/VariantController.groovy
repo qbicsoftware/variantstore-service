@@ -89,7 +89,6 @@ class VariantController {
                                             @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes) {
         log.info("Resource request for variants with filtering options.")
         try {
-            //@TODO add option to get genotype information in exported VCF file
             def variants
             if (format) {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
