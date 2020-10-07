@@ -97,14 +97,14 @@ class GeneController {
     @Operation(summary = "Upload gene information",
             description = "Upload Ensembl GFF3 file to add gene information to the store.",
             tags = "Gene")
-    @Post(uri = "/upload", consumes = MediaType.MULTIPART_FORM_DATA)
-    HttpResponse storeGenes(CompletedFileUpload file) {
+    @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
+    HttpResponse storeGenes(CompletedFileUpload files) {
         try {
             log.info("Request for storing gene information.")
 
-            File tempFile = File.createTempFile(file.getFilename(), "temp");
+            File tempFile = File.createTempFile(files.getFilename(), "temp");
             Path path = Paths.get(tempFile.getAbsolutePath());
-            Files.write(path, file.getBytes());
+            Files.write(path, files.getBytes());
             //TODO ensembl POJO
             EnsemblParser ensembl = new EnsemblParser(tempFile)
             service.storeGeneInformationInStore(ensembl)

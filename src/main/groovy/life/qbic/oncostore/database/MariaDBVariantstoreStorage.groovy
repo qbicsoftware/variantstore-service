@@ -490,13 +490,15 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
             timeStart = new Date()
             /* GET ids of variants */
             def variantInsert = tryToFindVariants(variants)
+            timeStop = new Date()
             def variantIdMap = variantInsert.first
             def infoIdMap = variantInsert.second
-
+            duration = TimeCategory.minus(timeStop, timeStart)
             println("Variant lookup 1 took..." + duration)
 
             //TODO optimization potential
             /* GET ids of genotypes */
+            timeStart = new Date()
             def genotypeMap = tryToFindGenotypes(variants, samples)
             timeStop = new Date()
             duration = TimeCategory.minus(timeStop, timeStart)
