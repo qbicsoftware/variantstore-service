@@ -124,7 +124,13 @@ class VariantstoreInformationCenter implements VariantstoreService{
         variants.each { variant ->
             AnnotationHandler.addAnnotationsToVariant(variant, meta.getMetadataContext().getVariantAnnotation())
             variant.setIsSomatic(meta.getMetadataContext().getIsSomatic())
-            variantsToInsert.add(variant)
+
+            if ((variant.referenceAllele.length() > 255) || (variant.observedAllele.length() > 255)) {
+                log.warn("Skipping variant ${variant.startPosition}:${variant.referenceAllele}>${variant.observedAllele} because the reference or observed allele is exceeding the maximum " + "length")
+            }
+            else {
+                variantsToInsert.add(variant)
+            }
         }
 
         log.info("Storing provided metadata and variants in the store")
