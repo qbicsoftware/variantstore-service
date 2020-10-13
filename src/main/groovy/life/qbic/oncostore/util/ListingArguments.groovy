@@ -32,6 +32,9 @@ class ListingArguments {
     private String geneId
 
     @Nullable
+    private String gene
+
+    @Nullable
     private String consequenceType
 
     @Nullable
@@ -88,6 +91,13 @@ class ListingArguments {
         return Optional.of(geneId)
     }
 
+    public Optional<String> getGene() {
+        if (gene == null) {
+            return Optional.empty()
+        }
+        return Optional.of(gene)
+    }
+
     public Optional<String> getConsequenceType() {
         if (consequenceType == null) {
             return Optional.empty()
@@ -133,6 +143,10 @@ class ListingArguments {
         this.geneId = geneId
     }
 
+    public void setGene(@Nullable String gene) {
+        this.gene = gene
+    }
+
     public void setConsequenceType(@Nullable String consequenceType) {
         this.consequenceType = consequenceType
     }
@@ -172,6 +186,10 @@ class ListingArguments {
 
         if (geneId != null) {
             uriBuilder.queryParam("geneId", geneId)
+        }
+
+        if (gene != null) {
+            uriBuilder.queryParam("gene", gene)
         }
 
         if (consequenceType != null) {
@@ -223,6 +241,11 @@ class ListingArguments {
 
         public Builder geneId(String geneId) {
             args.setGeneId(geneId)
+            return this
+        }
+
+        public Builder gene(String gene) {
+            args.setGene(gene)
             return this
         }
 

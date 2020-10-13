@@ -192,6 +192,14 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
     List<Case> findCases(@NotNull ListingArguments args) {
         sql = new Sql(dataSource.connection)
         try {
+            if (args.getGene().isPresent()) {
+                if (args.getConsequenceType().isPresent()) {
+                    return fetchCasesByGeneAndConsequenceType(args.getGene().get(), args.getConsequenceType().get())
+                }
+                else {
+                    return fetchCasesByGene(args.getGene().get())
+                }
+            }
             if (args.getConsequenceType().isPresent()) {
                 return fetchCasesByConsequenceType(args.getConsequenceType().get())
             }
@@ -205,6 +213,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
             if (args.getChromosome().isPresent()) {
                 return fetchCasesByChromosome(args.getChromosome().get())
             }
+
             return fetchCases()
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch cases.", e.printStackTrace())
@@ -222,6 +231,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
             }
             return fetchSamples()
         } catch (Exception e) {
+            println(e)
             throw new VariantstoreStorageException("Could not fetch samples.", e.fillInStackTrace())
         } finally {
             sql.close()
@@ -674,13 +684,13 @@ genotype.mappingquality=?""",
                     consIds.add(consIdMap[cons])
                 } else {
                     def result = sql.firstRow("SELECT id FROM consequence WHERE consequence.allele=? and consequence"
-                            + ".codingchange=? and consequence.transcriptid=? and consequence.transcriptversion=? and" + " consequence.type=? and consequence.biotype=? and consequence.canonical=? and consequence.aachange=? and consequence.cdnaposition=? and consequence.cdsposition=? and consequence.proteinposition=? and consequence.proteinlength=? and consequence.cdnalength=? and consequence.cdslength=? and consequence.impact=? and consequence.exon=? and consequence.intron=? and consequence.strand=? and consequence.genesymbol=? and consequence.featuretype=? and consequence.distance=? and consequence.warnings=?",
+                            + ".codingchange=? and consequence.transcriptid=? and consequence.transcriptversion=? and" + " consequence.type=? and consequence.biotype=? and consequence.canonical=? and consequence.aachange=? and consequence.cdnaposition=? and consequence.cdsposition=? and consequence.proteinposition=? and consequence.proteinlength=? and consequence.cdnalength=? and consequence.cdslength=? and consequence.impact=? and consequence.exon=? and consequence.intron=? and consequence.strand=? and consequence.genesymbol=? and consequence.featuretype=? and consequence.distance=?",
 
                             [cons.allele, cons.codingChange, cons.transcriptId, cons.transcriptVersion, cons.type,
                              cons.bioType, cons.canonical, cons.aaChange, cons.cdnaPosition, cons.cdsPosition, cons
                                      .proteinPosition, cons.proteinLength, cons.cdnaLength, cons.cdsLength, cons
                                      .impact, cons.exon, cons.intron, cons.strand, cons.geneSymbol, cons.featureType,
-                             cons.distance, cons.warnings])
+                             cons.distance])
                     consIds.add(result.id)
                     consIdMap[cons] = result.id
                 }
@@ -783,13 +793,13 @@ ensembl.version=$ensemblVersion;""")
     }
 
     private List<Case> fetchCases() {
-        def result = sql.rows("""SELECT * FROM entity;""")
+        def result = sql.rows("SELECT * FROM entity;")
         List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
 
     private List<Sample> fetchSamples() {
-        def result = sql.rows("""SELECT * FROM sample;""")
+        def result = sql.rows("SELECT * FROM sample;")
         List<Sample> samples = result.collect { convertRowResultToSample(it) }
         return samples
     }
@@ -817,17 +827,25 @@ ensembl.version=$ensemblVersion;""")
     }
 
     private List<Gene> fetchGenes() {
-        def result = sql.rows("""SELECT * FROM gene;""")
+        def result = sql.rows("SELECT * FROM gene;")
         List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
 
+    private List<Case> fetchCasesByGene(String gene) {
+        def result = sql.rows("""select distinct entity.id, project_id,genesymbol from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id WHERE genesymbol=$gene;""")
+        List<Case> cases = result.collect { convertRowResultToCase(it) }
+        return cases
+    }
+
+    private List<Case> fetchCasesByGeneAndConsequenceType(String gene, String consequenceType) {
+        def result = sql.rows("""select distinct entity.id, project_id,genesymbol, type from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id WHERE type=$consequenceType AND genesymbol=$gene;""")
+        List<Case> cases = result.collect { convertRowResultToCase(it) }
+        return cases
+    }
+
     private List<Case> fetchCasesByConsequenceType(String consequenceType) {
-        def result = sql.rows("""select distinct entity.id, project_id from entity INNER JOIN sample ON entity.id = 
-sample.entity_id INNER JOIN sample_has_variant ON sample.identifier = sample_has_variant.sample_id INNER JOIN
- variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence
- .variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id where 
- consequence.type = $consequenceType""")
+        def result = sql.rows("""select distinct entity.id, project_id, type from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id where type==$consequenceType;""")
         List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
@@ -835,7 +853,7 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.identifier = sample_has
     private List<Case> fetchCasesByChromosome(String chromosome) {
         def result = sql.rows("""select distinct entity.id, project_id from entity INNER JOIN sample ON entity.id = 
 sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN
- variant ON variant.id = sample_has_variant.variant_id where variant.chr = $chromosome;""")
+ variant ON variant.id = sample_has_variant.variant_id where variant.chr=$chromosome;""")
         List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
@@ -844,8 +862,7 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
             endPosition) {
         def result = sql.rows("""select distinct entity.id, project_id from entity INNER JOIN sample ON entity.id = 
 sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN
- variant ON variant.id = sample_has_variant.variant_id where variant.chr = $chromosome AND variant.start >= 
-$startPosition AND variant.end <= $endPosition;""")
+ variant ON variant.id = sample_has_variant.variant_id where variant.chr=$chromosome AND variant.start>=$startPosition AND variant.end<=$endPosition;""")
         List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
@@ -880,7 +897,7 @@ ${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND vari
                 result = sql.rows(selectVariantsWithVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " + "annotationsoftware.name='${annotationSoftware}' AND variant.chr='${chromosome}' AND variant" + "" + ".start=$start;"))
             }
             else {
-                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " + "annotationsoftware.name='${annotationSoftware}' AND variant.chr='${chromosome}' AND variant" + "" + ".start=$start;"))
+                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND variant.chr='${chromosome}' AND variant" + "" + ".start=$start;"))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
@@ -934,7 +951,7 @@ ${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND vari
                 result = sql.rows(selectVariantsWithVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " + "annotationsoftware.name='${annotationSoftware}' AND variant.start=$start;"))
             }
             else {
-                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " + "annotationsoftware.name='${annotationSoftware}' AND variant.start=$start;"))
+                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND variant.start=$start;"))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
@@ -963,7 +980,7 @@ ${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Samp
 
             }
             else {
-                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " + "annotationsoftware.name='${annotationSoftware}' AND Sample_identifier='${sampleId}';"))
+                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND Sample_identifier='${sampleId}';"))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
@@ -993,7 +1010,7 @@ geneid='${geneId}';"""))
                 result = sql.rows(selectVariantsWithVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " + "annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND " + "geneid='${geneId}';"))
             }
             else {
-                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND " + "annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND " + "geneid='${geneId}';"))
+                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND Sample_identifier = '${sampleId}' AND " + "geneid='${geneId}';"))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
@@ -1021,8 +1038,7 @@ geneid='${geneId}';"""))
 annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
             }
             else {
-                result = sql.rows(selectVariants.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND 
-annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
+                result = sql.rows(selectVariants.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND geneid='${geneId}';"""))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
