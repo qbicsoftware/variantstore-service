@@ -72,9 +72,10 @@ public class AnnotationHandler {
         snpeff1.put("distance", 14)
         snpeff1.put("warnings", 15)
         snpEff.put("4.3t", snpeff1)
-
+        snpEff.put("bioconda::4.3.1t", snpeff1)
         def outputString = "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s"
         snpEffOutput.put("4.3t", outputString)
+        snpEffOutput.put("bioconda::4.3.1t", outputString)
     }
 
     /**
