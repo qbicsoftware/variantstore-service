@@ -20,7 +20,7 @@ class VcfInfo {
     Boolean thousandGenomes
     Integer combinedDepth
     Integer endPos
-    Integer rms // RMS mapping quality
+    Float rms // RMS mapping quality
     Integer mqZero // Number of MAPQ == 0 reads covering this record
     Integer strandBias
     Integer numberSamples //  Number of samples with data
@@ -43,7 +43,7 @@ class VcfInfo {
         this.thousandGenomes = commonInfo.getAttributeAsBoolean(VCFConstants.THOUSAND_GENOMES_KEY, false)
         this.combinedDepth = commonInfo.getAttributeAsInt(VCFConstants.DEPTH_KEY, -1)
         this.endPos = commonInfo.getAttributeAsInt(VCFConstants.END_KEY, -1)
-        this.rms = commonInfo.getAttributeAsInt(VCFConstants.RMS_MAPPING_QUALITY_KEY, -1)
+        this.rms = commonInfo.getAttributeAsDouble(VCFConstants.RMS_MAPPING_QUALITY_KEY, -1) as Float
         this.mqZero = commonInfo.getAttributeAsInt(VCFConstants.MAPPING_QUALITY_ZERO_KEY, -1)
         this.strandBias = commonInfo.getAttributeAsInt(VCFConstants.STRAND_BIAS_KEY, -1)
         this.numberSamples = commonInfo.getAttributeAsInt(VCFConstants.SAMPLE_NUMBER_KEY, -1)

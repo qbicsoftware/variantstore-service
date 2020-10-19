@@ -55,6 +55,7 @@ class MetadataReader {
     }
 
     static Sample parseSample(jsonContent) {
-        return new Sample(jsonContent.sample.identifier, jsonContent.sample.cancerEntity)
+        def cancerEntity = jsonContent.sample.cancerEntity ?: ''
+        return new Sample(jsonContent.sample.identifier, cancerEntity)
     }
 }
