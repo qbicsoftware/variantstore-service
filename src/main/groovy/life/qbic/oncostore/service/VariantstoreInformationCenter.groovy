@@ -133,8 +133,45 @@ class VariantstoreInformationCenter implements VariantstoreService{
             }
         }
 
+        // get sample identifiers provided in VCF file and compare them with the samples provided in metadata JSON
+        def genotypesIdentifiers = []
+        def sampleGenotypeMapping = [:]
+        variants.get(0).genotypes.each {genotype ->
+            if (genotype.sampleName) genotypesIdentifiers.add(genotype.sampleName)
+        }
+
+        if (genotypesIdentifiers.isEmpty()) {
+            log.info("No sample/genotype information provided in VCF, using information given in metadata file.")
+            meta.getMetadataContext().samples.each { sample ->
+                sampleGenotypeMapping[sample.identifier] = sample
+            }
+        }
+        else {
+            assert genotypesIdentifiers.size() == meta.getMetadataContext().samples.size()
+            // in case of one identifier, the mapping is straightforward
+            if(genotypesIdentifiers.size() == 1) {
+                sampleGenotypeMapping[genotypesIdentifiers.get(0)] = meta.getMetadataContext().samples.get(0)
+            }
+            else {
+                meta.getMetadataContext().samples.each { sample ->
+                    def searchIndex = genotypesIdentifiers.indexOf(sample.identifier)
+                    if (searchIndex > -1) {
+                        sampleGenotypeMapping[genotypesIdentifiers[searchIndex]] = sample
+                    } else {
+                        log.info("Genotype identifier does not match any sample identifiers. Trying to map identifiers...")
+                        if (sample.cancerEntity && genotypesIdentifiers.findIndexOf{"TUMOR"} > -1) {
+                            sampleGenotypeMapping["NORMAL"] = sample
+                        } else if (!sample.cancerEntity && genotypesIdentifiers.findIndexOf{"NORMAL"} > -1) {
+                            sampleGenotypeMapping["TUMOR"] = sample
+                        } else {
+                            log.error("Could not map genotype information to provided sample information.")
+                        }
+                    }
+                }
+            }
+        }
         log.info("Storing provided metadata and variants in the store")
-        storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), variantsToInsert)
+        storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), sampleGenotypeMapping, variantsToInsert)
         log.info("...done.")
     }
 

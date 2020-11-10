@@ -1,7 +1,9 @@
 package life.qbic.oncostore.model
 
+import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+@EqualsAndHashCode
 @Schema(name="Variant Annotation", description="A variant annotation software")
 class Annotation implements Software{
 

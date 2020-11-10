@@ -1,8 +1,10 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+@EqualsAndHashCode
 @Schema(name="Consequence", description="A variant consequence")
 class Consequence implements Comparable{
 
@@ -32,8 +34,36 @@ class Consequence implements Comparable{
     Integer distance
     String warnings
 
-    Consequence() {
+    Consequence(String allele, String codingChange, String transcriptId, Integer transcriptVersion, String type,
+                String bioType, Boolean canonical, String aaChange, String cdnaPosition, String cdsPosition, String
+                        proteinPosition, Integer proteinLength, Integer cdnaLength, Integer cdsLength, String impact,
+                String exon, String intron, Integer strand, String geneSymbol, String featureType,
+                Integer distance, String warnings) {
+        this.allele = allele
+        this.codingChange = codingChange
+        this.transcriptId = transcriptId
+        this.transcriptVersion = transcriptVersion
+        this.type = type
+        this.bioType = bioType
+        this.canonical = canonical
+        this.aaChange = aaChange
+        this.cdnaPosition = cdnaPosition
+        this.cdsPosition = cdsPosition
+        this.proteinPosition = proteinPosition
+        this.proteinLength = proteinLength
+        this.cdnaLength = cdnaLength
+        this.cdsLength = cdsLength
+        this.impact = impact
+        this.exon = exon
+        this.intron = intron
+        this.strand = strand
+        this.geneSymbol = geneSymbol
+        this.featureType = featureType
+        this.distance = distance
+        this.warnings = warnings
+    }
 
+    Consequence() {
     }
 
     @Override

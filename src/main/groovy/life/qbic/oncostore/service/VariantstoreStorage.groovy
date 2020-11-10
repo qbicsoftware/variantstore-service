@@ -53,7 +53,7 @@ interface VariantstoreStorage {
 
     void storeAnnotationSoftwareInStore(Annotation annotationSoftware) throws VariantstoreStorageException
 
-    void storeVariantsInStoreWithMetadata(MetadataContext metadata, List<SimpleVariantContext> variantContext) throws VariantstoreStorageException
+    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map sampleIdentifiers, List<SimpleVariantContext> variantContext) throws VariantstoreStorageException
 
     void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws VariantstoreStorageException
 }

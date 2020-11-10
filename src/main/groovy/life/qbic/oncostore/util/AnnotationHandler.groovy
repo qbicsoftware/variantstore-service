@@ -1,5 +1,6 @@
 package life.qbic.oncostore.util
 
+import groovy.util.logging.Log4j2
 import life.qbic.oncostore.model.Annotation
 import life.qbic.oncostore.model.Consequence
 import life.qbic.oncostore.model.SimpleVariantContext
@@ -10,6 +11,7 @@ import life.qbic.oncostore.model.SimpleVariantContext
  * to index for different version of Ensembl Variant Effect Predictor and SnpEff.
  */
 
+@Log4j2
 public class AnnotationHandler {
 
     public static Map<String, Map<String, Object>> vep = [:]
@@ -91,7 +93,7 @@ public class AnnotationHandler {
         consequences.each { annotation ->
             def cons = new Consequence()
             def consequence = populateConsequence(cons, annotation as String, annotationSoftware)
-            variantConsequences.add(consequence)
+            if (consequence) { variantConsequences.add(consequence) }
         }
 
         simpleVariant.consequences = variantConsequences
@@ -171,6 +173,10 @@ public class AnnotationHandler {
                 cons.aaChange = parsedAnnotation[snpEff[version].get("proteinCoding") as Integer]
                 cons.impact = parsedAnnotation[snpEff[version].get("impact") as Integer]
                 def geneId = (parsedAnnotation[snpEff[version].get("gene") as Integer] != '') ? parsedAnnotation[snpEff[version].get("gene") as Integer] : ''
+                if ((geneId == null) || (geneId == "")) {
+                    log.info("Skipping annotaton with transcript id ${cons.transcriptId} due to missing gene identifier.")
+                    return null
+                }
                 cons.geneId = geneId
                 cons.geneSymbol = parsedAnnotation[snpEff[version].get("symbol") as Integer]
                 def distance = parsedAnnotation[snpEff[version].get("distance") as Integer]

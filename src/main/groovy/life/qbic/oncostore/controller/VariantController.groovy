@@ -140,6 +140,7 @@ class VariantController {
             List<SimpleVariantContext> variantsToAdd = []
             files.subscribeOn(Schedulers.from(ioExecutorService))
                     .subscribe { file ->
+                        log.info("Processing file ${file.filename}")
                         variantsToAdd = []
                         SimpleVCFReader reader = new SimpleVCFReader(file.inputStream)
                         reader.iterator().each { variant -> variantsToAdd.add(variant)

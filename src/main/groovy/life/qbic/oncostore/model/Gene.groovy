@@ -1,8 +1,10 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+@EqualsAndHashCode
 @Schema(name="Gene", description="A Gene")
 class Gene {
 

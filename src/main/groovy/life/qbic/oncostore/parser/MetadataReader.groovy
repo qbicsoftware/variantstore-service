@@ -54,8 +54,12 @@ class MetadataReader {
         return new Case(jsonContent.case.identifier)
     }
 
-    static Sample parseSample(jsonContent) {
-        def cancerEntity = jsonContent.sample.cancerEntity ?: ''
-        return new Sample(jsonContent.sample.identifier, cancerEntity)
+    static List<Sample> parseSample(jsonContent) {
+        def samples = []
+        jsonContent.samples.each { sample ->
+            def cancerEntity = sample.cancerEntity ?: ''
+            samples.add(new Sample(sample.identifier, cancerEntity))
+        }
+        return samples
     }
 }

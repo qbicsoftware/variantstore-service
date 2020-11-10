@@ -1,9 +1,11 @@
 package life.qbic.oncostore.model
 
+import groovy.transform.EqualsAndHashCode
 import htsjdk.variant.variantcontext.CommonInfo
 import htsjdk.variant.vcf.VCFConstants
 import life.qbic.oncostore.util.VcfConstants
 
+@EqualsAndHashCode
 class VcfInfo {
 
     // possible reserved sub-fields of the INFO column as defined in the VCF specification
@@ -33,7 +35,7 @@ class VcfInfo {
         //TODO check if that isn`t AA (amino acid) annotation?
         this.ancestralAllele = commonInfo.getAttributeAsString(VCFConstants.ANCESTRAL_ALLELE_KEY, "")
         this.alleleCount = commonInfo.getAttributeAsIntList(VCFConstants.ALLELE_COUNT_KEY, -1)
-        this.alleleFrequency = commonInfo.getAttribute(VCFConstants.ALLELE_FREQUENCY_KEY) as List<Float>
+        this.alleleFrequency = commonInfo.getAttributeAsIntList(VCFConstants.ALLELE_FREQUENCY_KEY, -1) as List<Float>
         this.numberAlleles = commonInfo.getAttributeAsInt(VCFConstants.ALLELE_NUMBER_KEY, -1)
         this.baseQuality = commonInfo.getAttributeAsInt(VCFConstants.RMS_BASE_QUALITY_KEY, -1)
         this.cigar = commonInfo.getAttributeAsString(VCFConstants.CIGAR_KEY, "")

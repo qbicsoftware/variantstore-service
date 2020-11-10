@@ -1,7 +1,9 @@
 package life.qbic.oncostore.model
 
+import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+@EqualsAndHashCode
 @Schema(name="Variant Caller", description="A variant calling software")
 class VariantCaller implements Software {
 
