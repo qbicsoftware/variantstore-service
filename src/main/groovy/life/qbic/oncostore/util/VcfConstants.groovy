@@ -1,11 +1,30 @@
 package life.qbic.oncostore.util
 
+/**
+ * Holding constants used in the context of Variant Call Format files
+ *
+ * @since: 1.1.0
+ */
 class VcfConstants {
 
+    /**
+     * A delimiter for property values
+     */
     static final String PROPERTY_DELIMITER = ";"
+    /**
+     * Assigns values to a property
+     */
     static final String PROPERTY_DEFINITION_STRING = "="
+    /**
+     * A delimiter for genotype properties
+     */
     static final String GENOTYPE_DELIMITER = ":"
 
+    /**
+     * Valid tags for properties used in the INFO column of a VCF file
+     *
+     * @since: 1.1.0
+     */
     enum VcfInfoAbbreviations{
         ANCESTRALALLELE("AA"),
         ALLELECOUNT("AC"),
@@ -29,12 +48,19 @@ class VcfConstants {
         VcfInfoAbbreviations(String tag) {
             this.tag = tag
         }
+
         private final String tag
+
         String getTag() {
             tag
         }
     }
 
+    /**
+     * Valid tags for genotype properties in a VCF file
+     *
+     * @since: 1.1.0
+     */
     enum VcfGenotypeAbbreviations{
         GENOTYPE("GT"),
         READDEPTH("DP"),
@@ -54,6 +80,7 @@ class VcfConstants {
             this.tag = tag
         }
         private final String tag
+
         String getTag() {
             tag
         }

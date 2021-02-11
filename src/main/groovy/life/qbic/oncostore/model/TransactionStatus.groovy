@@ -6,15 +6,35 @@ import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.model.naming.NamingStrategies
 
+/**
+ * A DTO representing the status of a transaction
+ *
+ * @since: 1.1.0
+ */
 @MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
 class TransactionStatus{
 
+    /**
+     * The name of a tool
+     */
     @Id
     @GeneratedValue
     Integer id
+    /**
+     * The name of a tool
+     */
     String uuid
+    /**
+     * The name of a tool
+     */
     String fileName
+    /**
+     * The name of a tool
+     */
     Float fileSize
+    /**
+     * The status of a transaction. It is a {@link Status}
+     */
     String status
 
     TransactionStatus() {
@@ -65,6 +85,11 @@ class TransactionStatus{
     }
 }
 
+/**
+ * Possible status of a transaction
+ *
+ * @since: 1.11.0
+ */
 enum Status{
     started,
     processing,

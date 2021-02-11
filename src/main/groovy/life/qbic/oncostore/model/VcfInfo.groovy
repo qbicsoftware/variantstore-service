@@ -2,55 +2,114 @@ package life.qbic.oncostore.model
 
 import groovy.transform.EqualsAndHashCode
 import htsjdk.variant.variantcontext.CommonInfo
-import htsjdk.variant.vcf.VCFConstants
 import life.qbic.oncostore.util.VcfConstants
 
+/**
+ * A class to store information as given in the INFO column as defined in the Variant Call Format specification
+ *
+ * @since: 1.0.0
+ */
 @EqualsAndHashCode
 class VcfInfo {
 
     // possible reserved sub-fields of the INFO column as defined in the VCF specification
     // http://samtools.github.io/hts-specs/ (VCF 4.1 and 4.2)
+    //TODO deal with future releases?
+    /**
+     * The ancestral allele
+     **/
     String ancestralAllele
+    /**
+     * The allele count
+     **/
     List<Integer> alleleCount
+    /**
+     * The allele frequency
+     **/
     List<Float> alleleFrequency
+    /**
+     * The number of alleles
+     **/
     Integer numberAlleles
-    Integer baseQuality // RMS base quality
+    /**
+     * The RMS base quality
+     **/
+    Integer baseQuality
+    /**
+     * The cigar string describing how to align an alternate allele to the reference allele
+     **/
     String cigar
+    /**
+     * Membership in dbSNP ?
+     **/
     Boolean dbSnp
+    /**
+     * Membership in hapmap2 ?
+     **/
     Boolean hapmapTwo
+    /**
+     * Membership in hapmap3 ?
+     **/
     Boolean hapmapThree
+    /**
+     * Membership in 1000 Genomes ?
+     **/
     Boolean thousandGenomes
+    /**
+     * The combined depth (DP) across samples
+     **/
     Integer combinedDepth
+    /**
+     * The end position of the described variant
+     **/
     Integer endPos
-    Float rms // RMS mapping quality
-    Integer mqZero // Number of MAPQ == 0 reads covering this record
+    /**
+     * The RMS mapping quality (MQ)
+     **/
+    Float rms
+    /**
+     * The number of MAPQ==0 reads covering this record (MQ0)
+     **/
+    Integer mqZero
+    /**
+     * The strand bias at this position
+     **/
     Integer strandBias
-    Integer numberSamples //  Number of samples with data
+    /**
+     * The number of samples with data
+     **/
+    Integer numberSamples
+    /**
+     * Indicates that the record is a somatic mutation
+     **/
     Boolean somatic
+    /**
+     * Validated by follow-up experiment
+     **/
     Boolean validated
 
-    VcfInfo() {}
+    VcfInfo() { }
 
     VcfInfo(CommonInfo commonInfo) {
         //TODO check if that isn`t AA (amino acid) annotation?
-        this.ancestralAllele = commonInfo.getAttributeAsString(VCFConstants.ANCESTRAL_ALLELE_KEY, "")
-        this.alleleCount = commonInfo.getAttributeAsIntList(VCFConstants.ALLELE_COUNT_KEY, -1)
-        this.alleleFrequency = commonInfo.getAttributeAsIntList(VCFConstants.ALLELE_FREQUENCY_KEY, -1) as List<Float>
-        this.numberAlleles = commonInfo.getAttributeAsInt(VCFConstants.ALLELE_NUMBER_KEY, -1)
-        this.baseQuality = commonInfo.getAttributeAsInt(VCFConstants.RMS_BASE_QUALITY_KEY, -1)
-        this.cigar = commonInfo.getAttributeAsString(VCFConstants.CIGAR_KEY, "")
-        this.dbSnp = commonInfo.getAttributeAsBoolean(VCFConstants.DBSNP_KEY, false)
-        this.hapmapTwo = commonInfo.getAttributeAsBoolean(VCFConstants.HAPMAP2_KEY, false)
-        this.hapmapThree = commonInfo.getAttributeAsBoolean(VCFConstants.HAPMAP3_KEY, false)
-        this.thousandGenomes = commonInfo.getAttributeAsBoolean(VCFConstants.THOUSAND_GENOMES_KEY, false)
-        this.combinedDepth = commonInfo.getAttributeAsInt(VCFConstants.DEPTH_KEY, -1)
-        this.endPos = commonInfo.getAttributeAsInt(VCFConstants.END_KEY, -1)
-        this.rms = commonInfo.getAttributeAsDouble(VCFConstants.RMS_MAPPING_QUALITY_KEY, -1) as Float
-        this.mqZero = commonInfo.getAttributeAsInt(VCFConstants.MAPPING_QUALITY_ZERO_KEY, -1)
-        this.strandBias = commonInfo.getAttributeAsInt(VCFConstants.STRAND_BIAS_KEY, -1)
-        this.numberSamples = commonInfo.getAttributeAsInt(VCFConstants.SAMPLE_NUMBER_KEY, -1)
-        this.somatic = commonInfo.getAttributeAsBoolean(VCFConstants.SOMATIC_KEY, false)
-        this.validated = commonInfo.getAttributeAsBoolean(VCFConstants.VALIDATED_KEY, false)
+        this.ancestralAllele = commonInfo.getAttributeAsString(VcfConstants.VcfInfoAbbreviations.ANCESTRALALLELE.tag, null)
+        this.alleleCount = commonInfo.getAttributeAsIntList(VcfConstants.VcfInfoAbbreviations.ALLELECOUNT.tag, -1)
+        this.alleleFrequency = commonInfo.getAttributeAsIntList(VcfConstants.VcfInfoAbbreviations.ALLELEFREQUENCY.tag, -1) as List<Float>
+        this.numberAlleles = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.NUMBERALLELES.tag, -1)
+        this.baseQuality = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.BASEQUALITY.tag, -1)
+        this.cigar = commonInfo.getAttributeAsString(VcfConstants.VcfInfoAbbreviations.CIGAR.tag, null)
+        this.dbSnp = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.DBSNP.tag, false)
+        this.hapmapTwo = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.HAPMAPTWO.tag, false)
+        this.hapmapThree = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.HAPMAPTHREE.tag, false)
+        this.thousandGenomes = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.THOUSANDGENOMES.tag, false)
+        this.combinedDepth = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.COMBINEDDEPTH.tag, -1)
+        this.endPos = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.ENDPOS.tag, -1)
+        this.rms = commonInfo.getAttributeAsDouble(VcfConstants.VcfInfoAbbreviations.RMS.tag, -1) as Float
+        this.mqZero = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.MQZERO.tag, -1)
+        this.strandBias = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.STRANDBIAS.tag, -1)
+        this.numberSamples = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.NUMBERSAMPLES.tag, -1)
+        this.somatic = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.SOMATIC.tag, false)
+        this.validated = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.VALIDATED.tag, false)
     }
 
     String getAncestralAllele() {
@@ -125,6 +184,11 @@ class VcfInfo {
         return validated
     }
 
+    /**
+     * Generate representation in INFO column format.
+     *
+     * @return the content of an INFO column as specified in a Variant Call Format file
+     */
     String toVcfFormat() {
         def vcfInfoString = new StringJoiner(VcfConstants.PROPERTY_DELIMITER)
         this.properties.each { it ->

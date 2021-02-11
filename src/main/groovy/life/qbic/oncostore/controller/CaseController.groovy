@@ -16,13 +16,25 @@ import life.qbic.oncostore.model.Case
 import life.qbic.oncostore.model.Sample
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.ListingArguments
-
 import javax.inject.Inject
 
+/**
+ * Controller for case (patient) requests
+ *
+ * This handles requests that try to retrieve information on patients from the store. Requests can thereby be made by
+ * providing patient identifiers or by providing filtering criteria such as variant information. Therefore, questions
+ * could be answered such as "Which patient has variant X on gene Y ?".
+ *
+ * @since: 1.0.0
+ */
 @Log4j2
 @Controller("/cases")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class CaseController {
+
+    /**
+     * The variantstore service
+     */
     private final VariantstoreService service
 
     @Inject
@@ -31,21 +43,20 @@ class CaseController {
     }
 
     /**
-     *
-     * @param identifier The case identifier
-     * @return The found case
+     * Retrieve case by identifier
+     * @param identifier the case identifier
+     * @return the found case or 404 Not Found
      */
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a case",
             description = "The case with the specified identifier is returned.",
             tags = "Case")
-    @ApiResponse(
-            responseCode = "200", description = "Returns a case", content = @Content(
-                    mediaType = "application/json",
-                    schema = @Schema(implementation = Sample.class)))
+    @ApiResponse(responseCode = "200", description = "Returns a case", content = @Content(mediaType =
+            "application/json",
+            schema = @Schema(implementation = Sample.class)))
     @ApiResponse(responseCode = "400", description = "Invalid case identifier supplied")
     @ApiResponse(responseCode = "404", description = "Case not found")
-    HttpResponse getCase(@PathVariable(name="id") String identifier) {
+    HttpResponse getCase(@PathVariable(name = "id") String identifier) {
         log.info("Resource request for case: $identifier")
         try {
             List<Case> cases = service.getCaseForCaseId(identifier)
@@ -65,16 +76,16 @@ class CaseController {
 
 
     /**
-     *
-     * @param args The filter arguments
-     * @return The found cases
+     * Retrieve case based on filtering options
+     * @param args the filter arguments
+     * @return The found cases or 404 Not Found
      */
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a set of cases",
             description = "The cases matching the supplied properties are returned.",
             tags = "Case")
-    @ApiResponse(responseCode = "200", description = "Returns a set of cases", content = @Content(
-            mediaType = "application/json",
+    @ApiResponse(responseCode = "200", description = "Returns a set of cases", content = @Content(mediaType =
+            "application/json",
             schema = @Schema(implementation = Case.class)))
     @ApiResponse(responseCode = "404", description = "No cases found matching provided attributes")
     HttpResponse getCases(ListingArguments args) {
@@ -82,8 +93,7 @@ class CaseController {
         try {
             List<Case> cases = service.getCasesForSpecifiedProperties(args)
             return cases ? HttpResponse.ok(cases) : HttpResponse.ok([])
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }

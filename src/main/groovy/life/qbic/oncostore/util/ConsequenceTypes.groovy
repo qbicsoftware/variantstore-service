@@ -1,7 +1,17 @@
 package life.qbic.oncostore.util
 
+/**
+ * This enum defines possible consequences types of variants.
+ *
+ * Note: It might be necessary to extend this list.
+ *
+ * @since: 1.0.0
+ */
 enum ConsequenceTypes {
 
+    /**
+     * The variant types
+     */
     TRANSCRIPT_ABLATION("transcript_ablation"), SPLICE_ACCEPTOR_VARIANT("splice_acceptor_variant"),
     SPLICE_DONOR_VARIANT("splice_donor_variant"), STOP_GAINED("stop_gained"),
     FRAMESHIFT_VARIANT("frameshift_variant"), STOP_LOST("stop_lost"), START_LOST("start_lost"),
@@ -31,6 +41,9 @@ enum ConsequenceTypes {
         tag
     }
 
+    /**
+     * Perform consequence type to LOINC mapping
+     */
     static ConsequenceTypesLoinc getLoincMapping(String term) {
         switch (term) {
             case TRANSCRIPT_ABLATION.tag:

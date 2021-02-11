@@ -6,13 +6,36 @@ import life.qbic.oncostore.model.ReferenceGenome
 import life.qbic.oncostore.model.VariantCaller
 import life.qbic.oncostore.model.Sample
 
+/**
+ * A DTO for metadata
+ *
+ * @since: 1.0.0
+ */
 class MetadataContext {
 
+    /**
+     * Indicates if the provided variants are somatic
+     */
     final boolean isSomatic
+    /**
+     * The applied variant calling software
+     */
     final VariantCaller variantCalling
+    /**
+     * The applied variant annotation software
+     */
     final Annotation variantAnnotation
+    /**
+     * The reference genome
+     */
     final ReferenceGenome referenceGenome
+    /**
+     * The associated case (patient)
+     */
     final Case patient
+    /**
+     * The associated samples
+     */
     final List<Sample> samples
 
     MetadataContext(boolean isSomatic, VariantCaller variantCalling, Annotation variantAnnotation, ReferenceGenome referenceGenome, Case patient, List<Sample> samples) {

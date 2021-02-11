@@ -24,11 +24,21 @@ import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
 
+/**
+ * Controller for gene requests
+ *
+ * This handles requests that try to retrieve information on genes from the store.
+ *
+ * @since: 1.0.0
+ */
 @Log4j2
 @Controller("/genes")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class GeneController {
 
+    /**
+     * The variantstore service
+     */
     private final VariantstoreService service
 
     @Inject
@@ -37,9 +47,9 @@ class GeneController {
     }
 
     /**
-     *
-     * @param identifier The gene identifier
-     * @return The found genes
+     * Retrieve gene by identifier
+     * @param identifier the gene identifier
+     * @return The found gene or 404 Not Found
      */
     @Get(uri = "/{id}{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a gene",
@@ -69,9 +79,9 @@ class GeneController {
 
 
     /**
-     *
-     * @param args The filter arguments
-     * @return The found genes
+     * Retrieve gene based on filtering options
+     * @param args the filter arguments
+     * @return the found genes or 404 Not Found
      */
     @Operation(summary = "Request a set of genes",
             description = "The genes matching the supplied properties are returned.",
@@ -94,6 +104,11 @@ class GeneController {
     }
 
 
+    /**
+     * Upload gene information provided as GFF3 file to the store
+     * @param args the filter arguments
+     * @return 200 OK or 400 Bad Request
+     */
     @Operation(summary = "Upload gene information",
             description = "Upload Ensembl GFF3 file to add gene information to the store.",
             tags = "Gene")
@@ -101,7 +116,6 @@ class GeneController {
     HttpResponse storeGenes(CompletedFileUpload files) {
         try {
             log.info("Request for storing gene information.")
-
             File tempFile = File.createTempFile(files.getFilename(), "temp");
             Path path = Paths.get(tempFile.getAbsolutePath());
             Files.write(path, files.getBytes());

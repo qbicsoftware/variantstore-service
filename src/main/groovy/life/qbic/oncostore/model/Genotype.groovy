@@ -1,25 +1,71 @@
 package life.qbic.oncostore.model
 
 import groovy.transform.EqualsAndHashCode
-import htsjdk.variant.vcf.VCFConstants
 import life.qbic.oncostore.util.VcfConstants
 
+/**
+ * A genotype with associated information and measurements
+ *
+ * @since: 1.0.0
+ */
 @EqualsAndHashCode(includes = 'genotype, readDepth, filter, likelihoods, genotypeLikelihoods, genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities, phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality')
-class Genotype{
+class Genotype {
 
+    /**
+     * The sample name associated with a genotype
+     */
     String sampleName
+    /**
+     * The genotype, encoded as allele values separated by / or |
+     */
     String genotype // GT
+    /**
+     * The measured read depth of a genotype
+     */
     Integer readDepth // DP
+    /**
+     * The filter indicating if this genotype was “called”
+     */
     String filter // FT
-    String likelihoods // PL (phred-scaled genotype likelihoods)
-    String genotypeLikelihoods // GL genotype likelihoods
-    String genotypeLikelihoodsHet // GLE genotype likelihoods of heterogeneous ploidy
-    String posteriorProbs // GP phred-scaled genotype posterior probabilities
-    Integer genotypeQuality // GQ
-    String haplotypeQualities // HQ
-    String phaseSet // PS A phase set is defined as a set of phased genotypes to which this genotype belongs
-    Integer phasingQuality // PQ phred-scaled probability
+    /**
+     * The phred-scaled genotype likelihoods (PL)
+     */
+    String likelihoods
+    /**
+     * The genotype likelihoods (GL)
+     */
+    String genotypeLikelihoods
+    /**
+     * The genotype likelihoods of heterogeneous ploidy (GLE)
+     */
+    String genotypeLikelihoodsHet
+    /**
+     * The phred-scaled genotype posterior probabilities (GP)
+     */
+    String posteriorProbs
+    /**
+     * The quality (error probability) of a genotype (GQ)
+     */
+    Integer genotypeQuality
+    /**
+     * The haplotype qualities (HQ)
+     */
+    String haplotypeQualities
+    /**
+     * A phase set is defined as a set of phased genotypes to which this genotype belongs (PS)
+     */
+    String phaseSet
+    /**
+     * The phred-scaled probability (PQ)
+     */
+    Integer phasingQuality
+    /**
+     * The alternate allele counts of a genotype
+     */
     String alternateAlleleCounts
+    /**
+     * The RMS mapping quality (MQ)
+     */
     Integer mappingQuality // MQ RMS mapping quality
 
     Genotype(htsjdk.variant.variantcontext.Genotype genotype) {
@@ -28,21 +74,27 @@ class Genotype{
         setReadDepth(genotype.DP)
         genotype.filters ? setFilter(genotype.filters) : setFilter("")
         setLikelihoods(genotype.likelihoodsString)
-        //TODO use constants
-        setGenotypeLikelihoods(genotype.getExtendedAttribute("GL", "") as String)
-        setGenotypeLikelihoodsHet(genotype.getExtendedAttribute("GLE", "") as String)
-        setPosteriorProbs(genotype.getExtendedAttribute(VCFConstants.GENOTYPE_POSTERIORS_KEY, "") as String)
-        setGenotypeQuality(genotype.GQ)
-        setHaplotypeQualities(genotype.getExtendedAttribute(VCFConstants.HAPLOTYPE_QUALITY_KEY, "") as String)
-        setPhaseSet(genotype.getExtendedAttribute(VCFConstants.PHASE_SET_KEY, "") as String)
-        setPhasingQuality(genotype.getExtendedAttribute(VCFConstants.PHASE_QUALITY_KEY, -1) as Integer)
-        setAlternateAlleleCounts(genotype.getExtendedAttribute(VCFConstants.EXPECTED_ALLELE_COUNT_KEY, "") as String)
-        setMappingQuality(genotype.getExtendedAttribute(VCFConstants.RMS_MAPPING_QUALITY_KEY, -1) as Integer)
+        setGenotypeLikelihoods(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations
+                .GENOTYPELIKELIHOODS.tag, "".intern()) as String)
+        setGenotypeLikelihoodsHet(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations
+                .GENOTYPELIKELIHOODSHET.tag, "".intern()) as String)
+        setPosteriorProbs(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.POSTERIORPROBS.tag, ""
+                .intern()) as String)
+        setGenotypeQuality(genotype.GQ as Integer)
+        setHaplotypeQualities(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.HAPLOTYPEQUALITIES
+                .tag, "".intern()) as String)
+        setPhaseSet(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.PHASESET.tag, "".intern()) as
+                String)
+        setPhasingQuality(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.PHASINGQUALITY.tag, -1)
+                as Integer)
+        setAlternateAlleleCounts(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations
+                .ALTERNATEALLELECOUNTS.tag, "".intern())
+                as String)
+        setMappingQuality(genotype.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.MAPPINGQUALITY.tag, -1)
+                as Integer)
     }
 
-    Genotype() {
-
-    }
+    Genotype() { }
 
     String getSampleName() {
         return sampleName
@@ -156,6 +208,10 @@ class Genotype{
         this.mappingQuality = mappingQuality
     }
 
+    /**
+     * Generates content in Variant Call Format (VCF) for a genotype.
+     * @return the format string (defining the contained information) and genotype content in Variant Call Format
+     */
     List<String> toVcfFormat() {
         def formatString = new StringJoiner(VcfConstants.GENOTYPE_DELIMITER)
         def genotypeString = new StringJoiner(VcfConstants.GENOTYPE_DELIMITER)

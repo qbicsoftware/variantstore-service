@@ -1,37 +1,113 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+/**
+ * A consequence of a genomic variant
+ *
+ * @since: 1.1.0
+ */
 @EqualsAndHashCode
-@Schema(name="Consequence", description="A variant consequence")
-class Consequence implements Comparable{
+@CompileStatic
+@Schema(name = "Consequence", description = "A variant consequence")
+class Consequence implements Comparable {
 
-
+    /**
+     * The genomic allele of a consequence
+     */
     String allele
+    /**
+     * The coding change in HGVS notation of a consequence
+     */
     String codingChange
+    /**
+     * The transcript identifier of a consequence
+     */
     String transcriptId
+    /**
+     * The transcript version of a consequence
+     */
     Integer transcriptVersion
+    /**
+     * The type of a consequence
+     */
     String type
+    /**
+     * The biological type of a consequence
+     */
     String bioType
+    /**
+     * Indicating if the associated transcript is denoted as canonical
+     */
     Boolean canonical
+    /**
+     * The amino acid change of a consequence
+     */
     String aaChange
-    // the following three positions can be ranges (including -) therefore we will just use (for now) the string as annotated
+    // the following three positions can be ranges (including -) therefore we will just use (for now) the string as
+    // annotated
+    /**
+     * The cdna position of a consequence
+     */
     String cdnaPosition
+    /**
+     * The cds position of a consequence
+     */
     String cdsPosition
+    /**
+     * The associated protein position of a consequence
+     */
     String proteinPosition
+    /**
+     * The length of the associated protein of a consequence
+     */
     Integer proteinLength
+    /**
+     * The length of the associated cDNA sequence
+     */
     Integer cdnaLength
+    /**
+     * The length of the associated cds sequence
+     */
     Integer cdsLength
+    /**
+     * The impact of a consequence
+     */
     String impact
+    /**
+     * The associated exon of a consequence
+     */
     String exon
+    /**
+     * The associated intron of a consequence
+     */
     String intron
+    /**
+     * The associated strand of a consequence
+     */
     Integer strand
+    /**
+     * The symbol of the associated gene of a consequence
+     */
     String geneSymbol
+    /**
+     * The identifier of the associated gene of a consequence
+     */
     String geneId
+    /**
+     * The feature type of a consequence
+     */
     String featureType
+    /**
+     * The shortest distance from variant to transcript
+     */
     Integer distance
+    /**
+     * The warnings associated with a consequence
+     */
     String warnings
 
     Consequence(String allele, String codingChange, String transcriptId, Integer transcriptVersion, String type,
@@ -63,8 +139,7 @@ class Consequence implements Comparable{
         this.warnings = warnings
     }
 
-    Consequence() {
-    }
+    Consequence() {}
 
     @Override
     int compareTo(Object other) {

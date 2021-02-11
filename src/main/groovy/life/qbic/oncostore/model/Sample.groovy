@@ -4,12 +4,26 @@ import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+/**
+ * A sample with associated metadata
+ *
+ * @since: 1.0.0
+ */
 @EqualsAndHashCode
 @Schema(name="Sample", description="A biological sample")
 class Sample {
 
+    /**
+     * The identifier of a given sample
+     */
     String identifier
+    /**
+     * The annotated cancer entity of a given sample
+     */
     String cancerEntity
+    /**
+     * The associated case (patient) identifier of a given sample
+     */
     String caseId
 
     Sample(String identifier, String cancerEntity) {

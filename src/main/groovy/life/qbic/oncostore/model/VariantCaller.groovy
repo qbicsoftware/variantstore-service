@@ -3,12 +3,26 @@ package life.qbic.oncostore.model
 import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+/**
+ * A variant calling software
+ *
+ * @since: 1.0.0
+ */
 @EqualsAndHashCode
 @Schema(name="Variant Caller", description="A variant calling software")
 class VariantCaller implements Software {
 
+    /**
+     * The name of a variant calling software
+     */
     final String name
+    /**
+     * The version of a variant calling software
+     */
     final String version
+    /**
+     * The Digital Object Identifier (DOI) of a variant calling software
+     */
     final String doi
 
     VariantCaller(String name, String version, String doi) {
