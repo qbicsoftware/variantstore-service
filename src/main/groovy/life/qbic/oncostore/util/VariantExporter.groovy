@@ -1,18 +1,23 @@
 package life.qbic.oncostore.util
 
 import ca.uhn.fhir.context.FhirContext
+import life.qbic.oncostore.model.SimpleVariantContext
 import life.qbic.oncostore.model.Variant
 import org.hl7.fhir.r4.model.*
 import org.hl7.fhir.r4.model.codesystems.ObservationCategory
-
 import java.time.Instant
 
+/**
+ * An exporter class to generate variant content in various formats, such as Variant Call Format and FHIR (experimental)
+ *
+ * @since: 1.0.0
+ */
 class VariantExporter {
 
-    private static Map<String, String> vcfHeaders = [:]
-
     /**
-     * headers for different Variant Call Format versions*/
+     * Different headers for Variant Call Format versions
+     */
+    private static Map<String, String> vcfHeaders = [:]
     static {
         vcfHeaders['4.1'] = "##fileformat=VCFv4.1 " +
                 "\n##fileDate=%s\n##source=%s\n##reference=%s\nCHROM\tPOS\tID\tREF\tALT\tQUAL\tFILTER\tINFO"
@@ -21,19 +26,17 @@ class VariantExporter {
     }
 
     /**
-     * Generates VCF content from list of variants
-     * @param variants the variants to export in VCF
-     * @return a VCF content
+     * Generate Variant Call Format content for a list of variants.
+     * @param variants the variants to export
+     * @return variants in Variant Call Format representation
      */
-    static String exportVariantsToVCF(List<Variant> variants, Boolean withConsequences, Boolean withGenotypes, String
-            referenceGenome,
-                                      String annotationSoftware) {
+    static String exportVariantsToVCF(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean withGenotypes, String
+            referenceGenome, String annotationSoftware, String version) {
         def vcfContent = new StringBuilder()
         def date = new Date().format('yyyyMMdd')
 
-        //@TODO allow to choose VCF version
         // in this case, we have to add the given sample identifiers to the header
-        def vcfHeader = String.format(vcfHeaders["4.1"], date, 'variantstore', referenceGenome)
+        def vcfHeader = String.format(vcfHeaders[version], date, 'variantstore', referenceGenome)
         List<String> genotypeSamples = []
 
         if (withGenotypes) {
@@ -61,9 +64,9 @@ class VariantExporter {
                 def formatString = ""
                 var.getGenotypes().each { genotype ->
                     // make sure we write the genotype information for the sample in the header
-                    def genotypeIdx = genotypeSamples.findIndexOf { it == genotype.sampleName}
+                    def genotypeIdx = genotypeSamples.findIndexOf { it == genotype.sampleName }
                     assert genotype.sampleName == genotypeSamples[genotypeIdx]
-                    def genotypeVcf =  genotype.toVcfFormat()
+                    def genotypeVcf = genotype.toVcfFormat()
                     genotypeStrings.add(genotypeIdx, genotypeVcf.get(1))
                     formatString = genotypeVcf.get(0)
                 }
@@ -76,19 +79,18 @@ class VariantExporter {
     }
 
     /**
-     * Generates JSON content in FHIR format from list of variants
+     * Generate JSON content in FHIR format for a list of variants.
      * @param variants the variants to export in FHIR
-     * @return a FHIR content
+     * @return variants in FHIR representation
      */
     static String exportVariantsToFHIR(List<Variant> variants, Boolean withConsequences, String referenceGenome) {
-
         // @TODO get patient ID if needed
         def patientReference = new Reference(new Patient().setIdentifier([new Identifier().setValue("#patient")]))
 
         // initialize diagnostic report
         DiagnosticReport diagnosticReport = new DiagnosticReport().tap {
             meta = new Meta().tap {
-                profile = [new CanonicalType(new URI("http://hl7" + "" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/diagnosticreport"))]
+                profile = [new CanonicalType(new URI("http://hl7" + "" + "" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/diagnosticreport"))]
             }
             id = ""
             code = new CodeableConcept(new Coding("http://loinc.org", "81247-9", "Master HL7 genetic " + "variant " +
@@ -108,7 +110,7 @@ class VariantExporter {
                 variantReferences.add(new Reference("#${variant.identifier}"))
 
                 meta = new Meta().tap {
-                    profile = [new CanonicalType("http://hl7" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
+                    profile = [new CanonicalType("http://hl7" + "" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/StructureDefinition/variant")]
                 }
                 status = Observation.ObservationStatus.FINAL
                 category = [new CodeableConcept(new Coding(ObservationCategory.LABORATORY.system,
@@ -126,7 +128,7 @@ class VariantExporter {
             })
 
             variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
-                code = new CodeableConcept(new Coding("http://hl7" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes", "exact-start-end", "Variant exact start and end"))
+                code = new CodeableConcept(new Coding("http://hl7" + "" + "" + "" + "" + "" + ".org/fhir/uv/genomics-reporting/CodeSystem/tbd-codes", "exact-start-end", "Variant exact start and end"))
                 value = new Range().tap {
                     low = new Quantity(variant.startPosition.longValue())
                     high = new Quantity(variant.endPosition.longValue())
@@ -142,7 +144,6 @@ class VariantExporter {
                 value = new CodeableConcept(new Coding("http://loinc.org", "69551-0", "Genomic alt allele [ID]"))
                 value = new StringType(variant.observedAllele)
             })
-
 
             if (variant.consequences.get(0)) {
                 variantObservationComponents.add(new Observation.ObservationComponentComponent().tap {
@@ -272,10 +273,9 @@ class VariantExporter {
         diagnosticReport.contained = containedVariants
         diagnosticReport.result = variantReferences
 
-        // Create a context for R4, do we need other versions?
+        // create a context for R4, do we need other versions?
         FhirContext contextR4 = FhirContext.forR4()
         def fhirContent = contextR4.newJsonParser().setPrettyPrint(true).encodeResourceToString(diagnosticReport)
-
         return fhirContent
     }
 }
