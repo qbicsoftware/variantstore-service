@@ -41,7 +41,7 @@ class SampleController {
 
     /**
      * Retrieve sample by identifier
-     * @param identifier The sample identifier
+     * @param identifier the sample identifier
      * @return the found sample or 404 Not Found
      */
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)

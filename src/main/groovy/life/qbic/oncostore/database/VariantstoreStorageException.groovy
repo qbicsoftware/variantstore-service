@@ -1,5 +1,10 @@
 package life.qbic.oncostore.database
 
+/**
+ * A class for Variantstore storage-specific exceptions.
+ *
+ * @since: 1.0.0
+ */
 class VariantstoreStorageException extends RuntimeException{
 
     VariantstoreStorageException() {
