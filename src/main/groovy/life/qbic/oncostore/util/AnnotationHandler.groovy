@@ -5,19 +5,30 @@ import life.qbic.oncostore.model.Annotation
 import life.qbic.oncostore.model.Consequence
 import life.qbic.oncostore.model.SimpleVariantContext
 
-
 /**
- * Static class to provide mapping of consequence annotation attributes
- * to index for different version of Ensembl Variant Effect Predictor and SnpEff.
+ * Static class to provide mapping of consequence annotation attributes to index
+ * for different version of Ensembl Variant Effect Predictor (VEP) and SnpEff.
+ *
+ * Futher used to parse given annotation string and to populate {@Consequence} objects.
+ *
+ * @since: 1.0.0
  */
-
 @Log4j2
-public class AnnotationHandler {
+class AnnotationHandler {
 
+    /**
+     * Maps holding mapping of properties to position in string.
+     */
     public static Map<String, Map<String, Object>> vep = [:]
     public static Map<String, Map<String, Object>> snpEff = [:]
+    /**
+     * Map to store output format for different SnpEff versions
+     */
     public static Map<String, String> snpEffOutput = [:]
 
+    /**
+     * Available annotation tool tags as found in annotation variants in VCF files.
+     */
     enum AnnotationTools{
         VEP("CSQ"), SNPEFF("ANN")
 
@@ -81,18 +92,18 @@ public class AnnotationHandler {
     }
 
     /**
-     *
-     * @param simpleVariant
+     * Add annotations as consequence objects to variant.
+     * @param simpleVariant a variant and its annotations
      * @param annotationSoftware
-     * @return
+     * @return a variant with assigned consequences
      */
     static SimpleVariantContext addAnnotationsToVariant(SimpleVariantContext simpleVariant, Annotation annotationSoftware) {
         def variantConsequences = []
-        def annotationTool = annotationSoftware.getName().toUpperCase()  as AnnotationTools
-        def consequences = simpleVariant.getAttribute(annotationTool.getTag())
-        consequences.each { annotation ->
+
+        simpleVariant.consequences.each { annotation ->
+            def annotationString = annotation.toString()
             def cons = new Consequence()
-            def consequence = populateConsequence(cons, annotation as String, annotationSoftware)
+            def consequence = populateConsequence(cons, annotationString, annotationSoftware)
             if (consequence) { variantConsequences.add(consequence) }
         }
 
@@ -101,32 +112,33 @@ public class AnnotationHandler {
     }
 
     /**
-     *
-     * @param cons
-     * @param annotation
-     * @param annotationSoftware
-     * @return
+     * Populate Consequence object with values parsed from provided annotation String.
+     * @param cons a Consequence object
+     * @param annotation a String containing variant annotations
+     * @param annotationSoftware a annotation software used to generate the annotations
+     * @return a populated Consequence object
      */
     private static Consequence populateConsequence(Consequence cons, String annotation, Annotation annotationSoftware) {
         def parsedAnnotation = annotation.split('\\|', -1)
         def version = annotationSoftware.getVersion()
         def softwareName = annotationSoftware.getName().toUpperCase() as AnnotationTools
 
-        switch (softwareName)  {
+        switch (softwareName) {
             case AnnotationTools.VEP:
                 cons.allele = parsedAnnotation[vep[version].get("allele") as Integer]
                 cons.codingChange = parsedAnnotation[vep[version].get("cdsCoding") as Integer]
-                cons.transcriptId = parsedAnnotation[vep[version].get("transcriptId")as Integer]
-                def (transcriptVersion, aaChange) = parsedAnnotation[vep[version].get("proteinCoding")as Integer].tokenize(':')
+                cons.transcriptId = parsedAnnotation[vep[version].get("transcriptId") as Integer]
+                def (transcriptVersion, aaChange) = parsedAnnotation[vep[version].get("proteinCoding") as Integer]
+                        .tokenize(':')
                 cons.transcriptVersion = transcriptVersion ? transcriptVersion.split(".")[-1] : -1
                 cons.aaChange = aaChange ?: ''
-                cons.type = parsedAnnotation[vep[version].get("consequence")as Integer]
-                cons.bioType = parsedAnnotation[vep[version].get("bioType")as Integer]
+                cons.type = parsedAnnotation[vep[version].get("consequence") as Integer]
+                cons.bioType = parsedAnnotation[vep[version].get("bioType") as Integer]
                 def canonical = parsedAnnotation[vep[version].get("canonical") as Integer]
                 cons.canonical = canonical && canonical == "YES"
-                cons.featureType = parsedAnnotation[vep[version].get("featureType")as Integer]
-                cons.exon = parsedAnnotation[vep[version].get("exon")as Integer]
-                cons.intron = parsedAnnotation[vep[version].get("intron")as Integer]
+                cons.featureType = parsedAnnotation[vep[version].get("featureType") as Integer]
+                cons.exon = parsedAnnotation[vep[version].get("exon") as Integer]
+                cons.intron = parsedAnnotation[vep[version].get("intron") as Integer]
                 /* for insertions and deletions we expect a range (start-end) for the protein position  */
                 def (protPosition, protLength) = parsedAnnotation[vep[version].get("protPos") as Integer].tokenize('/')
                 cons.proteinPosition = protPosition ?: ''
@@ -134,7 +146,7 @@ public class AnnotationHandler {
                 cons.geneId = parsedAnnotation[vep[version].get("gene") as Integer]
                 cons.geneSymbol = parsedAnnotation[vep[version].get("symbol") as Integer]
                 def (cdna, cdnaLength) = parsedAnnotation[vep[version].get("cdnaPos") as Integer].tokenize('/')
-                def (cds, cdsLength) = parsedAnnotation[vep[version].get("cdsPos")  as Integer].tokenize('/')
+                def (cds, cdsLength) = parsedAnnotation[vep[version].get("cdsPos") as Integer].tokenize('/')
                 cons.cdsPosition = cds ?: ''
                 cons.cdnaPosition = cdna ?: ''
                 cons.cdsLength = cdsLength && !cdsLength.isEmpty() ? cdsLength.toInteger() : -1
@@ -148,40 +160,46 @@ public class AnnotationHandler {
                 break
 
             case AnnotationTools.SNPEFF:
-                cons.allele = parsedAnnotation[snpEff[version].get("allele") as Integer]
-                cons.codingChange = parsedAnnotation[snpEff[version].get("cdsCoding")  as Integer]
-                cons.transcriptId = parsedAnnotation[snpEff[version].get("transcriptId") as Integer]
-                cons.featureType = parsedAnnotation[snpEff[version].get("featureType") as Integer]
-                cons.exon = parsedAnnotation[snpEff[version].get("rank") as Integer]
-                // There is only rank in SNPEFF annotations in contrast to VEP, so we will use exon to store rank information
+                def geneId = (parsedAnnotation[snpEff[version].get("gene") as Integer].intern() != '') ?
+                        parsedAnnotation[snpEff[version].get("gene") as Integer].intern() : ''
+                cons.geneId = geneId
+                if ((geneId == null) || (geneId == "")) {
+                    //log.info("Skipping annotaton with transcript id ${cons.transcriptId} due to missing gene
+                    // identifier.")
+                    return null
+                }
+                cons.allele = parsedAnnotation[snpEff[version].get("allele") as Integer].intern()
+                cons.codingChange = parsedAnnotation[snpEff[version].get("cdsCoding") as Integer].intern()
+                def transId = parsedAnnotation[snpEff[version].get("transcriptId") as Integer].tokenize('.') ?: []
+
+                cons.transcriptId = transId[0]
+                cons.featureType = parsedAnnotation[snpEff[version].get("featureType") as Integer].intern()
+                cons.exon = parsedAnnotation[snpEff[version].get("rank") as Integer].intern()
+                // There is only rank in SNPEFF annotations in contrast to VEP, so we will use exon to store rank
+                // information
                 cons.intron = ''
-                def (cdna, cdnaLength) = parsedAnnotation[snpEff[version].get("cdna") as Integer].tokenize('/')
-                def (cds, cdsLength) = parsedAnnotation[snpEff[version].get("cds")  as Integer].tokenize('/')
-                def (protPosition, protLength) = parsedAnnotation[snpEff[version].get("protein") as Integer].tokenize('/')
-                def featureVersion  = cons.transcriptId.split('.')
-                cons.transcriptVersion = !featureVersion.toList().isEmpty() ? featureVersion[-1].toInteger(): -1
+                def (cdna, cdnaLength) = parsedAnnotation[snpEff[version].get("cdna") as Integer].intern().tokenize('/')
+                def (cds, cdsLength) = parsedAnnotation[snpEff[version].get("cds") as Integer].intern().tokenize('/')
+                def (protPosition, protLength) = parsedAnnotation[snpEff[version].get("protein") as Integer].intern()
+                        .tokenize('/')
+
+                cons.transcriptVersion = transId.size() > 1 ? transId[-1].toInteger() : -1
                 cons.proteinPosition = protPosition ?: ""
                 cons.proteinLength = protLength && !protLength.isEmpty() ? protLength.toInteger() : -1
                 cons.cdsPosition = cds ?: ""
                 cons.cdsLength = cdsLength && !cdsLength.isEmpty() ? cdsLength.toInteger() : -1
                 cons.cdnaPosition = cdna ?: ""
                 cons.cdnaLength = cdnaLength && !cdnaLength.isEmpty() ? cdnaLength.toInteger() : -1
-                cons.type = parsedAnnotation[snpEff[version].get("consequence") as Integer]
-                cons.bioType = parsedAnnotation[snpEff[version].get("bioType") as Integer]
+                cons.type = parsedAnnotation[snpEff[version].get("consequence") as Integer].intern()
+                cons.bioType = parsedAnnotation[snpEff[version].get("bioType") as Integer].intern()
                 cons.canonical = false //how to determine?
                 cons.strand = 0 //how to determine?
-                cons.aaChange = parsedAnnotation[snpEff[version].get("proteinCoding") as Integer]
-                cons.impact = parsedAnnotation[snpEff[version].get("impact") as Integer]
-                def geneId = (parsedAnnotation[snpEff[version].get("gene") as Integer] != '') ? parsedAnnotation[snpEff[version].get("gene") as Integer] : ''
-                if ((geneId == null) || (geneId == "")) {
-                    log.info("Skipping annotaton with transcript id ${cons.transcriptId} due to missing gene identifier.")
-                    return null
-                }
-                cons.geneId = geneId
-                cons.geneSymbol = parsedAnnotation[snpEff[version].get("symbol") as Integer]
-                def distance = parsedAnnotation[snpEff[version].get("distance") as Integer]
+                cons.aaChange = parsedAnnotation[snpEff[version].get("proteinCoding") as Integer].intern()
+                cons.impact = parsedAnnotation[snpEff[version].get("impact") as Integer].intern()
+                cons.geneSymbol = parsedAnnotation[snpEff[version].get("symbol") as Integer].intern()
+                def distance = parsedAnnotation[snpEff[version].get("distance") as Integer].intern()
                 cons.distance = distance && !distance.isEmpty() ? distance.toInteger() : -1
-                cons.warnings = parsedAnnotation[snpEff[version].get("warnings") as Integer]
+                cons.warnings = parsedAnnotation[snpEff[version].get("warnings") as Integer].intern()
                 break
 
             default:
@@ -192,24 +210,26 @@ public class AnnotationHandler {
     }
 
     /**
-     * Generate snpEff output for consequence
+     * Generates SnpEff output for a Consequence object
      * @param cons the provided consequence
      * @return a snpEff annotation
      */
     static String toSnpEff(Consequence cons) {
         //@TODO determine version of annotation software?
-
-        return sprintf(snpEffOutput["4.3t"], cons.allele, cons.type, cons.impact, cons.geneSymbol, cons.geneId, cons.featureType, cons.transcriptId, cons.bioType, cons.exon, cons.codingChange, cons.aaChange, "/".join(cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(cons.cdsPosition.toString(), cons.cdsPosition.toString()), "/".join(cons.proteinPosition.toString(), cons.proteinLength.toString()), cons.distance.toString(), cons.warnings)
+        return sprintf(snpEffOutput["4.3t"], cons.allele, cons.type, cons.impact, cons.geneSymbol, cons.geneId, cons
+                .featureType, cons.transcriptId, cons.bioType, cons.exon, cons.codingChange, cons.aaChange, "/".join
+                (cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(cons.cdsPosition.toString(),
+                cons.cdsPosition.toString()), "/".join(cons.proteinPosition.toString(), cons.proteinLength.toString()
+        ), cons.distance.toString(), cons.warnings)
     }
 
-    //@TODO implement
+    //@TODO implement VEP output string generation
     /**
-     * Generates VEP output for consequence
+     * Generates Variant Effect Predictor output for a Consequence object
      * @param cons the provided consequence
      * @return a VEP annotation
      */
     static String toVep(Consequence cons) {
-
-        return ""
+        return cons.toString()
     }
 }
