@@ -16,39 +16,66 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
-import life.qbic.oncostore.model.*
+import life.qbic.oncostore.model.TransactionStatus
+import life.qbic.oncostore.model.TransactionStatusRepository
+import life.qbic.oncostore.model.Variant
 import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
-
 import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.inject.Named
 import java.util.concurrent.ExecutorService
 
+/**
+ * Controller for variant requests.
+ *
+ * This handles requests that try to retrieve information on variants from the store.
+ *
+ * @since: 1.0.0
+ */
 @Log4j2
 @Controller("/variants")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class VariantController {
 
+    /**
+     * The Variantstore service instance
+     */
     private final VariantstoreService service
+    /**
+     * The executor service instance
+     */
+    @Inject
+    @Named(TaskExecutors.IO)
+    ExecutorService ioExecutorService
+
+    /**
+     * The embedded server instance
+     */
+    @Inject
+    EmbeddedServer server
+    /**
+     * The repository instance to track the transaction status during variant import
+     */
+    @Inject
+    TransactionStatusRepository repository
+    /**
+     * The transaction status
+     */
+    TransactionStatus transactionStatus
 
     @Inject
     VariantController(VariantstoreService service) {
         this.service = service
     }
 
-    @Inject
-    @Named(TaskExecutors.IO)
-    ExecutorService ioExecutorService
-
-    @Inject
-    EmbeddedServer server
-
-    @Inject
-    TransactionStatusRepository repository
-
+    /**
+     * Retrieve variant by identifier
+     * @param identifier the variant identifier
+     * @return the found variant or 404 Not Found
+     */
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a variant",
             description = "The variant with the specified identifier is returned.",
@@ -74,8 +101,19 @@ class VariantController {
         }
     }
 
-    @Get(uri = "{?args*}", produces = [MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN])
-    @Operation(summary = "Request a set of variants",
+    /**
+     * Retrieve variants by providing filtering options
+     * @param args the filtering arguments
+     * @param format the format in which variants should be returned (JSON (default)/VCF/FHIR)
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if variants should be returned with consequences
+     * @param annotationSoftware the annotation software
+     * @param withGenotypes true if variants should be returned with connected genotype information
+     * @param vcfVersion the Variant Call Format version
+     * @return the found variants or 404 Not Found
+     */
+    @Get(uri = "{?args*}{?format,referenceGenome,withConsequences,annotationSoftware,withGenotypes,vcfVersion}", produces = [MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN])
+    @Operation(summary = "Request a set of variats",
             description = "The variants matching the supplied properties are returned.",
             tags = "Variant")
     @ApiResponse(responseCode = "200", description = "Returns a set of variants", content = @Content(mediaType =
@@ -83,10 +121,10 @@ class VariantController {
             schema = @Schema(implementation = Variant.class, type = "object")))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @Nullable String format, @QueryValue
+    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @QueryValue @Nullable String format, @QueryValue
             (defaultValue = "GRCh37") @Nullable String referenceGenome, @QueryValue(defaultValue = "false") @Nullable
             Boolean withConsequences, @QueryValue(defaultValue = "snpeff") @Nullable String annotationSoftware,
-                                            @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes) {
+                                            @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes, @QueryValue(defaultValue = "4.1") @Nullable String vcfVersion) {
         log.info("Resource request for variants with filtering options.")
         try {
             def variants
@@ -100,7 +138,7 @@ class VariantController {
 
                 if (format.toUpperCase() == IdValidator.VariantFormats.VCF.toString()) {
                     return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences, withGenotypes,
-                            referenceGenome, annotationSoftware))
+                            referenceGenome, annotationSoftware, vcfVersion))
                             .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
                             .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
                             "matching " + "provided attributes.") as HttpResponse<List<Variant>>
@@ -125,6 +163,12 @@ class VariantController {
         }
     }
 
+    /**
+     * Store provided variants in the store.
+     * @param metadata the provided metadata
+     * @param files the provided VCF (or VCF.gz) files containing variants
+     * @return 202 Accepted
+     */
     @Operation(summary = "Add variants to the store",
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
@@ -135,16 +179,12 @@ class VariantController {
             def statusId = UUID.randomUUID().toString()
 
             // build location for response
-            def uri = UriBuilder.of("${server.getURI()}/variants/upload/status/${statusId}").build()
+            def uri = UriBuilder.of("/variants/upload/status/${statusId}").build()
+            def transactionStatus = null
 
-            List<SimpleVariantContext> variantsToAdd = []
             files.subscribeOn(Schedulers.from(ioExecutorService))
-                    .subscribe { file ->
+                    .subscribe() { file ->
                         log.info("Processing file ${file.filename}")
-                        variantsToAdd = []
-                        SimpleVCFReader reader = new SimpleVCFReader(file.inputStream)
-                        reader.iterator().each { variant -> variantsToAdd.add(variant)
-                        }
 
                         def newStatus = new TransactionStatus().tap {
                             uuid = statusId
@@ -152,18 +192,28 @@ class VariantController {
                             fileSize = file.size
                             status = life.qbic.oncostore.model.Status.processing
                         }
-                        def test = repository.save(newStatus)
 
-                        service.storeVariantsInStore(metadata, variantsToAdd)
-                        repository.updateStatus(test.getId(), life.qbic.oncostore.model.Status.finished.toString())
+                        transactionStatus = repository.save(newStatus)
+                        service.storeVariantsInStore(metadata, file.inputStream)
+                        System.gc()
                     }
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {
             log.error(exception)
             return HttpResponse.badRequest("Upload of variants failed.");
         }
+        finally {
+            repository.updateStatus(transactionStatus.getId(), life.qbic.oncostore.model.Status.finished.toString())
+            System.gc()
+            Schedulers.shutdown()
+        }
     }
 
+    /**
+     * Retrieve transaction status by identifier.
+     * @param identifier the transaction identifier
+     * @return the transaction status
+     */
     @Get(uri = "/upload/status/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request the variant upload status",
             description = "The status for the requested variant upload is shown.",
