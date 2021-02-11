@@ -2,26 +2,81 @@ package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
+import htsjdk.variant.variantcontext.VariantContext
 import io.swagger.v3.oas.annotations.media.Schema
 
+/**
+ * A variant with all accompanied information
+ *
+ * @since: 1.0.0
+ */
 @EqualsAndHashCode
-@Schema(name="Variant", description="A genomic variant")
-class Variant implements SimpleVariantContext, Comparable{
+@Schema(name = "Variant", description = "A genomic variant")
+class Variant implements SimpleVariantContext, Comparable {
 
+    /**
+     * The identifier (UUID) of a given variant
+     */
     String identifier
+    /**
+     * The database identifier (i.e. DBSNP) of a given variant
+     */
     String databaseIdentifier
+    /**
+     * The chromosome of a given variant
+     */
     String chromosome
+    /**
+     * The start position of a given variant
+     */
     BigInteger startPosition
+    /**
+     * The end position of a given variant
+     */
     BigInteger endPosition
+    /**
+     * The reference allele of a given variant
+     */
     String referenceAllele
+    /**
+     * The observed allele of a given variant
+     */
     String observedAllele
-    List<Consequence> consequences
-    ReferenceGenome referenceGenome
+    /**
+     * The consequences of a given variant
+     */
+    ArrayList consequences
+    /**
+     * Describes whether a given variant is somatic
+     */
     Boolean isSomatic
+    /**
+     * The information given in a VCF file for a given variant
+     */
     VcfInfo vcfInfo
+    /**
+     * The genotype information for a given variant
+     */
     List<Genotype> genotypes
 
-    Variant() {
+    Variant() {}
+
+    // create variant object from htsjdk variant context, given annotation type
+    Variant(VariantContext context, String annotationType) {
+        chromosome = context.contig
+        startPosition = context.start
+        endPosition = context.end
+        referenceAllele = context.reference.toString().replace("*", "")
+        observedAllele = context.alternateAlleles.join(',')
+        vcfInfo = new VcfInfo(context.getCommonInfo())
+        databaseIdentifier = context.getID()
+        List<Genotype> genotypes = []
+        consequences = annotationType ? context.getAttributeAsList(annotationType) : null
+        context.getGenotypes().each { genotype -> genotypes.add(new Genotype(genotype))
+        }
+
+        if (genotypes.empty) genotypes.add(new Genotype())
+        this.genotypes = genotypes
     }
 
     @Override
@@ -59,7 +114,7 @@ class Variant implements SimpleVariantContext, Comparable{
         this.isSomatic = isSomatic
     }
 
-    void setConsequences(List<Consequence> consequences) {
+    void setConsequences(ArrayList consequences) {
         this.consequences = consequences
     }
 
@@ -79,88 +134,85 @@ class Variant implements SimpleVariantContext, Comparable{
         this.genotypes = genotypes
     }
 
-    @Schema(description="The chromosome")
+    @Schema(description = "The chromosome")
     @JsonProperty("chromosome")
     @Override
     String getChromosome() {
         return chromosome
     }
 
-    @Schema(description="The genomic start position")
+    @Schema(description = "The genomic start position")
     @JsonProperty("startPosition")
     @Override
     BigInteger getStartPosition() {
         return startPosition
     }
 
-    @Schema(description="The genomic end position")
+    @Schema(description = "The genomic end position")
     @JsonProperty("endPosition")
     @Override
     BigInteger getEndPosition() {
         return endPosition
     }
 
-    @Schema(description="The reference allele")
+    @Schema(description = "The reference allele")
     @JsonProperty("referenceAllele")
     @Override
     String getReferenceAllele() {
         return referenceAllele
     }
 
-    @Schema(description="The observed allele")
+    @Schema(description = "The observed allele")
     @JsonProperty("observedAllele")
     @Override
     String getObservedAllele() {
         return observedAllele
     }
 
-    @Schema(description="The consequences")
+    @Schema(description = "The consequences")
     @JsonProperty("consequences")
     @Override
     List<Consequence> getConsequences() {
         return consequences
     }
 
-    @Schema(description="The reference genome")
-    @JsonProperty("referenceGenome")
-    @Override
-    ReferenceGenome getReferenceGenome() {
-        return referenceGenome
-    }
-
-    @Schema(description="Is it a somatic variant?")
+    @Schema(description = "Is it a somatic variant?")
     @JsonProperty("isSomatic")
     @Override
     Boolean getIsSomatic() {
         return isSomatic
     }
 
-    @Schema(description="The variant identifier")
+    @Schema(description = "The variant identifier")
     @JsonProperty("identifier")
     @Override
     String getId() {
         return identifier
     }
 
-    @Schema(description="The information given in the INFO column of a VCF file")
+    @Schema(description = "The information given in the INFO column of a VCF file")
     @JsonProperty("info")
     @Override
     VcfInfo getVcfInfo() {
         return vcfInfo
     }
 
-    @Schema(description="The database identifier of this variant (if available)")
+    @Schema(description = "The database identifier of this variant (if available)")
     @JsonProperty("databaseIdentifier")
     String getDatabaseId() {
         return databaseIdentifier
     }
 
-    @Schema(description="The genotypes associated with this variant")
+    @Schema(description = "The genotypes associated with this variant")
     @JsonProperty("genotypes")
     List<Genotype> getGenotypes() {
         return genotypes
     }
 
+    /**
+     * Generate variant content in Variant Call Format.
+     * @return variant information in Variant Call Format
+     */
     String toVcfFormat() {
         def vcfInfo = vcfInfo.toVcfFormat() ?: '.'
         return new StringBuilder().append(chromosome + "\t").append(startPosition + "\t").append(databaseIdentifier +
