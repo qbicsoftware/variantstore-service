@@ -20,9 +20,9 @@ import io.swagger.v3.oas.annotations.info.License
 
 @Log4j2
 @CompileStatic
-class Application {
+class Variantstore {
     static void main(String[] args) {
         log.info("Variantstore service started.")
-        Micronaut.run(Application.class)
+        Micronaut.run(Variantstore.class)
     }
 }
