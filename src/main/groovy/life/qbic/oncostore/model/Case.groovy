@@ -16,11 +16,11 @@ class Case {
     /**
      * The identifier of a case
      */
-    String identifier
+    final String identifier
     /**
      * The project identifier associated with a case
      */
-    String projectId
+    final String projectId
 
     Case(String identifier, String projectId) {
         this.identifier = identifier
@@ -29,9 +29,8 @@ class Case {
 
     Case(String identifier) {
         this.identifier = identifier
+        this.projectId = ""
     }
-
-    Case() {}
 
     @Schema(description = "The case identifier")
     @JsonProperty("id")
@@ -43,13 +42,5 @@ class Case {
     @JsonProperty("projectId")
     String getProjectId() {
         return projectId
-    }
-
-    void setIdentifier(String identifier) {
-        this.identifier = identifier
-    }
-
-    void setProjectId(String projectId) {
-        this.projectId = projectId
     }
 }

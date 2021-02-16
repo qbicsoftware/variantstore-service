@@ -97,7 +97,7 @@ class MetadataReader {
         def samples = []
         jsonContent.samples.each { sample ->
             def cancerEntity = sample.cancerEntity ?: ''
-            samples.add(new Sample(sample.identifier, cancerEntity))
+            samples.add(new Sample(sample.identifier, cancerEntity, jsonContent.case.identifier))
         }
         return samples
     }

@@ -18,77 +18,75 @@ class VcfInfo {
     /**
      * The ancestral allele
      **/
-    String ancestralAllele
+    final String ancestralAllele
     /**
      * The allele count
      **/
-    List<Integer> alleleCount
+    final List<Integer> alleleCount
     /**
      * The allele frequency
      **/
-    List<Float> alleleFrequency
+    final List<Float> alleleFrequency
     /**
      * The number of alleles
      **/
-    Integer numberAlleles
+    final Integer numberAlleles
     /**
      * The RMS base quality
      **/
-    Integer baseQuality
+    final Integer baseQuality
     /**
      * The cigar string describing how to align an alternate allele to the reference allele
      **/
-    String cigar
+    final String cigar
     /**
      * Membership in dbSNP ?
      **/
-    Boolean dbSnp
+    final Boolean dbSnp
     /**
      * Membership in hapmap2 ?
      **/
-    Boolean hapmapTwo
+    final Boolean hapmapTwo
     /**
      * Membership in hapmap3 ?
      **/
-    Boolean hapmapThree
+    final Boolean hapmapThree
     /**
      * Membership in 1000 Genomes ?
      **/
-    Boolean thousandGenomes
+    final Boolean thousandGenomes
     /**
      * The combined depth (DP) across samples
      **/
-    Integer combinedDepth
+    final Integer combinedDepth
     /**
      * The end position of the described variant
      **/
-    Integer endPos
+    final Integer endPos
     /**
      * The RMS mapping quality (MQ)
      **/
-    Float rms
+    final Float rms
     /**
      * The number of MAPQ==0 reads covering this record (MQ0)
      **/
-    Integer mqZero
+    final Integer mqZero
     /**
      * The strand bias at this position
      **/
-    Integer strandBias
+    final Integer strandBias
     /**
      * The number of samples with data
      **/
-    Integer numberSamples
+    final Integer numberSamples
     /**
      * Indicates that the record is a somatic mutation
      **/
-    Boolean somatic
+    final Boolean somatic
     /**
      * Validated by follow-up experiment
      **/
-    Boolean validated
-
-    VcfInfo() { }
+    final Boolean validated
 
     VcfInfo(CommonInfo commonInfo) {
         //TODO check if that isn`t AA (amino acid) annotation?
@@ -110,6 +108,30 @@ class VcfInfo {
         this.numberSamples = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.NUMBERSAMPLES.tag, -1)
         this.somatic = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.SOMATIC.tag, false)
         this.validated = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.VALIDATED.tag, false)
+    }
+
+    VcfInfo(String ancestralAllele, List<Integer> alleleCount, List<Float> alleleFrequency, Integer numberAlleles,
+            Integer baseQuality, String cigar, Boolean dbSnp, Boolean hapmapTwo, Boolean hapmapThree, Boolean
+                    thousandGenomes, Integer combinedDepth, Integer endPos, Float rms, Integer mqZero, Integer
+                    strandBias, Integer numberSamples, Boolean somatic, Boolean validated) {
+        this.ancestralAllele = ancestralAllele
+        this.alleleCount = alleleCount
+        this.alleleFrequency = alleleFrequency
+        this.numberAlleles = numberAlleles
+        this.baseQuality = baseQuality
+        this.cigar = cigar
+        this.dbSnp = dbSnp
+        this.hapmapTwo = hapmapTwo
+        this.hapmapThree = hapmapThree
+        this.thousandGenomes = thousandGenomes
+        this.combinedDepth = combinedDepth
+        this.endPos = endPos
+        this.rms = rms
+        this.mqZero = mqZero
+        this.strandBias = strandBias
+        this.numberSamples = numberSamples
+        this.somatic = somatic
+        this.validated = validated
     }
 
     String getAncestralAllele() {

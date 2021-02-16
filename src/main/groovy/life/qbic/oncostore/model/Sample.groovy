@@ -16,26 +16,20 @@ class Sample {
     /**
      * The identifier of a given sample
      */
-    String identifier
+    final String identifier
     /**
      * The annotated cancer entity of a given sample
      */
-    String cancerEntity
+    final String cancerEntity
     /**
      * The associated case (patient) identifier of a given sample
      */
-    String caseId
+    final String caseId
 
-    Sample(String identifier, String cancerEntity) {
+    Sample(String identifier, String cancerEntity, String caseId) {
         this.identifier = identifier
         this.cancerEntity = cancerEntity
-    }
-
-    Sample(String identifier) {
-        this.identifier = identifier
-    }
-
-    Sample() {
+        this.caseId = caseId
     }
 
     @Schema(description="The sample identifier")
@@ -54,17 +48,5 @@ class Sample {
     @JsonProperty("caseID")
     String getCaseId() {
         return caseId
-    }
-
-    void setIdentifier(String identifier) {
-        this.identifier = identifier
-    }
-
-    void setCancerEntity(String cancerEntity) {
-        this.cancerEntity = cancerEntity
-    }
-
-    void setCaseId(String caseId) {
-        this.caseId = caseId
     }
 }

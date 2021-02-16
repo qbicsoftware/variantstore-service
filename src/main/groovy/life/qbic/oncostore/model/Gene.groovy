@@ -16,63 +16,60 @@ class Gene {
     /**
      * The chromosome of a gene
      */
-    String chromosome
+    final String chromosome
     /**
      * The symbol of a gene
      */
-    String symbol
+    final String symbol
     /**
      * The name of a gene
      */
-    String name
+    final String name
     /**
      * The biological classification (such as pseudogene and protein coding) of a gene
      */
-    String bioType
+    final String bioType
     /**
      * The description available for a gene
      */
-    String description
+    final String description
     /**
      * The start position of a gene
      */
-    BigInteger geneStart
+    final BigInteger geneStart
     /**
      * The end position of a gene
      */
-    BigInteger geneEnd
+    final BigInteger geneEnd
     /**
      * The identifier of a gene
      */
-    String geneId
+    final String geneId
     /**
      * The strand of a gene
      */
-    String strand
+    final String strand
     /**
      * The version of a gene
      */
-    Integer version
+    final Integer version
     /**
      * The associated synonyms of a gene
      */
-    List<String> synonyms
+    final List<String> synonyms
 
-    Gene() {}
-
-    Gene(String geneId) {
-        this.geneId = geneId
-    }
-
-    Gene(String chromosome, String symbol, String name, String bioType, BigInteger geneStart, BigInteger geneEnd,
-         String geneId, List<String> synonyms) {
+    Gene(String bioType, String chromosome, String symbol, String name, BigInteger geneStart, BigInteger geneEnd,
+         String geneId, String description, String strand, Integer version, List<String> synonyms) {
+        this.bioType = bioType
         this.chromosome = chromosome
         this.symbol = symbol
         this.name = name
-        this.bioType = bioType
         this.geneStart = geneStart
         this.geneEnd = geneEnd
         this.geneId = geneId
+        this.description = description
+        this.strand = strand
+        this.version = version
         this.synonyms = synonyms
     }
 
@@ -140,49 +137,5 @@ class Gene {
     @JsonProperty("version")
     Integer getVersion() {
         return version
-    }
-
-    void setStrand(String strand) {
-        this.strand = strand
-    }
-
-    void setVersion(Integer version) {
-        this.version = version
-    }
-
-    void setDescription(String description) {
-        this.description = description
-    }
-
-    void setChromosome(String chromosome) {
-        this.chromosome = chromosome
-    }
-
-    void setSymbol(String geneSymbol) {
-        this.symbol = geneSymbol
-    }
-
-    void setName(String name) {
-        this.name = name
-    }
-
-    void setBioType(String bioType) {
-        this.bioType = bioType
-    }
-
-    void setGeneStart(BigInteger geneStart) {
-        this.geneStart = geneStart
-    }
-
-    void setGeneEnd(BigInteger geneEnd) {
-        this.geneEnd = geneEnd
-    }
-
-    void setGeneId(String geneID) {
-        this.geneId = geneID
-    }
-
-    void setSynonyms(List<String> synonyms) {
-        this.synonyms = synonyms
     }
 }
