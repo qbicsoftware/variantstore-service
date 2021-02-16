@@ -13,7 +13,7 @@ import io.swagger.v3.oas.annotations.info.License
                 title = "Variantstore",
                 version = "0.9",
                 description = "Variantstore Restful API",
-                license = @License(name = "", url = ""),
+                license = @License(name = "MIT License", url = "https://opensource.org/licenses/mit-license.php"),
                 contact = @Contact(url = "https://github.com/christopher-mohr", name = "Christopher Mohr", email = "christopher.mohr@uni-tuebingen.de")
         )
 )

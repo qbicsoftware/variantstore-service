@@ -31,7 +31,7 @@ class VariantExporter {
      * @return variants in Variant Call Format representation
      */
     static String exportVariantsToVCF(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean withGenotypes, String
-            referenceGenome, String annotationSoftware, String version) {
+            referenceGenome, String annotationSoftware, String annotationSoftwareVersion, String version) {
         def vcfContent = new StringBuilder()
         def date = new Date().format('yyyyMMdd')
 
@@ -53,10 +53,10 @@ class VariantExporter {
                 vcfContent.append(";")
                 if (annotationSoftware.toLowerCase() == "snpeff") {
                     vcfContent.append("${AnnotationHandler.AnnotationTools.SNPEFF.tag}=")
-                    vcfContent.append(var.consequences.collect { AnnotationHandler.toSnpEff(it) }.join(","))
+                    vcfContent.append(var.consequences.collect { AnnotationHandler.toSnpEff(it, annotationSoftwareVersion) }.join(","))
                 } else {
                     vcfContent.append("${AnnotationHandler.AnnotationTools.VEP.tag}=")
-                    vcfContent.append(var.consequences.collect { AnnotationHandler.toVep(it) }.join(","))
+                    vcfContent.append(var.consequences.collect { AnnotationHandler.toVep(it, annotationSoftwareVersion) }.join(","))
                 }
             }
             if (withGenotypes) {
