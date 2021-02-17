@@ -89,18 +89,8 @@ class VariantstoreInformationCenter implements VariantstoreService{
                                         String reference, String observed, String assemblyId) {
 
         List<Variant> variants = storage.findVariantsForBeaconResponse(chromosome, start, reference, observed, assemblyId)
-
-        BeaconAlleleRequest request = new BeaconAlleleRequest()
-        request.setAlternateBases(observed)
-        request.setAssemblyId(assemblyId)
-        request.setReferenceBases(reference)
-        request.setReferenceName(chromosome)
-        request.setStart(start)
-
-        BeaconAlleleResponse response = new BeaconAlleleResponse()
-        response.setAlleleRequest(request)
-        response.setExists(!variants.empty)
-
+        BeaconAlleleRequest request = new BeaconAlleleRequest(chromosome, start, reference, observed, assemblyId)
+        BeaconAlleleResponse response = new BeaconAlleleResponse(request, !variants.empty)
         return response
     }
 
@@ -145,12 +135,18 @@ class VariantstoreInformationCenter implements VariantstoreService{
      */
     @Override
     @Transactional
-    String getVcfContentForVariants(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean withGenotypes,
-                                    String referenceGenome, String annotationSoftware, String version) {
+    String getVcfContentForVariants(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean
+            withGenotypes,
+                                    String referenceGenome, String annotationSoftware, String
+                                            annotationSoftwareVersion, String version) {
         // order variants by position in order to get valid VCF file
-        return VariantExporter.exportVariantsToVCF(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
-                .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
-                .chromosome) ?: a.startPosition <=> b.startPosition } as List<SimpleVariantContext>, withConsequences, withGenotypes, referenceGenome, annotationSoftware, version) }
+        return VariantExporter.exportVariantsToVCF(variants.sort { a, b ->
+            (a.chromosome?.isInteger() ? a.chromosome
+                    .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
+                    .chromosome) ?: a.startPosition <=> b.startPosition
+        } as List<SimpleVariantContext>, withConsequences, withGenotypes, referenceGenome, annotationSoftware,
+                annotationSoftwareVersion, version)
+    }
 
     /**
      * {@inheritDoc}
@@ -178,7 +174,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      */
     @Override
     @Transactional
-    void storeVariantsInStore(String metadata, InputStream inputStream) {
+    void storeVariantsInStore(String metadata, InputStream inputStream, TransactionStatusRepository repository, TransactionStatus transactionStatus) {
         MetadataReader meta = new MetadataReader(metadata)
         Annotation annotationSoftware =  meta.getMetadataContext().getVariantAnnotation()
         AnnotationHandler.AnnotationTools annotationTool = annotationSoftware.getName().toUpperCase()  as AnnotationHandler.AnnotationTools
@@ -219,6 +215,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
             }
             storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), sampleGenotypeMapping, variantsToInsert)
             variantsToInsert.clear()
+            repository.updateStatus(transactionStatus.getId(), Status.finished.toString())
             log.info("...done.")
         }
         finally {

@@ -19,15 +19,14 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.TransactionStatus
 import life.qbic.oncostore.model.TransactionStatusRepository
 import life.qbic.oncostore.model.Variant
-import life.qbic.oncostore.parser.SimpleVCFReader
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.IdValidator
 import life.qbic.oncostore.util.ListingArguments
+
 import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.inject.Named
 import java.util.concurrent.ExecutorService
-
 /**
  * Controller for variant requests.
  *
@@ -61,10 +60,6 @@ class VariantController {
      */
     @Inject
     TransactionStatusRepository repository
-    /**
-     * The transaction status
-     */
-    TransactionStatus transactionStatus
 
     @Inject
     VariantController(VariantstoreService service) {
@@ -124,6 +119,7 @@ class VariantController {
     HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @QueryValue @Nullable String format, @QueryValue
             (defaultValue = "GRCh37") @Nullable String referenceGenome, @QueryValue(defaultValue = "false") @Nullable
             Boolean withConsequences, @QueryValue(defaultValue = "snpeff") @Nullable String annotationSoftware,
+                                            @QueryValue(defaultValue = "4.3t") @Nullable String annotationSoftwareVersion,
                                             @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes, @QueryValue(defaultValue = "4.1") @Nullable String vcfVersion) {
         log.info("Resource request for variants with filtering options.")
         try {
@@ -138,7 +134,7 @@ class VariantController {
 
                 if (format.toUpperCase() == IdValidator.VariantFormats.VCF.toString()) {
                     return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences, withGenotypes,
-                            referenceGenome, annotationSoftware, vcfVersion))
+                            referenceGenome, annotationSoftware, annotationSoftwareVersion, vcfVersion))
                             .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
                             .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
                             "matching " + "provided attributes.") as HttpResponse<List<Variant>>
@@ -180,9 +176,8 @@ class VariantController {
 
             // build location for response
             def uri = UriBuilder.of("/variants/upload/status/${statusId}").build()
-            def transactionStatus = null
 
-            files.subscribeOn(Schedulers.from(ioExecutorService))
+            files.subscribeOn(Schedulers.from(ioExecutorService)).doOnError { throwable -> log.error("Upload of variants failed.") }
                     .subscribe() { file ->
                         log.info("Processing file ${file.filename}")
 
@@ -193,8 +188,8 @@ class VariantController {
                             status = life.qbic.oncostore.model.Status.processing
                         }
 
-                        transactionStatus = repository.save(newStatus)
-                        service.storeVariantsInStore(metadata, file.inputStream)
+                        TransactionStatus transactionStatus = repository.save(newStatus)
+                        service.storeVariantsInStore(metadata, file.inputStream, repository, transactionStatus)
                         System.gc()
                     }
             return HttpResponse.accepted(uri)
@@ -203,7 +198,6 @@ class VariantController {
             return HttpResponse.badRequest("Upload of variants failed.");
         }
         finally {
-            repository.updateStatus(transactionStatus.getId(), life.qbic.oncostore.model.Status.finished.toString())
             System.gc()
             Schedulers.shutdown()
         }

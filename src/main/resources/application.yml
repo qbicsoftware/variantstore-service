@@ -67,29 +67,11 @@ datasources:
     url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
     username: ${db-user}
     password: ${db-pwd}
-    #validationQuery: "/* ping */ SELECT 1"
-    #testOnBorrow: true
-    #testOnReturn: true
-    #testWhileIdle: true
-    maxIdle: 20
-    minIdle: 10
-    testOnBorrow: true
-    validationQuery: "/* ping */ SELECT 1"
-    removeAbandoned: false
-    testOnReturn: true
-    testWhileIdle: true
-    maxAge: 45000
-    validationInterval: 5000
-    timeBetweenEvictionRunsMillis: 45000
     driverClassName: org.mariadb.jdbc.Driver
   transactions:
     url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
     username: ${db-user}
     password: ${db-pwd}
-    #validationQuery: "/* ping */ SELECT 1"
-    #testOnBorrow: true
-    #testOnReturn: true
-    #testWhileIdle: true
     driverClassName: org.mariadb.jdbc.Driver
 endpoints:
   health:

@@ -86,11 +86,12 @@ interface VariantstoreService {
      * @param withGenotypes true if genotype information should be included in VCF
      * @param referenceGenome the reference genome
      * @param annotationSoftware the annotation software
+     * @param annotationSoftwareVersion the annotation software version
      * @param version the VCF version
      * @return the variant content in Variant Call Format
      */
     String getVcfContentForVariants(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean withGenotypes, String
-            referenceGenome, String annotationSoftware, String version)
+            referenceGenome, String annotationSoftware, String annotationSoftwareVersion, String version)
     /**
      * Generates content in FHIR format for given set of variants.
      * @param variants the provided variants
@@ -106,7 +107,7 @@ interface VariantstoreService {
      * @param metadata JSON string holding metadata
      * @param inputStream input stream of variant content
      */
-    void storeVariantsInStore(String metadata, InputStream inputStream)
+    void storeVariantsInStore(String metadata, InputStream inputStream, TransactionStatusRepository repository, TransactionStatus transactionStatus)
     /**
      * Stores gene information provided in a GFF3 file (Ensembl) in the store.
      * @param ensemblParser parser to extract information from GFF3 file
