@@ -220,7 +220,8 @@ class VariantstoreInformationCenter implements VariantstoreService{
         }
         finally {
             reader.iterator().close()
-            System.gc()
+            inputStream.close()
+            Runtime.getRuntime().gc()
         }
     }
 

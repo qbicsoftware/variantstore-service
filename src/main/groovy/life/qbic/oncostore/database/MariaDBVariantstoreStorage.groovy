@@ -40,9 +40,9 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
      * Predefined queries for inserting db entries in junction tables.
      */
     static final String insertVariantConsequenceJunction = "INSERT INTO variant_has_consequence (variant_id, consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=id"
-    static final String insertVariantVariantCallerJunction = "INSERT INTO variant_has_variantcaller (variantcaller_id, variant_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE variantcaller_id=variantcaller_id"
+    static final String insertVariantVariantCallerJunction = "INSERT INTO variant_has_variantcaller (variantcaller_id, variant_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=id"
     static final String insertAnnotationSoftwareConsequenceJunction = "INSERT INTO annotationsoftware_has_consequence (annotationsoftware_id, consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=id"
-    static final String insertReferenceGenomeVariantJunction = "INSERT INTO variant_has_referencegenome (referencegenome_id, variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE referencegenome_id=referencegenome_id"
+    static final String insertReferenceGenomeVariantJunction = "INSERT INTO variant_has_referencegenome (referencegenome_id, variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id"
     static final String insertSampleVariantJunction = "INSERT INTO sample_has_variant (sample_id, variant_id, vcfinfo_id, genotype_id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id=id"
     static final String insertEnsemblGeneJunction = "INSERT INTO ensembl_has_gene (ensembl_id, gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE ensembl_id=ensembl_id"
     static final String insertConsequenceGeneJunction = "INSERT INTO consequence_has_gene (consequence_id, gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id"
@@ -577,6 +577,7 @@ consequence.warnings=?""",
             throw new VariantstoreStorageException("Could not store variants with metadata in store: $metadata", e
                     .printStackTrace())
         } finally {
+            Runtime.getRuntime().gc()
         }
     }
 
@@ -663,6 +664,7 @@ consequence.warnings=?""",
                         resultSet = pstmt.getResultSet()
 
                         while (resultSet.next()) {
+                            /*
                             def newVcfInfo = new VcfInfo()
                             newVcfInfo.ancestralAllele = resultSet.getString("ancestralallele") != "" ? resultSet.getString("ancestralallele") : null
                             newVcfInfo.alleleCount = new JsonSlurper().parseText(resultSet.getString("allelecount"))
@@ -673,6 +675,12 @@ consequence.warnings=?""",
                             props.each {
                                 prop -> newKey.append(newVcfInfo.getProperty(prop.name))
                             }
+
+                             */
+                            def newKey = new StringBuilder("")
+                            newKey.append(resultSet.getString("ancestralallele") != "" ? resultSet.getString("ancestralallele") : null)
+                            newKey.append(new JsonSlurper().parseText(resultSet.getString("allelecount")))
+                            newKey.append(new JsonSlurper().parseText(resultSet.getString("allelefrequency")))
                             infosFound[newKey.toString()] = resultSet.getInt(1)
                         }
                         sqlSelectInfo = null
@@ -1782,7 +1790,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         (${variantCaller.name},
         ${variantCaller.version},
         ${variantCaller.doi})
-     ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
+     ON DUPLICATE KEY UPDATE id=id;""")
         sql.close()
     }
 
@@ -1797,7 +1805,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         sql.executeInsert("""INSERT INTO sample (identifier, cancerentity) values \
         (${sample.identifier},
         ${sample.cancerEntity})
-     ON DUPLICATE KEY UPDATE identifier=identifier;""")
+     ON DUPLICATE KEY UPDATE id=id;""")
         sql.close()
         return sample.identifier
     }
@@ -1815,7 +1823,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         (${sample.identifier},
         ${caseId},
         ${sample.cancerEntity})
-     ON DUPLICATE KEY UPDATE identifier=identifier;""")
+     ON DUPLICATE KEY UPDATE id=id;""")
         sql.close()
         return sample.identifier
     }
@@ -1829,7 +1837,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         sql.withTransaction {
-            sql.withBatch("INSERT INTO sample (identifier, entity_id, cancerentity) values (?,?,?) ON DUPLICATE KEY UPDATE identifier=identifier") { BatchingPreparedStatementWrapper ps ->
+            sql.withBatch("INSERT INTO sample (identifier, entity_id, cancerentity) values (?,?,?) ON DUPLICATE KEY UPDATE id=id") { BatchingPreparedStatementWrapper ps ->
                 samples.values().each { sample -> ps.addBatch([sample.identifier, caseId, sample.cancerEntity])
                 }
             }
@@ -1849,7 +1857,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         (${annotationSoftware.name},
         ${annotationSoftware.version},
         ${annotationSoftware.doi})
-     ON DUPLICATE KEY UPDATE id=LAST_INSERT_ID(id);""")
+     ON DUPLICATE KEY UPDATE id=id;""")
         sql.close()
     }
 

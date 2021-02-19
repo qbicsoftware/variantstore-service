@@ -60,12 +60,10 @@ class BeaconController {
                     observed, assemblyId)
             return HttpResponse.ok(response)
         }
-
         catch (Exception e) {
-            println(chromosome)
+            //@TODO check for 400 ? (bad request), missing mandatory parameters
             log.error(e)
             return HttpResponse.serverError()
         }
-        //@TODO check for 400 ? (bad request), missing mandatory parameters
     }
 }

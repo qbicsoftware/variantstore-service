@@ -190,7 +190,6 @@ class VariantController {
 
                         TransactionStatus transactionStatus = repository.save(newStatus)
                         service.storeVariantsInStore(metadata, file.inputStream, repository, transactionStatus)
-                        System.gc()
                     }
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {
@@ -198,8 +197,8 @@ class VariantController {
             return HttpResponse.badRequest("Upload of variants failed.");
         }
         finally {
-            System.gc()
             Schedulers.shutdown()
+            Runtime.getRuntime().gc()
         }
     }
 
