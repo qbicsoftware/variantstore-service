@@ -2,17 +2,21 @@ package life.qbic.oncostore.util
 
 import htsjdk.samtools.util.CloseableIterator
 import htsjdk.variant.variantcontext.VariantContext
-import life.qbic.oncostore.model.SimpleVariant
 import life.qbic.oncostore.model.SimpleVariantContext
-
-import java.util.stream.Stream
+import life.qbic.oncostore.model.Variant
 
 public class VariantIterator implements CloseableIterator<SimpleVariantContext> {
 
     private final CloseableIterator<VariantContext> variantContext
+    private final String annotationType
 
     public VariantIterator(CloseableIterator<VariantContext> variantContext) {
         this.variantContext = variantContext
+    }
+
+    public VariantIterator(CloseableIterator<VariantContext> variantContext, String annotationType) {
+        this.variantContext = variantContext
+        this.annotationType = annotationType
     }
 
     @Override
@@ -22,7 +26,7 @@ public class VariantIterator implements CloseableIterator<SimpleVariantContext> 
 
     @Override
     public SimpleVariantContext next() {
-        return new SimpleVariant(variantContext.next())
+        return new Variant(variantContext.next(), annotationType)
     }
 
     @Override
@@ -30,6 +34,12 @@ public class VariantIterator implements CloseableIterator<SimpleVariantContext> 
         variantContext.close()
     }
 
+    @Override
+    public void remove() {
+        variantContext.remove()
+    }
+
+/*
     @Override
     public List<SimpleVariantContext> toList() {
         return variantContext.toList().collect{
@@ -43,4 +53,7 @@ public class VariantIterator implements CloseableIterator<SimpleVariantContext> 
             new SimpleVariant(it)
         }
     }
+
+ */
+
 }

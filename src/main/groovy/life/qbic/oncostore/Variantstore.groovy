@@ -8,22 +8,21 @@ import io.swagger.v3.oas.annotations.info.Contact
 import io.swagger.v3.oas.annotations.info.Info
 import io.swagger.v3.oas.annotations.info.License
 
-
 @OpenAPIDefinition(
         info = @Info(
                 title = "Variantstore",
-                version = "0.6",
+                version = "0.9",
                 description = "Variantstore Restful API",
-                license = @License(name = "", url = ""),
+                license = @License(name = "MIT License", url = "https://opensource.org/licenses/mit-license.php"),
                 contact = @Contact(url = "https://github.com/christopher-mohr", name = "Christopher Mohr", email = "christopher.mohr@uni-tuebingen.de")
         )
 )
 
 @Log4j2
 @CompileStatic
-class Application {
+class Variantstore {
     static void main(String[] args) {
-        log.info("Variantstore started.")
-        Micronaut.run(Application.class)
+        log.info("Variantstore service started.")
+        Micronaut.run(Variantstore.class)
     }
 }

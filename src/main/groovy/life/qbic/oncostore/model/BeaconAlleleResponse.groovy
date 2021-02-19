@@ -11,16 +11,21 @@ class BeaconAlleleResponse {
     private Boolean exists
     private BeaconAlleleRequest alleleRequest
 
-    BeaconAlleleResponse() {
-
+    BeaconAlleleResponse(alleleRequest, exists) {
+        this.beaconId = ""
+        this.apiVersion = ""
+        this.exists = exists
+        this.alleleRequest = alleleRequest
     }
 
-    BeaconAlleleResponse(String beaconId, String apiVersion, Boolean exists, BeaconAlleleRequest alleleRequest) {
+    BeaconAlleleResponse( beaconId, apiVersion, exists, alleleRequest) {
         this.beaconId = beaconId
         this.apiVersion = apiVersion
         this.exists = exists
         this.alleleRequest = alleleRequest
     }
+
+    BeaconAlleleResponse() { }
 
     @JsonProperty("beaconId")
     String getBeaconId() {
@@ -40,21 +45,5 @@ class BeaconAlleleResponse {
     @JsonProperty("exists")
     Boolean getExists() {
         return exists
-    }
-
-    void setBeaconId(String beaconId) {
-        this.beaconId = beaconId
-    }
-
-    void setApiVersion(String apiVersion) {
-        this.apiVersion = apiVersion
-    }
-
-    void setExists(Boolean exists) {
-        this.exists = exists
-    }
-
-    void setAlleleRequest(BeaconAlleleRequest alleleRequest) {
-        this.alleleRequest = alleleRequest
     }
 }

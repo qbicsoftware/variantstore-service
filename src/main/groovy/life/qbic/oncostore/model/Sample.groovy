@@ -1,25 +1,35 @@
 package life.qbic.oncostore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
+import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+/**
+ * A sample with associated metadata
+ *
+ * @since: 1.0.0
+ */
+@EqualsAndHashCode
 @Schema(name="Sample", description="A biological sample")
 class Sample {
 
-    String identifier
-    String cancerEntity
-    String caseId
+    /**
+     * The identifier of a given sample
+     */
+    final String identifier
+    /**
+     * The annotated cancer entity of a given sample
+     */
+    final String cancerEntity
+    /**
+     * The associated case (patient) identifier of a given sample
+     */
+    final String caseId
 
-    Sample(String identifier, String cancerEntity) {
+    Sample(String identifier, String cancerEntity, String caseId) {
         this.identifier = identifier
         this.cancerEntity = cancerEntity
-    }
-
-    Sample(String identifier) {
-        this.identifier = identifier
-    }
-
-    Sample() {
+        this.caseId = caseId
     }
 
     @Schema(description="The sample identifier")
@@ -38,17 +48,5 @@ class Sample {
     @JsonProperty("caseID")
     String getCaseId() {
         return caseId
-    }
-
-    void setIdentifier(String identifier) {
-        this.identifier = identifier
-    }
-
-    void setCancerEntity(String cancerEntity) {
-        this.cancerEntity = cancerEntity
-    }
-
-    void setCaseId(String caseId) {
-        this.caseId = caseId
     }
 }

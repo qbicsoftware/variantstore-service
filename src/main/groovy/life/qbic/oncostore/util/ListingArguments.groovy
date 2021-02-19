@@ -1,12 +1,17 @@
 package life.qbic.oncostore.util
 
 import io.micronaut.http.uri.UriBuilder;
-
 import javax.annotation.Nullable
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Positive
 
-
+/**
+ * A class to hold variables for request arguments.
+ *
+ * Might extract these arguments at some point and use this class for sorting, pagination etc.
+ *
+ * @since: 1.0.0
+ */
 class ListingArguments {
     @Nullable
     @Pattern(regexp = "[1-22]|X|Y")

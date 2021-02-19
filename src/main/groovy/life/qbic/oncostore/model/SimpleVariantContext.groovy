@@ -1,8 +1,10 @@
 package life.qbic.oncostore.model
 
-import life.qbic.oncostore.model.Consequence
-import life.qbic.oncostore.model.ReferenceGenome
-
+/**
+ * A variant object with additional information
+ *
+ * @since: 1.0.0
+ */
 interface SimpleVariantContext {
 
     String getChromosome()
@@ -19,8 +21,6 @@ interface SimpleVariantContext {
 
     List<Genotype> getGenotypes()
 
-    ReferenceGenome getReferenceGenome()
-
     String getDatabaseId()
 
     Boolean getIsSomatic()
@@ -33,5 +33,5 @@ interface SimpleVariantContext {
 
     void setIsSomatic(Boolean somatic)
 
-    void setConsequences(List<Consequence> consequences)
+    void setConsequences(ArrayList consequences)
 }

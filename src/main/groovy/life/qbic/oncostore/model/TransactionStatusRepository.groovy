@@ -6,6 +6,11 @@ import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.model.query.builder.sql.Dialect
 import io.micronaut.data.repository.CrudRepository
 
+/**
+ * A repository holding transcation status information
+ *
+ * @since: 1.0.0
+ */
 @Repository("transactions")
 @JdbcRepository(dialect = Dialect.MYSQL)
 interface TransactionStatusRepository extends CrudRepository<TransactionStatus, Long> {

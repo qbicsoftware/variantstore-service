@@ -8,12 +8,29 @@ import htsjdk.tribble.readers.LineIterator
 import life.qbic.oncostore.model.Gene
 import life.qbic.oncostore.model.ReferenceGenome
 
+/**
+ * A parser to process Ensembl GFF files holding gene information
+ *
+ * @since: 1.0.0
+ */
 @Log4j2
 class EnsemblParser {
 
+    /**
+     * The genes
+     */
     final List<Gene> genes
+    /**
+     * The reference genome
+     */
     final ReferenceGenome referenceGenome
+    /**
+     * The Ensembl version
+     */
     final Integer version
+    /**
+     * The date associated with this Ensembl file
+     */
     final String date
 
     EnsemblParser(File file) {
@@ -22,9 +39,10 @@ class EnsemblParser {
         AbstractFeatureReader<Gff3Feature, LineIterator> reader = AbstractFeatureReader.getFeatureReader(file
                 .absolutePath.toString(), null, codec, false);
 
+        // try to extract reference genome and Ensembl version
         def versionMatch = (file.name =~ /(GRCh)\d+.\d+|\w+(v)\d+/)
-        def referenceGenome = ""
-        def ensemblVersion = 0
+        String referenceGenome = ""
+        Integer ensemblVersion = 0
         if (versionMatch.find()) {
             (referenceGenome, ensemblVersion) = versionMatch[0][0].toString().split("\\.|v")
         }
@@ -36,6 +54,7 @@ class EnsemblParser {
         def numberOfGenes = 0
         def genes = []
 
+        // process features
         for (final Gff3Feature feature : reader.iterator()) {
             if(feature.type.contains("gene")) {
                 numberOfGenes++
@@ -73,7 +92,7 @@ class EnsemblParser {
             }
         }
 
-        // Determine reference genome version from Ensembl file
+        // determine reference genome version from Ensembl file
         def (referenceGenomeFromFile, referenceGenomeVersion) = splittedLine.split("v|\\.")
 
         try {
@@ -86,7 +105,7 @@ class EnsemblParser {
 
         this.genes = genes
         this.referenceGenome = new ReferenceGenome("Genome Reference Consortium", referenceGenome,
-        referenceGenomeVersion)
+        referenceGenomeVersion as String)
         this.version = ensemblVersion.toInteger()
         this.date = updateDate
     }

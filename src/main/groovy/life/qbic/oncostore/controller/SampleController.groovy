@@ -1,7 +1,6 @@
 package life.qbic.oncostore.controller
 
 import groovy.util.logging.Log4j2
-import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
@@ -16,14 +15,23 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.oncostore.model.Sample
 import life.qbic.oncostore.service.VariantstoreService
 import life.qbic.oncostore.util.ListingArguments
-
 import javax.inject.Inject
 
+/**
+ * Controller for samples requests
+ *
+ * This handles requests that try to retrieve information on samples from the store.
+ *
+ * @since: 1.0.0
+ */
 @Log4j2
 @Controller("/samples")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class SampleController {
 
+    /**
+     * The variantstore service
+     */
     private final VariantstoreService service
 
     @Inject
@@ -32,9 +40,9 @@ class SampleController {
     }
 
     /**
-     *
-     * @param identifier The sample identifier
-     * @return The found sample
+     * Retrieve sample by identifier
+     * @param identifier the sample identifier
+     * @return the found sample or 404 Not Found
      */
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a sample",
@@ -63,9 +71,9 @@ class SampleController {
     }
 
     /**
-     *
-     * @param args The filter arguments
-     * @return The found samples
+     * Retrieve samples based on filtering criteria
+     * @param args the filter arguments
+     * @return the found samples or 404 Not Found
      */
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a set of samples",

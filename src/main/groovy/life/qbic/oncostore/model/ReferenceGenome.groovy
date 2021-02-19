@@ -1,7 +1,15 @@
 package life.qbic.oncostore.model
 
+import groovy.transform.EqualsAndHashCode
 import io.swagger.v3.oas.annotations.media.Schema
 
+/**
+ * A sample with associated metadata
+ *
+ * @since: 1.0.0
+ *
+ */
+@EqualsAndHashCode
 @Schema(name="ReferenceGenome", description="A reference genome")
 class ReferenceGenome {
 
