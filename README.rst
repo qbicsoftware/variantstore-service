@@ -34,12 +34,12 @@ Database
 In the current version, the **Variantstore** service can be used with a MariaDB database. If you want to use a different DBMS,
 make sure to specify the database model, set up the datasource in the ``application.yml``, and provide an implementation for the ``VariantstoreStorage`` interface.
 
-The main database `model <models/oncostore-model.sql>_.` expected by the **Variantstore** is the following:
+The main database `model <models/oncostore-model.sql>`_. expected by the **Variantstore** is the following:
 
 .. image:: images/variantstore-model-diagram.png
     :alt: Variantstore model diagram
 
-Additonally, a database with the following table `<models/transaction-db.sql>_.` is needed to track the transactions in the Variantstore:
+Additonally, a database with the following table `<models/transaction-db.sql>`_. is needed to track the transactions in the Variantstore:
 
 .. image:: images/transaction-model-diagram.png
     :alt: Variantstore transaction model diagram
