@@ -38,7 +38,7 @@ The detailed documentation of the REST endpoints provided by the **Variantstore*
 | **GET /genes**
 | Request a set of genes
 
-| **POST /genes/upload**
+| **POST /genes**
 | Upload gene information
 
 | **GET /variants/{id}**
@@ -62,7 +62,7 @@ The detailed documentation of the REST endpoints provided by the **Variantstore*
 | **GET /samples/{id}**
 | Request a sample
 
-| **GET /samples/**
+| **GET /samples**
 | Request a set of samples
 
 | **GET /beacon/query**
