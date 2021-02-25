@@ -8,7 +8,7 @@ import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
-import life.qbic.oncostore.controller.CaseController
+import life.qbic.variantstore.controller.CaseController
 import spock.lang.Unroll
 
 import javax.inject.Inject
