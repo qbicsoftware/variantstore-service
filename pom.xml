@@ -553,6 +553,19 @@
                     <targetJdk>${maven.compiler.target}</targetJdk>
                 </configuration>
             </plugin>
+        <plugin>
+            <groupId>life.qbic</groupId>
+            <artifactId>groovydoc-maven-plugin</artifactId>
+            <version>1.0.2</version>
+        </plugin>
         </plugins>
     </build>
+    <reporting>
+        <plugins>
+            <plugin>
+                <groupId>life.qbic</groupId>
+                <artifactId>groovydoc-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </reporting>
 </project>
