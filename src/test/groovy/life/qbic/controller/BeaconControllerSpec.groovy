@@ -1,7 +1,6 @@
 package life.qbic.controller
 
 import io.micronaut.context.ApplicationContext
-import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
 import io.micronaut.http.client.RxHttpClient
@@ -9,8 +8,8 @@ import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
-import life.qbic.oncostore.controller.BeaconController
-import life.qbic.oncostore.model.BeaconAlleleResponse
+import life.qbic.variantstore.controller.BeaconController
+import life.qbic.variantstore.model.BeaconAlleleResponse
 
 import javax.inject.Inject
 
