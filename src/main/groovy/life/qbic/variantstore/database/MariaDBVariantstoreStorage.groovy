@@ -22,7 +22,7 @@ import java.sql.SQLException
 
 /**
  * A VariantstoreStorage implementation.
- *
+ *genesymbol
  * This provides an interface to a MariaDB database storing variant information.
  *
  * @since: 1.0.0
@@ -39,13 +39,13 @@ class MariaDBVariantstoreStorage implements VariantstoreStorage {
     /**
      * Predefined queries for inserting db entries in junction tables.
      */
-    static final String insertVariantConsequenceJunction = "INSERT INTO variant_has_consequence (variant_id, consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=id"
-    static final String insertVariantVariantCallerJunction = "INSERT INTO variant_has_variantcaller (variantcaller_id, variant_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=id"
-    static final String insertAnnotationSoftwareConsequenceJunction = "INSERT INTO annotationsoftware_has_consequence (annotationsoftware_id, consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE id=id"
-    static final String insertReferenceGenomeVariantJunction = "INSERT INTO variant_has_referencegenome (referencegenome_id, variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id"
-    static final String insertSampleVariantJunction = "INSERT INTO sample_has_variant (sample_id, variant_id, vcfinfo_id, genotype_id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE id=id"
-    static final String insertEnsemblGeneJunction = "INSERT INTO ensembl_has_gene (ensembl_id, gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE ensembl_id=ensembl_id"
-    static final String insertConsequenceGeneJunction = "INSERT INTO consequence_has_gene (consequence_id, gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE id=id"
+    static final String insertVariantConsequenceJunction = "INSERT INTO variant_has_consequence (variant_id, consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE variant_id=variant_id, consequence_id=consequence_id"
+    static final String insertVariantVariantCallerJunction = "INSERT INTO variant_has_variantcaller (variantcaller_id, variant_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE variantcaller_id=variantcaller_id, variant_id=variant_id"
+    static final String insertAnnotationSoftwareConsequenceJunction = "INSERT INTO annotationsoftware_has_consequence (annotationsoftware_id, consequence_id) VALUES (?, ?) ON DUPLICATE KEY UPDATE annotationsoftware_id=annotationsoftware_id, consequence_id=consequence_id"
+    static final String insertReferenceGenomeVariantJunction = "INSERT INTO variant_has_referencegenome (referencegenome_id, variant_id) VALUES (?,?) ON DUPLICATE KEY UPDATE referencegenome_id=referencegenome_id, variant_id=variant_id"
+    static final String insertSampleVariantJunction = "INSERT INTO sample_has_variant (sample_id, variant_id, vcfinfo_id, genotype_id) VALUES (?,?,?,?) ON DUPLICATE KEY UPDATE sample_id=sample_id, variant_id=variant_id, vcfinfo_id=vcfinfo_id, genotype_id=genotype_id"
+    static final String insertEnsemblGeneJunction = "INSERT INTO ensembl_has_gene (ensembl_id, gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE ensembl_id=ensembl_id, gene_id=gene_id"
+    static final String insertConsequenceGeneJunction = "INSERT INTO consequence_has_gene (consequence_id, gene_id) VALUES (?,?) ON DUPLICATE KEY UPDATE consequence_id=consequence_id, gene_id=gene_id"
 
     /**
      * Predefined queries for selecting entities from the database.
@@ -1155,7 +1155,7 @@ ensembl.version=$ensemblVersion;""")
      * @return the found cases
      */
     private List<Case> fetchCasesByGene(String gene, Sql sql) {
-        def result = sql.rows("""select distinct entity.id, project_id,genesymbol from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id WHERE genesymbol=$gene;""")
+        def result = sql.rows("""select distinct entity.id, project_id from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id WHERE consequence.genesymbol=$gene;""")
         List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
@@ -1168,7 +1168,7 @@ ensembl.version=$ensemblVersion;""")
      * @return the found cases
      */
     private List<Case> fetchCasesByGeneAndConsequenceType(String gene, String consequenceType, Sql sql) {
-        def result = sql.rows("""select distinct entity.id, project_id,genesymbol, type from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id WHERE type=$consequenceType AND genesymbol=$gene;""")
+        def result = sql.rows("""select distinct entity.id, project_id from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id WHERE consequence.type=$consequenceType AND consequence.genesymbol=$gene;""")
         List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
@@ -1461,23 +1461,23 @@ annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
             result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", """ WHERE referencegenome
-.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND genesymbol='${geneName}';"""))
+.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND consequence.genesymbol='${geneName}';"""))
         } else if (withConsequences) {
             if (withVcInfo) {
                 result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", """ WHERE referencegenome
-.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND genesymbol='${geneName}';"""))
+.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND consequence.genesymbol='${geneName}';"""))
             } else {
                 result = sql.rows(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome
-.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND genesymbol='${geneName}';"""))
+.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND consequence.genesymbol='${geneName}';"""))
             }
         } else {
             if (withVcInfo) {
                 result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND 
-annotationsoftware.name='${annotationSoftware}' AND genesymbol='${geneName}';"""))
+annotationsoftware.name='${annotationSoftware}' AND consequence.genesymbol='${geneName}';"""))
             }
             else {
-                println(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND genesymbol='${geneName}';"""))
-                result = sql.rows(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND genesymbol='${geneName}';"""))
+                println(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND consequence.genesymbol='${geneName}';"""))
+                result = sql.rows(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND consequence.genesymbol='${geneName}';"""))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)

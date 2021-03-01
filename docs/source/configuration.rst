@@ -1,6 +1,6 @@
 Configuration
 =============
-The configuration of the Variantstore instance is done by setting the environment variables which are used in the `application.yml <https://github.com/qbicsoftware/oncostore-proto-project/blob/development/src/main/resources/application.yml>`_.
+The configuration of the Variantstore instance is done by setting the environment variables which are used in the `application.yml <https://github.com/qbicsoftware/variantstore-service/blob/development/src/main/resources/application.yml>`_.
 
 ::
 
@@ -24,6 +24,20 @@ The configuration of the Variantstore instance is done by setting the environmen
 If you want to use a port other than 8080, set the optional environment variable ``VARIANTSTORE_PORT``. The default data source can be configured by the following environment variables: ``DB_HOST`` (database host address), ``DB_NAME`` (database name), ``DB_USER`` (database user) and ``DB_PWD`` (database password).
 It is expected that the ``default`` and ``transactions`` data sources run on the same host and use the same credentials. Please change the `application.yml` accordingly if this is not the case.
 
+Database
+--------
+In the current version, the **Variantstore** service can be used with a MariaDB database. If you want to use a different DBMS,
+make sure to specify the database model, set up the datasource in the ``application.yml``, and provide an implementation for the ``VariantstoreStorage`` interface.
+
+The main database `model <models/varianstore-model.sql>`_ expected by the **Variantstore** is the following:
+
+.. image:: images/variantstore-model-diagram.png
+    :alt: Variantstore model diagram
+
+Additonally, a database with the following `table <models/transaction-db.sql>`_ is needed to track the transactions in the Variantstore:
+
+.. image:: images/transaction-model-diagram.png
+    :alt: Variantstore transaction model diagram
 
 Authentication and Authorization
 --------------------------------

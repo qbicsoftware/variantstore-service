@@ -20,3 +20,8 @@ Build the Project
 .. code-block:: bash
 
    mvn clean package
+
+Setup Database
+--------
+
+The complete installation of the Variantstore includes setting up the required databases to store the genomic information. Details can be found under :ref:`configuration`.

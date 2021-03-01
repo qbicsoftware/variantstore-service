@@ -4,7 +4,7 @@ Usage
 Quick Start
 -----------
 
-Stable releases of the Variantstore are bundled as an executable `jar` and can be downloaded from the `releases <https://github.com/qbicsoftware/oncostore-proto-project/releases>`_ page. You can start the service by using the following command:
+Stable releases of the Variantstore are bundled as an executable `jar` and can be downloaded from the `releases <https://github.com/qbicsoftware/variantstore-service/releases>`_ page. You can start the service by using the following command:
 
 .. code-block:: bash
 

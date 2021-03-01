@@ -1,6 +1,6 @@
 
-.. image:: https://travis-ci.com/qbicsoftware/oncostore-proto-project.svg
-    :target: https://travis-ci.com/qbicsoftware/oncostore-proto-project
+.. image:: https://travis-ci.com/qbicsoftware/variantstore-service.svg
+    :target: https://travis-ci.com/qbicsoftware/variantstore-service
     :alt: Travis Build Status
 
 .. image:: https://readthedocs.org/projects/oncostore-proto-project/badge/?version=latest
@@ -34,16 +34,6 @@ Database
 In the current version, the **Variantstore** service can be used with a MariaDB database. If you want to use a different DBMS,
 make sure to specify the database model, set up the datasource in the ``application.yml``, and provide an implementation for the ``VariantstoreStorage`` interface.
 
-The main database `model <models/oncostore-model.sql>`_ expected by the **Variantstore** is the following:
-
-.. image:: images/variantstore-model-diagram.png
-    :alt: Variantstore model diagram
-
-Additonally, a database with the following `table <models/transaction-db.sql>`_ is needed to track the transactions in the Variantstore:
-
-.. image:: images/transaction-model-diagram.png
-    :alt: Variantstore transaction model diagram
-
 We are currently working on the support of `PostgreSQL <https://www.postgresql.org/>`_. 
 
 Contribute
@@ -53,4 +43,9 @@ The contribution guidelines can be found on `Contributing <https://oncostore-pro
 
 Credits
 -------
-The Variantstore service was designed by `Christopher Mohr <https://github.com/christopher-mohr>`_ and implemented by `Christopher Mohr <https://github.com/christopher-mohr>`_ and `Lukas Heumos <https://github.com/zethson>`_. Feel free to contribute!
+The Variantstore was created within the `DIFUTURE <https://difuture.de>`_ (Data Integration for Future Medicine) Consortium.
+
+This service was designed by `Christopher Mohr <https://github.com/christopher-mohr>`_ and implemented by `Christopher Mohr <https://github.com/christopher-mohr>`_ and `Lukas Heumos <https://github.com/zethson>`_.
+For a full list of authors, please refer to the file `AUTHORS <AUTHORS>`_.
+
+Feel free to contribute!
