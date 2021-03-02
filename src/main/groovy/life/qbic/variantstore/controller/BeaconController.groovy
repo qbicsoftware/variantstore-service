@@ -48,7 +48,7 @@ class BeaconController {
             tags = "Beacon")
     @ApiResponse(responseCode = "200", description = "Returns the answer to the specified question", content =
             @Content(schema = @Schema(implementation = BeaconAlleleResponse.class)))
-    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = '[1-9]|1[0-9]|2[0-3]|X|Y') @QueryValue String
+    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = '(?:chr)?[1-9]|1[0-9]|2[0-3]|X|Y') @QueryValue String
                                                             chromosome, @PositiveOrZero @QueryValue BigInteger
             startPosition,
                                                     @Pattern(regexp = '[ACTG]+') @QueryValue String reference,
