@@ -1,4 +1,4 @@
-Welcome to oncostore-proto-project's documentation!
+Welcome to the Variantstore documentation!
 ===================================================
 
 .. toctree::

@@ -98,12 +98,94 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
  varuuid, variant.databaseidentifier as vardbid FROM variant INNER JOIN variant_has_referencegenome ON variant.id = 
  variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
    variant_has_referencegenome.referencegenome_id;"""
-    static final selectVariantsWithVcfInfo = """SELECT variant.id as varid, variant.chr as varchr, variant.start as varstart, 
+    static final selectVariantsWithVcfInfo = """SELECT variant.id as varid, variant.chr as varchr, variant.start as 
+varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
- varuuid, variant.databaseidentifier as vardbid, vcfinfo.* FROM variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
+ varuuid, variant.databaseidentifier as vardbid, vcfinfo.* FROM variant INNER JOIN sample_has_variant ON variant_id =
+  variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
  .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
  variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
    variant_has_referencegenome.referencegenome_id;"""
+    static final selectVariantsWithSample = """SELECT variant.id as varid, variant.chr as varchr, variant.start as 
+varstart, 
+variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
+ varuuid, variant.databaseidentifier as vardbid , gene.geneid, sample.identifier FROM variant INNER JOIN 
+ variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
+ ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
+ = consequence.id INNER JOIN  consequence_has_gene on consequence_has_gene.consequence_id = consequence.id 
+ INNER JOIN 
+ gene on gene.id=consequence_has_gene.gene_id INNER JOIN sample_has_variant ON variant.id = sample_has_variant
+ .variant_id INNER JOIN sample ON sample_has_variant.sample_id = sample.id;"""
+    static final selectVariantsWithSampleAnVcfInfo = """SELECT variant.id as varid, variant.chr as varchr, variant
+.start as varstart,  variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as 
+varsomatic, variant.uuid as  varuuid, variant.databaseidentifier as vardbid, vcfinfo.* , gene.geneid, sample
+.identifier FROM 
+variant INNER JOIN variant_has_consequence 
+ ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
+ = consequence.idINNER JOIN  consequence_has_gene on consequence_has_gene.consequence_id = consequence.id 
+ INNER JOIN 
+ gene on gene.id=consequence_has_gene.gene_id  INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN 
+ vcfinfo ON vcfinfo.id=sample_has_variant 
+ .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = variant_has_referencegenome.variant_id INNER 
+ JOIN referencegenome ON referencegenome.id = variant_has_referencegenome.referencegenome_id INNER JOIN 
+ sample_has_variant ON variant.id = sample_has_variant.variant_id INNER JOIN sample ON 
+ sample_has_variant.sample_id = sample.id;"""
+    static final selectVariantsWithSampleAndConsequencesAndVcfInfo = """SELECT variant.id as varid, variant.chr as 
+varchr, variant
+.start as varstart, 
+variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
+ varuuid, variant.databaseidentifier as vardbid, consequence.*, vcfinfo.*, gene.id as geneindex, gene.geneid, gene
+ .name as genename, sample.identifier FROM 
+ variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
+ .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
+ ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware_has_consequence ON annotationsoftware_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware ON annotationsoftware.id = annotationsoftware_has_consequence
+ .annotationsoftware_id INNER JOIN  consequence_has_gene on consequence_has_gene.consequence_id = consequence.id 
+ INNER JOIN 
+ gene on gene.id=consequence_has_gene.gene_id INNER JOIN sample_has_variant ON variant.id = sample_has_variant
+ .variant_id INNER JOIN sample ON 
+ sample_has_variant.sample_id = sample.id;"""
+    static final selectVariantsWithSampleAndConsequences = """SELECT variant.id as varid, variant.chr as varchr, 
+variant.start as 
+varstart, 
+variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
+ varuuid, variant.databaseidentifier as vardbid, consequence.*, gene.id, gene.geneid as geneid, gene.name as 
+ genename, sample.identifier FROM variant INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id = 
+ variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
+ ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware_has_consequence ON annotationsoftware_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware ON annotationsoftware.id = annotationsoftware_has_consequence
+ .annotationsoftware_id INNER JOIN  consequence_has_gene on consequence_has_gene.consequence_id = consequence.id 
+ INNER JOIN 
+ gene on gene.id=consequence_has_gene.gene_id INNER JOIN sample_has_variant ON variant.id = sample_has_variant
+ .variant_id INNER JOIN sample ON 
+ sample_has_variant.sample_id = sample.id;"""
+    static final selectVariantsWithSampleAndConsequencesAndGenotypes = """SELECT variant.id as varid, variant.chr as 
+varchr, variant
+.start as varstart, 
+variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
+ varuuid, variant.databaseidentifier as vardbid, consequence.*, genotype.*, vcfinfo.*, gene.id as geneindex, gene
+ .geneid, gene.name as genename
+  ,sample.identifier FROM 
+ variant INNER JOIN sample_has_variant ON variant_id = variant.id INNER JOIN sample ON sample_has_variant.sample_id =
+  sample.id INNER JOIN vcfinfo ON vcfinfo.id=sample_has_variant
+ .vcfinfo_id INNER JOIN variant_has_referencegenome ON variant.id = 
+ variant_has_referencegenome.variant_id INNER JOIN referencegenome ON referencegenome.id =
+   variant_has_referencegenome.referencegenome_id INNER JOIN variant_has_consequence 
+ ON variant.id = variant_has_consequence.variant_id INNER JOIN consequence on variant_has_consequence.consequence_id 
+ = consequence.id INNER JOIN annotationsoftware_has_consequence ON 
+ annotationsoftware_has_consequence.consequence_id = consequence.id INNER JOIN annotationsoftware ON 
+ annotationsoftware.id = annotationsoftware_has_consequence.annotationsoftware_id INNER JOIN genotype ON genotype
+ .id=sample_has_variant.genotype_id INNER JOIN consequence_has_gene on consequence_has_gene.consequence_id = 
+ consequence.id INNER JOIN 
+ gene on gene.id=consequence_has_gene.gene_id INNER JOIN sample_has_variant ON variant.id = sample_has_variant
+ .variant_id INNER JOIN sample ON sample_has_variant.sample_id = sample.id;"""
 
     @Inject
     MariaDBVariantstoreStorage(QBiCDataSource dataSource) {
@@ -395,9 +477,12 @@ consequence.warnings=?""",
         Sql sql = requestNewConnection()
         try {
             if (args.getSampleId()) {
+                //@TODO decide if we want to restrict this
+                /*
                 if (!IdValidator.isValidSampleCode(args.getSampleId().get())) {
                     throw new IllegalArgumentException("Invalid sample identifier supplied.")
                 }
+                 */
                 return fetchGenesBySample(args.getSampleId().get(), sql)
             }
             return fetchGenes(sql)
@@ -1180,7 +1265,7 @@ ensembl.version=$ensemblVersion;""")
      * @return the found cases
      */
     private List<Case> fetchCasesByConsequenceType(String consequenceType, Sql sql) {
-        def result = sql.rows("""select distinct entity.id, project_id, type from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id where type==$consequenceType;""")
+        def result = sql.rows("""select distinct entity.id, project_id, type from entity INNER JOIN sample ON entity.id = sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN variant ON variant.id = sample_has_variant.variant_id INNER JOIN variant_has_consequence ON variant_has_consequence.variant_id = variant.id INNER JOIN consequence on variant_has_consequence.consequence_id = consequence.id where type=$consequenceType;""")
         List<Case> cases = result.collect { convertRowResultToCase(it) }
         return cases
     }
@@ -1349,20 +1434,20 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
         def result
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier='${sampleId}';"))
+            result = sql.rows(selectVariantsWithSampleAndConsequencesAndGenotypes.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier='${sampleId}';"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier='${sampleId}';"))
+                result = sql.rows(selectVariantsWithSampleAndConsequencesAndVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier='${sampleId}';"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier='${sampleId}';"))
+                result = sql.rows(selectVariantsWithSampleAndConsequences.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier='${sampleId}';"))
             }
         } else {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier='${sampleId}';"))
+                result = sql.rows(selectVariantsWithSampleAnVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier='${sampleId}';"))
 
             }
             else {
-                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND Sample_identifier='${sampleId}';"))
+                result = sql.rows(selectVariantsWithSample.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND sample.identifier='${sampleId}';"))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
@@ -1386,19 +1471,19 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
         def result
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
-            result = sql.rows(selectVariantsWithConsequencesAndGenotypes.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+            result = sql.rows(selectVariantsWithSampleAndConsequencesAndGenotypes.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier = '${sampleId}' AND gene.geneid='${geneId}';"))
         } else if (withConsequences) {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithConsequencesAndVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+                result = sql.rows(selectVariantsWithSampleAndConsequencesAndVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier = '${sampleId}' AND gene.geneid='${geneId}';"))
             } else {
-                result = sql.rows(selectVariantsWithConsequences.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+                result = sql.rows(selectVariantsWithSampleAndConsequences.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier = '${sampleId}' AND gene.geneid='${geneId}';"))
             }
         } else {
             if (withVcInfo) {
-                result = sql.rows(selectVariantsWithVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+                result = sql.rows(selectVariantsWithSampleAnVcfInfo.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND annotationsoftware.name='${annotationSoftware}' AND sample.identifier = '${sampleId}' AND gene.geneid='${geneId}';"))
             }
             else {
-                result = sql.rows(selectVariants.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND Sample_identifier = '${sampleId}' AND geneid='${geneId}';"))
+                result = sql.rows(selectVariantsWithSample.replace(";", " WHERE referencegenome.build='${referenceGenome}' AND sample.identifier = '${sampleId}' AND gene.geneid='${geneId}';"))
             }
         }
         return parseVariantQueryResult(result, withConsequences, withVcInfo, withGenotypes)
@@ -1516,11 +1601,11 @@ and variant.obs LIKE ${obs};""")
      * @return the found genes
      */
     private List<Gene> fetchGenesBySample(String sampleId, Sql sql) {
-        def result = sql.rows(""" SELECT gene.*, Sample_has_variant.* FROM gene INNER JOIN consequence_has_gene ON 
+        def result = sql.rows("""SELECT gene.*, sample_has_variant.*, sample.* FROM gene INNER JOIN consequence_has_gene ON 
 gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has_gene.consequence_id = consequence.id
  INNER JOIN variant_has_consequence on variant_has_consequence.consequence_id = consequence.id INNER JOIN variant ON 
  variant_has_consequence.variant_id = variant.id INNER JOIN sample_has_variant ON sample_has_variant.variant_id = 
- variant.id WHERE sample_id=$sampleId;""")
+ variant.id INNER JOIN sample ON sample_has_variant.sample_id = sample.id WHERE sample.identifier=$sampleId;""")
         List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
     }
