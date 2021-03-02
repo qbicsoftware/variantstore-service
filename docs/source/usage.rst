@@ -30,7 +30,7 @@ This command will create an executable jar in your current working directory und
 
 REST API
 --------
-The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.6>`_. Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via /swagger-ui ``and`` .../rapidoc.
+The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/1.0.0>`_. Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via /swagger-ui ``and`` .../rapidoc.
 
 | **GET /genes/{id}**
 | Request a gene
