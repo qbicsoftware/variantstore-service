@@ -1,20 +1,91 @@
 micronaut:
-    router:
-        static-resources:
-            swagger:
-                paths: classpath:META-INF/swagger
-                mapping: /swagger/**
-    application:
-        name: oncostore
-datasources:
-    default:
-      #url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=150&pool&log=true&rewriteBatchedStatements=true
-      url: jdbc:mariadb://${db-host}/${db-name}
-      username: ${db-user}
-      password: ${db-pwd}
-      driverClassName: org.mariadb.jdbc.Driver
-endpoints:
-    health:
+  application:
+    name: variantstore
+  server:
+    port: ${variantstore-port:8080}
+    maxRequestSize: 100MB
+    multipart:
+      maxFileSize: 100MB
+  logger:
+    levels:
+      ROOT: INFO
+  router:
+    static-resources:
+      swagger:
+        paths: classpath:META-INF/swagger
+        mapping: /swagger/**
+      swagger-ui:
+        paths: classpath:META-INF/swagger/views/swagger-ui
+        mapping: /swagger-ui/**
+      rapidoc:
+        paths: classpath:META-INF/swagger/views/rapidoc
+        mapping: /rapidoc/**
+  security:
+    enabled: ${variantstore-security-enabled:true}
+    intercept-url-map:
+      - pattern: /swagger/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /swagger-ui/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /rapidoc/**
+        http-method: GET
+        access:
+          - isAnonymous()
+    endpoints:
+      login:
         enabled: true
-        sensitive: false
-        details-visible: ANONYMOUS
+      logout:
+        enabled: true
+        get-allowed: true
+      oauth:
+        enabled: true
+    session:
+      enabled: true
+    token:
+      jwt:
+        enabled: true
+    oauth2:
+      enabled: ${variantstore-oauth2-enabled:false}
+      default-provider: keycloak
+      clients:
+        keycloak:
+          client-id: ${variantstore-oauth2-client-id}
+          client-secret: ${variantstore-oauth2-client-secret}
+          openid:
+            issuer: ${variantstore-oauth2-issuer}
+          authorization:
+            url: ${variantstore-oauth2-auth-url}
+          token:
+            url: ${variantstore-oauth2-token-url}
+            auth-method: client-secret-jwt
+datasources:
+  default:
+    url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+    username: ${db-user}
+    password: ${db-pwd}
+    driverClassName: org.mariadb.jdbc.Driver
+  transactions:
+    url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+    username: ${db-user}
+    password: ${db-pwd}
+    driverClassName: org.mariadb.jdbc.Driver
+endpoints:
+  health:
+    enabled: true
+    sensitive: false
+    details-visible: ANONYMOUS
+  routes:
+    enabled: true
+    sensitive: false
+  loggers:
+    enabled: true
+    sensitive: false
+  info:
+    enabled: true
+    sensitive: false
+userroles:
+  config: ${userrole-config:src/main/resources/test.yml}
