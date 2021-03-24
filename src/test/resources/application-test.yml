@@ -1,0 +1,51 @@
+micronaut:
+    application:
+        name: variantstore
+    server:
+        port: -1
+    security:
+        enabled: false
+        intercept-url-map:
+            - pattern: /swagger/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+            - pattern: /swagger-ui/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+            - pattern: /rapidoc/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+        endpoints:
+            login:
+                enabled: true
+            logout:
+                enabled: true
+                get-allowed: true
+            oauth:
+                enabled: true
+        session:
+            enabled: true
+        token:
+            jwt:
+                enabled: true
+        oauth2:
+            enabled: false
+#datasources:
+#    default:
+#        url: jdbc:postgresql://localhost:5432/variantstoredb
+#        default-schema: public
+#        username: mohr
+#        password: password
+#        driverClassName: org.postgresql.Driver
+#flyway:
+#    datasources:
+#       default:
+#          enabled: true
+          #clean-schema: true
+#          baselineOnMigrate: true
+#          locations: classpath:db/postgresql
+userroles:
+    config: "src/main/resources/test.yml"
