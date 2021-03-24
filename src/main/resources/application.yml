@@ -73,6 +73,28 @@ datasources:
     username: ${db-user}
     password: ${db-pwd}
     driverClassName: org.mariadb.jdbc.Driver
+  variantstore_postgres:
+    url: jdbc:postgresql://localhost:5432/variantstore_db
+    username: mohr
+    password: password
+    driverClassName: org.postgresql.Driver
+#flyway:
+#  datasources:
+#    default:
+#      enabled: false
+#    transactions:
+#      enabled: false
+  flyway:
+    datasources:
+      default:
+        enabled: false
+        transactions:
+      enabled: false
+        variantstore_postgres:
+        enabled: false
+        #schemas: variantstore_model
+        baselineOnMigrate: true
+      locations: classpath:db/postgresql
 endpoints:
   health:
     enabled: true
@@ -85,6 +107,9 @@ endpoints:
     enabled: true
     sensitive: false
   info:
+    enabled: true
+    sensitive: false
+  flyway:
     enabled: true
     sensitive: false
 userroles:

@@ -3,6 +3,9 @@ package life.qbic.variantstore.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
 import htsjdk.variant.variantcontext.VariantContext
+import io.micronaut.core.annotation.Creator
+import io.micronaut.data.annotation.*
+import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -10,10 +13,14 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.0.0
  */
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode
 @Schema(name = "Variant", description = "A genomic variant")
 class Variant implements SimpleVariantContext, Comparable {
 
+    @GeneratedValue
+    @Id
+    private Long id
     /**
      * The identifier (UUID) of a given variant
      */
@@ -21,44 +28,58 @@ class Variant implements SimpleVariantContext, Comparable {
     /**
      * The database identifier (i.e. DBSNP) of a given variant
      */
+    @MappedProperty("databaseidentifier")
     String databaseIdentifier
     /**
      * The chromosome of a given variant
      */
+    @MappedProperty("chr")
     String chromosome
     /**
      * The start position of a given variant
      */
+    @MappedProperty("start")
     BigInteger startPosition
     /**
      * The end position of a given variant
      */
+    @MappedProperty("end")
     BigInteger endPosition
     /**
      * The reference allele of a given variant
      */
+    @MappedProperty("ref")
     String referenceAllele
     /**
      * The observed allele of a given variant
      */
+    @MappedProperty("obs")
     String observedAllele
     /**
      * The consequences of a given variant
      */
+    @Transient
     ArrayList consequences
     /**
      * Describes whether a given variant is somatic
      */
+    @MappedProperty("issomatic")
     Boolean isSomatic
     /**
      * The information given in a VCF file for a given variant
      */
+    @Transient
     VcfInfo vcfInfo
     /**
      * The genotype information for a given variant
      */
+    @Transient
     List<Genotype> genotypes
 
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variants")
+    private Set<ReferenceGenome> referenceGenomes = new HashSet<>();
+
+    @Creator
     Variant() {}
 
     // create variant object from htsjdk variant context, given annotation type
@@ -79,6 +100,16 @@ class Variant implements SimpleVariantContext, Comparable {
         this.genotypes = genotypes
     }
 
+
+
+    void setId(Long id) {
+        this.id = id
+    }
+
+    Long getId() {
+        return id
+    }
+
     @Override
     int compareTo(Object other) {
         Variant v = (Variant) other
@@ -86,7 +117,7 @@ class Variant implements SimpleVariantContext, Comparable {
     }
 
     @Override
-    void setId(String identifier) {
+    void setIdentifier(String identifier) {
         this.identifier = identifier
     }
 
@@ -134,6 +165,14 @@ class Variant implements SimpleVariantContext, Comparable {
         this.genotypes = genotypes
     }
 
+    Set<ReferenceGenome> getReferenceGenomes() {
+        return referenceGenomes
+    }
+
+    void setReferenceGenomes(Set<ReferenceGenome> referenceGenomes) {
+        this.referenceGenomes = referenceGenomes
+    }
+
     @Schema(description = "The chromosome")
     @JsonProperty("chromosome")
     @Override
@@ -172,7 +211,7 @@ class Variant implements SimpleVariantContext, Comparable {
     @Schema(description = "The consequences")
     @JsonProperty("consequences")
     @Override
-    List<Consequence> getConsequences() {
+    ArrayList<Consequence> getConsequences() {
         return consequences
     }
 
@@ -186,7 +225,7 @@ class Variant implements SimpleVariantContext, Comparable {
     @Schema(description = "The variant identifier")
     @JsonProperty("identifier")
     @Override
-    String getId() {
+    String getIdentifier() {
         return identifier
     }
 
@@ -199,7 +238,7 @@ class Variant implements SimpleVariantContext, Comparable {
 
     @Schema(description = "The database identifier of this variant (if available)")
     @JsonProperty("databaseIdentifier")
-    String getDatabaseId() {
+    String getDatabaseIdentifier() {
         return databaseIdentifier
     }
 

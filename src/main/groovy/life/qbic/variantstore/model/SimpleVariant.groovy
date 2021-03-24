@@ -18,7 +18,7 @@ class SimpleVariant implements SimpleVariantContext{
     String observedAllele
     VcfInfo vcfInfo
     List<Genotype> genotypes
-    String id
+    String identifier
     Boolean isSomatic
     ArrayList consequences
     String databaseId
@@ -80,7 +80,7 @@ class SimpleVariant implements SimpleVariantContext{
 
     @JsonProperty("databaseId")
     @Override
-    String getDatabaseId() {
+    String getDatabaseIdentifier() {
         return databaseId
         //context.getID()
     }
@@ -112,8 +112,8 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    String getId() {
-        return id
+    String getIdentifier() {
+        return identifier
     }
 
     VariantContext getContext() {
@@ -125,8 +125,8 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    void setId(String id) {
-        this.id = id
+    void setIdentifier(String id) {
+        this.identifier = id
     }
 
     @Override

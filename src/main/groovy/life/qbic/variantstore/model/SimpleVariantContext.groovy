@@ -21,15 +21,15 @@ interface SimpleVariantContext {
 
     List<Genotype> getGenotypes()
 
-    String getDatabaseId()
+    String getDatabaseIdentifier()
 
     Boolean getIsSomatic()
 
-    String getId()
+    String getIdentifier()
 
     VcfInfo getVcfInfo()
 
-    void setId(String id)
+    void setIdentifier(String id)
 
     void setIsSomatic(Boolean somatic)
 
