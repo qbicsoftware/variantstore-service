@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Changed`
 - [#40](https://github.com/qbicsoftware/variantstore-service/issues/40) Extended usage documentation and added examples
+- Prevent the creation of duplicate gene entries in the database
 
 ### `Fixed`
 - [#42](https://github.com/qbicsoftware/variantstore-service/issues/42) - Fix parsing of Ensembl version
