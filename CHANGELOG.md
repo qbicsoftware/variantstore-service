@@ -3,13 +3,16 @@
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/)
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## v1.1.0-SNAPSHOT - 2021-03-04
+## v1.0.1 - 2021-03-25
 
 ### `Added`
 
 ### `Changed`
+- [#40](https://github.com/qbicsoftware/variantstore-service/issues/40) Extended usage documentation and added examples
 
 ### `Fixed`
+- [#42](https://github.com/qbicsoftware/variantstore-service/issues/42) - Fix parsing of Ensembl version
+- [#41](https://github.com/qbicsoftware/variantstore-service/issues/41) - Fix `EnsemblParser` bug caused by missing `Gene` constructor
 
 ## v1.0.0 - Valmart - 2021-03-02
 
