@@ -14,9 +14,9 @@ The **Variantstore** is a Java/Groovy-based service application implemented usin
 
 Features
 --------
-- Import metadata (JSON files using this `schema <https://github.com/qbicsoftware/mtb-metadata-specs/blob/master/schemes/mtb/variants.metadata.schema.json>`_)
 - Import variants (VCF files, annotated using `SnpEff <http://snpeff.sourceforge.net>`_ or `VEP <https://www.ensembl.org/info/docs/tools/vep/index.html>`_)
-- Import gene information (Ensembl, GFF3 files)  
+- Import metadata in JSON together with variants
+- Import gene information (Ensembl, GFF3 files)
 - Query information on variants, genes, and cases via (secured) REST endpoints
 - Ask Beacon endpoint if a specific variant exists in the store
 - Export variants in Variant Call Format (VCF) and `FHIR <https://www.hl7.org/fhir/>`_
