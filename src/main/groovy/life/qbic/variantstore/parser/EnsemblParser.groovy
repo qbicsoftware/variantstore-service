@@ -40,11 +40,18 @@ class EnsemblParser {
                 .absolutePath.toString(), null, codec, false);
 
         // try to extract reference genome and Ensembl version
+        def referenceMatch = (file.name =~ /(GRCh|hg)\d+/)
         def versionMatch = (file.name =~ /(GRCh)\d+.\d+|\w+(v)\d+/)
         String referenceGenome = ""
         Integer ensemblVersion = 0
         if (versionMatch.find()) {
-            (referenceGenome, ensemblVersion) = versionMatch[0][0].toString().split("\\.|v")
+            def foundPattern = versionMatch[0][0].toString().split("\\.|v")
+            referenceGenome = foundPattern.first()
+            ensemblVersion = Integer.valueOf(foundPattern.last())
+        }
+        else if (referenceMatch.find()) {
+            referenceGenome = referenceMatch[0][0].toString()
+            ensemblVersion = null
         }
 
         def splittedLine = ""
@@ -58,21 +65,22 @@ class EnsemblParser {
         for (final Gff3Feature feature : reader.iterator()) {
             if(feature.type.contains("gene")) {
                 numberOfGenes++
-                def gene = new Gene()
-                gene.geneId = feature.ID.split(":")[-1]
-                gene.bioType = feature.getAttribute("biotype")
-                gene.chromosome = feature.contig
-                gene.geneStart = feature.start
-                gene.geneEnd = feature.end
-                gene.strand = feature.strand
-                gene.symbol = feature.name
-                gene.version = feature.getAttribute("version") != null ? feature.getAttribute("version").toInteger(): -1
+
+                String geneId = feature.ID.split(":")[-1]
+                def bioType = feature.getAttribute("biotype")
+                def chromosome = feature.contig
+                def geneStart = feature.start as BigInteger
+                def geneEnd = feature.end as BigInteger
+                def strand = feature.strand.toString()
+                def symbol = feature.name
+                def version = feature.getAttribute("version") != null ? feature.getAttribute("version").toInteger(): -1
                 def description = (feature.getAttribute("description") != null) ? feature.getAttribute("description") : ''
                 def synonym = (feature.getAttribute("description") != null) && feature.getAttribute("description").contains("HGNC") ? feature.getAttribute("description").split("\\[").last().split("HGNC:").last().replace("]", "") : ''
-                gene.name = description.split("\\[").first().trim()
+                def name = description.split("\\[").first().trim()
+                def synonyms = [synonym]
+                def geneDescription = description.trim()
 
-                gene.synonyms = [synonym]
-                gene.description = description.trim()
+                def gene = new Gene(bioType, chromosome, symbol, name, geneStart, geneEnd, geneId, geneDescription, strand, version, synonyms)
                 genes.add(gene)
             }
         }
@@ -104,9 +112,11 @@ class EnsemblParser {
         log.info("Read $numberOfGenes genes from provided Ensembl file.")
 
         this.genes = genes
-        this.referenceGenome = new ReferenceGenome("Genome Reference Consortium", referenceGenome,
+        // if the reference genome is specified in the file under #!genome-build we will use this information
+        def refernceGenomeToDB = referenceGenomeFromFile ? referenceGenomeFromFile : referenceGenome
+        this.referenceGenome = new ReferenceGenome("Genome Reference Consortium", refernceGenomeToDB,
         referenceGenomeVersion as String)
-        this.version = ensemblVersion.toInteger()
+        this.version = ensemblVersion ? ensemblVersion.toInteger() : -1
         this.date = updateDate
     }
 }
