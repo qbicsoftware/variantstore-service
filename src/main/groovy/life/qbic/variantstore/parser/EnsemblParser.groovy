@@ -16,6 +16,8 @@ import life.qbic.variantstore.model.ReferenceGenome
 @Log4j2
 class EnsemblParser {
 
+    private final GENOME_REFERENCE_SOURCE_GRC = "Genome Reference Consortium"
+
     /**
      * The genes
      */
@@ -114,7 +116,7 @@ class EnsemblParser {
         this.genes = genes
         // if the reference genome is specified in the file under #!genome-build we will use this information
         def refernceGenomeToDB = referenceGenomeFromFile ? referenceGenomeFromFile : referenceGenome
-        this.referenceGenome = new ReferenceGenome("Genome Reference Consortium", refernceGenomeToDB,
+        this.referenceGenome = new ReferenceGenome(GENOME_REFERENCE_SOURCE_GRC, refernceGenomeToDB,
         referenceGenomeVersion as String)
         this.version = ensemblVersion ? ensemblVersion.toInteger() : -1
         this.date = updateDate
