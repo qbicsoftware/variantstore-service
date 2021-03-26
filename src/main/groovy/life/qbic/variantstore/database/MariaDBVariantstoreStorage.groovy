@@ -2023,7 +2023,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     private List<Gene> tryToStoreGeneObjects(List<Gene> genes) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
-        sql.withBatch("insert INTO gene (symbol, name, biotype, chr, start, end, synonyms, geneid, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE symbol=?, name=?, " + "biotype=?, chr=?, start=?, end=?, synonyms=?, geneid=?, description=?, strand=?, version=?") {
+        sql.withBatch("insert INTO gene (symbol, name, biotype, chr, start, end, synonyms, geneid, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE symbol=?, name=?, biotype=?, chr=?, start=?, end=?, synonyms=?, geneid=?, description=?, strand=?, version=?") {
             BatchingPreparedStatementWrapper ps ->
             genes.each { gene ->
                 ps.addBatch([gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart,
