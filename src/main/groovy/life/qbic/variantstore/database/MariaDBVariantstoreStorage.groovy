@@ -1561,7 +1561,6 @@ annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
 annotationsoftware.name='${annotationSoftware}' AND consequence.genesymbol='${geneName}';"""))
             }
             else {
-                println(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND consequence.genesymbol='${geneName}';"""))
                 result = sql.rows(selectVariantsWithConsequences.replace(";", """ WHERE referencegenome.build='${referenceGenome}' AND consequence.genesymbol='${geneName}';"""))
             }
         }
@@ -2024,12 +2023,14 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     private List<Gene> tryToStoreGeneObjects(List<Gene> genes) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
-        sql.withBatch("insert INTO gene (symbol, name, biotype, chr, start, end, synonyms, geneid, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE id=id") {
+        sql.withBatch("insert INTO gene (symbol, name, biotype, chr, start, end, synonyms, geneid, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE symbol=?, name=?, biotype=?, chr=?, start=?, end=?, synonyms=?, geneid=?, description=?, strand=?, version=?") {
             BatchingPreparedStatementWrapper ps ->
             genes.each { gene ->
+                // we have to specify the values twice since we need them for the insert and "on duplicate" part of the sql query
                 ps.addBatch([gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart,
-                             gene.geneEnd, gene.synonyms[0], gene.geneId, gene.description, gene
-                                     .strand, gene.version])
+                             gene.geneEnd, gene.synonyms[0], gene.geneId, gene.description, gene.strand, gene.version,
+                             gene.symbol, gene.name, gene.bioType, gene.chromosome, gene.geneStart,
+                             gene.geneEnd, gene.synonyms[0], gene.geneId, gene.description, gene.strand, gene.version])
             }
         }
 
