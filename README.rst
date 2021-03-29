@@ -15,7 +15,7 @@ The **Variantstore** is a Java/Groovy-based service application implemented usin
 Features
 --------
 - Import variants (VCF files, annotated using `SnpEff <http://snpeff.sourceforge.net>`_ or `VEP <https://www.ensembl.org/info/docs/tools/vep/index.html>`_)
-- Import metadata in JSON together with variants
+- Import metadata in JSON together with variants (see `Usage <https://oncostore-proto-project.readthedocs.io/en/latest/usage.html>`_ for details)
 - Import gene information (Ensembl, GFF3 files)
 - Query information on variants, genes, and cases via (secured) REST endpoints
 - Ask Beacon endpoint if a specific variant exists in the store

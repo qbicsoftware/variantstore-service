@@ -69,7 +69,7 @@ For example using `curl` your upload command would look like this:
     -H 'Content-Type: multipart/form-data' \
     -F 'files=@/path/to/genes.GRCh38.87.gff3'
 
-This feature is currently supported for `gff3` files dervied from Ensembl. The Ensembl version (87 in the example above) is expected to be part of the file name otherwise the corresponding database field will be empty.
+This feature is currently supported for `gff3` files derived from Ensembl. The Ensembl version (87 in the example above) is expected to be part of the file name otherwise the corresponding database field will be empty.
 
 
 Retrieve data from the store
@@ -88,7 +88,7 @@ The full list of available endpoints can be seen below.
 
 REST API
 --------
-The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/1.0.0>`_. Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via /swagger-ui ``and`` .../rapidoc.
+The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on `SwaggerHub <https://app.swaggerhub.com/apis/christopher-mohr/variantstore/1.0.1>`_. Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via /swagger-ui ``and`` .../rapidoc.
 
 | **GET /genes/{id}**
 | Request a gene
