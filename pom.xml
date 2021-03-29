@@ -5,7 +5,7 @@
     <artifactId>variantstore</artifactId>
     <groupId>life.qbic</groupId>
     <name>Variantstore</name>
-    <version>1.0.1</version>
+    <version>1.1.0-SNAPSHOT</version>
     <description>Variantstore is a service to store and manage genomic variants</description>
     <properties>
         <jdk.version>1.8</jdk.version>

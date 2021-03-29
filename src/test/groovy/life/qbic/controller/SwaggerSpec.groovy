@@ -28,7 +28,7 @@ class SwaggerSpec extends TestContainerSpecification{
 
     def "swagger YAML is exposed"() {
         when:
-        HttpResponse response = httpClient.toBlocking().exchange(HttpRequest.GET("/swagger/variantstore-1.0.1.yml"))
+        HttpResponse response = httpClient.toBlocking().exchange(HttpRequest.GET("/swagger/variantstore-1.1.0-SNAPSHOT.yml"))
 
         then:
         response.status() == HttpStatus.OK
