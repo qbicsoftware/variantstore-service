@@ -1,6 +1,11 @@
 package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.Relation
+import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -9,10 +14,17 @@ import io.swagger.v3.oas.annotations.media.Schema
  * @since: 1.0.0
  *
  */
+@MappedEntity(value = "annotationsoftware", namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode
 @Schema(name="Variant Annotation", description="A variant annotation software")
 class Annotation implements Software{
 
+    /**
+     * The identifier of a Variant Caller
+     */
+    @GeneratedValue
+    @Id
+    private Long id
     /**
      * The name of a given annotation software
      */
@@ -26,10 +38,21 @@ class Annotation implements Software{
      */
     final String doi
 
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
+    Set<Consequence> consequences = new HashSet<>()
+
     Annotation(String name, String version, String doi) {
         this.name = name
         this.version = version
         this.doi = doi
+    }
+
+    Long getId() {
+        return id
+    }
+
+    void setId(Long id) {
+        this.id = id
     }
 
     @Override
@@ -45,5 +68,9 @@ class Annotation implements Software{
     @Override
     String getDoi() {
         return doi
+    }
+
+    Set<Consequence> getConsequences() {
+        return consequences
     }
 }

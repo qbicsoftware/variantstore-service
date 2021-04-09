@@ -2,6 +2,10 @@ package life.qbic.variantstore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.Relation
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -9,10 +13,17 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.1.0
  */
+@MappedEntity
 @EqualsAndHashCode
 @Schema(name = "Gene", description = "A Gene")
 class Gene {
 
+    /**
+     * The identifier of a gene
+     */
+    @GeneratedValue
+    @Id
+    private String id
     /**
      * The chromosome of a gene
      */
@@ -58,6 +69,12 @@ class Gene {
      */
     final List<String> synonyms
 
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
+    Set<Consequence> consequences = new HashSet<>()
+
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
+    Set<Ensembl> ensembles = new HashSet<>()
+
     Gene(String bioType, String chromosome, String symbol, String name, BigInteger geneStart, BigInteger geneEnd,
          String geneId, String description, String strand, Integer version, List<String> synonyms) {
         this.bioType = bioType
@@ -71,6 +88,14 @@ class Gene {
         this.strand = strand
         this.version = version
         this.synonyms = synonyms
+    }
+
+    String getId() {
+        return id
+    }
+
+    void setId(String id) {
+        this.id = id
     }
 
     @Schema(description = "The chromosome")
@@ -137,5 +162,21 @@ class Gene {
     @JsonProperty("version")
     Integer getVersion() {
         return version
+    }
+
+    Set<Consequence> getConsequences() {
+        return consequences
+    }
+
+    void setConsequences(Set<Consequence> consequences) {
+        this.consequences = consequences
+    }
+
+    Set<Ensembl> getEnsembles() {
+        return ensembles
+    }
+
+    void setEnsembles(Set<Ensembl> ensembles) {
+        this.ensembles = ensembles
     }
 }

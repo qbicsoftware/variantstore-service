@@ -43,6 +43,9 @@ class ReferenceGenome {
     @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
     Set<Variant> variants = new HashSet<>()
 
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "referencegenome")
+    private List<Ensembl> ensemblInstances
+
     ReferenceGenome(String source, String build, String version) {
         this.source = source
         this.build = build
@@ -55,6 +58,14 @@ class ReferenceGenome {
 
     void setId(Long id) {
         this.id = id
+    }
+
+    List<Ensembl> getEnsemblInstances() {
+        return ensemblInstances
+    }
+
+    void setEnsemblInstances(List<Ensembl> ensemblInstances) {
+        this.ensemblInstances = ensemblInstances
     }
 
     @Schema(description="The genome source")

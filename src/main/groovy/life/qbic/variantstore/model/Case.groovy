@@ -23,6 +23,7 @@ class Case {
      */
     @Id
     private final String id
+
     /**
      * The project associated with a case
      */
@@ -30,7 +31,7 @@ class Case {
     private Project project
 
     /**
-     * The project associated with a case
+     * The samples associated with a case
      */
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "entity")
     private final List<Sample> sample

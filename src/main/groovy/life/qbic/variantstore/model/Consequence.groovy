@@ -3,6 +3,10 @@ package life.qbic.variantstore.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.Relation
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -10,11 +14,18 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.1.0
  */
+@MappedEntity
 @EqualsAndHashCode
 @CompileStatic
 @Schema(name = "Consequence", description = "A variant consequence")
 class Consequence implements Comparable {
 
+    /**
+     * The id of a consequence
+     */
+    @GeneratedValue
+    @Id
+    private Long id
     /**
      * The genomic allele of a consequence
      */
@@ -110,6 +121,15 @@ class Consequence implements Comparable {
      */
     final String warnings
 
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
+    Set<Annotation> annotations = new HashSet<>()
+
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "gene")
+    private Set<Gene> genes = new HashSet<>()
+
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
+    Set<Variant> variants = new HashSet<>()
+
     Consequence(String allele, String codingChange, String transcriptId, Integer transcriptVersion, String type,
                 String bioType, Boolean canonical, String aaChange, String cdnaPosition, String cdsPosition, String
                         proteinPosition, Integer proteinLength, Integer cdnaLength, Integer cdsLength, String impact,
@@ -145,6 +165,14 @@ class Consequence implements Comparable {
         Consequence c = (Consequence) other
         int byCoding = this.codingChange <=> c.codingChange
         return byCoding ?: this.transcriptId <=> c.transcriptId
+    }
+
+    Long getId() {
+        return id
+    }
+
+    void setId(Long id) {
+        this.id = id
     }
 
     @JsonProperty("allele")
@@ -261,5 +289,17 @@ class Consequence implements Comparable {
     @JsonProperty("intron")
     String getIntron() {
         return intron
+    }
+
+    Set<Annotation> getAnnotations() {
+        return annotations
+    }
+
+    Set<Gene> getGenes() {
+        return genes
+    }
+
+    Set<Variant> getVariants() {
+        return variants
     }
 }

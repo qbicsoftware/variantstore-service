@@ -18,6 +18,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Schema(name = "Variant", description = "A genomic variant")
 class Variant implements SimpleVariantContext, Comparable {
 
+    /**
+     * The id of a variant
+     */
     @GeneratedValue
     @Id
     private Long id
@@ -59,7 +62,9 @@ class Variant implements SimpleVariantContext, Comparable {
      * The consequences of a given variant
      */
     @Transient
-    ArrayList consequences
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variants")
+    //ArrayList consequences
+    private Set<Consequence> consequences = new HashSet<>()
     /**
      * Describes whether a given variant is somatic
      */
@@ -77,7 +82,7 @@ class Variant implements SimpleVariantContext, Comparable {
     List<Genotype> genotypes
 
     @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variants")
-    private Set<ReferenceGenome> referenceGenomes = new HashSet<>();
+    private Set<ReferenceGenome> referenceGenomes = new HashSet<>()
 
     @Creator
     Variant() {}
@@ -247,6 +252,8 @@ class Variant implements SimpleVariantContext, Comparable {
     List<Genotype> getGenotypes() {
         return genotypes
     }
+
+
 
     /**
      * Generate variant content in Variant Call Format.

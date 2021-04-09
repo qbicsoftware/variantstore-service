@@ -14,7 +14,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 class Project {
 
     /**
-     * The identifier of a case
+     * The identifier of a project
      */
     @Id
     private final String id

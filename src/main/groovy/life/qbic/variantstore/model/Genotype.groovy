@@ -1,6 +1,9 @@
 package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
 import life.qbic.variantstore.util.VcfConstants
 
 /**
@@ -8,9 +11,16 @@ import life.qbic.variantstore.util.VcfConstants
  *
  * @since: 1.0.0
  */
+@MappedEntity
 @EqualsAndHashCode(includes = 'genotype, readDepth, filter, likelihoods, genotypeLikelihoods, genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities, phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality')
 class Genotype {
 
+    /**
+     * The identifier of a gene
+     */
+    @GeneratedValue
+    @Id
+    private String id
     /**
      * The sample name associated with a genotype
      */
@@ -112,6 +122,14 @@ class Genotype {
         this.phasingQuality = phasingQuality
         this.alternateAlleleCounts = alternateAlleleCounts
         this.mappingQuality = mappingQuality
+    }
+
+    String getId() {
+        return id
+    }
+
+    void setId(String id) {
+        this.id = id
     }
 
     String getSampleName() {

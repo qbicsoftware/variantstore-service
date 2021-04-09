@@ -1,6 +1,10 @@
 package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.Relation
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -8,10 +12,17 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.0.0
  */
+@MappedEntity
 @EqualsAndHashCode
 @Schema(name="Variant Caller", description="A variant calling software")
 class VariantCaller implements Software {
 
+    /**
+     * The identifier of a Variant Caller
+     */
+    @GeneratedValue
+    @Id
+    private Long id
     /**
      * The name of a variant calling software
      */
@@ -25,10 +36,17 @@ class VariantCaller implements Software {
      */
     final String doi
 
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
+    Set<Variant> variants = new HashSet<>()
+
     VariantCaller(String name, String version, String doi) {
         this.name = name
         this.version = version
         this.doi = doi
+    }
+
+    Long getId() {
+        return id
     }
 
     @Override
@@ -44,5 +62,17 @@ class VariantCaller implements Software {
     @Override
     String getDoi() {
         return doi
+    }
+
+    Set<Variant> getVariants() {
+        return variants
+    }
+
+    void setId(Long id) {
+        this.id = id
+    }
+
+    void setVariants(Set<Variant> variants) {
+        this.variants = variants
     }
 }

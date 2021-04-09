@@ -2,6 +2,9 @@ package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
 import htsjdk.variant.variantcontext.CommonInfo
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
 import life.qbic.variantstore.util.VcfConstants
 
 /**
@@ -9,12 +12,19 @@ import life.qbic.variantstore.util.VcfConstants
  *
  * @since: 1.0.0
  */
+@MappedEntity
 @EqualsAndHashCode
 class VcfInfo {
 
     // possible reserved sub-fields of the INFO column as defined in the VCF specification
     // http://samtools.github.io/hts-specs/ (VCF 4.1 and 4.2)
     //TODO deal with future releases?
+    /**
+     * The identifier of a gene
+     */
+    @GeneratedValue
+    @Id
+    private String id
     /**
      * The ancestral allele
      **/
@@ -132,6 +142,14 @@ class VcfInfo {
         this.numberSamples = numberSamples
         this.somatic = somatic
         this.validated = validated
+    }
+
+    String getId() {
+        return id
+    }
+
+    void setId(String id) {
+        this.id = id
     }
 
     String getAncestralAllele() {
