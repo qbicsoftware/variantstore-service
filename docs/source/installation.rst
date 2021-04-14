@@ -25,3 +25,18 @@ Setup Database
 --------
 
 The complete installation of the Variantstore includes setting up the required databases to store the genomic information. Details can be found under :ref:`configuration`.
+
+One-Click Deployment
+--------
+
+The Variantstore also supports a one-click deployment via docker-compose.
+This allows fast setup of a functional variantstore & database infrastructure.
+
+.. code-block:: bash
+
+   cd variantstore-service/
+   docker-compose up
+
+
+However, it has to be noted that this kind of deployment is designed only for testing purposes.
+For a productive environment, a manual setup with individual configuration is recommended.
