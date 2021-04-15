@@ -17,7 +17,7 @@ class Project {
      * The identifier of a project
      */
     @Id
-    private final String id
+    private String id
 
     //@Join(name = "project_id")
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "project")

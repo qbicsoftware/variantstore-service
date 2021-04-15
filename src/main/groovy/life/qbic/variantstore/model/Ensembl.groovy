@@ -27,7 +27,12 @@ class Ensembl {
     private ReferenceGenome referenceGenome
 
     @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "gene_id")
-    private Set<Gene> genes = new HashSet<>();
+    private Set<Gene> genes = new HashSet<>()
+
+    Ensembl(Integer version, String date) {
+        this.version = version
+        this.date = date
+    }
 
     Long getId() {
         return id
