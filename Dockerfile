@@ -21,10 +21,14 @@ COPY ./mvnw.cmd ${variantstore}/mvnw.cmd
 
 # Compile Variantstore
 RUN cd ${variantstore} && \
-    ./mvnw clean compile
+    ./mvnw clean package
+
+# Allow easier accessibility
+RUN mv ${variantstore}/target/variantstore*-SNAPSHOT.jar \
+    ${variantstore}/target/variantstore.runner.jar
 
 #-----------------------------------------------------#
 #                   Run Variantstore                  #
 #-----------------------------------------------------#
 WORKDIR ${variantstore}
-CMD ./mvnw exec:exec
+# CMD java -jar ./target/variantstore.runner.jar
