@@ -33,17 +33,18 @@ micronaut:
                 enabled: true
         oauth2:
             enabled: false
-    variantstore_postgres:
-        url: jdbc:postgresql://localhost:5432/variantstore_db
-        username: mohr
-        password: password
-        driverClassName: org.postgresql.Driver
-    flyway:
-        datasources:
-           variantstore_postgres:
-                enabled: false
-                schemas: variantstore_model
-                baselineOnMigrate: true
-                locations: classpath:db/postgresql
+datasources:
+  variantstore_postgres:
+      url: jdbc:postgresql://localhost:5432/variantstore_db
+      username: mohr
+      password: ""
+      driverClassName: org.postgresql.Driver
+flyway:
+    datasources:
+       variantstore_postgres:
+            enabled: true
+            schemas: variantstore_model
+            baselineOnMigrate: true
+            locations: classpath:db/postgresql
 userroles:
     config: "src/main/resources/test.yml"

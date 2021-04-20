@@ -76,7 +76,7 @@ datasources:
   variantstore_postgres:
     url: jdbc:postgresql://localhost:5432/variantstore_db
     username: mohr
-    password: password
+    password: ""
     driverClassName: org.postgresql.Driver
 #flyway:
 #  datasources:
@@ -84,17 +84,27 @@ datasources:
 #      enabled: false
 #    transactions:
 #      enabled: false
-  flyway:
-    datasources:
-      default:
-        enabled: false
-        transactions:
+flyway:
+  datasources:
+    default:
       enabled: false
-        variantstore_postgres:
-        enabled: false
-        #schemas: variantstore_model
-        baselineOnMigrate: true
+    transactions:
+      enabled: false
+    variantstore_postgres:
+      enabled: true
       locations: classpath:db/postgresql
+      createSchemas: false
+      ## Migrate sql script file name prefix, default V
+      sqlMigrationPrefix: V
+      ## Migrating sql script file name separator, default 2 underscores __
+      sqlMigrationSeparator: __
+      # Migrate the suffix of the name of the SQL script file
+      sqlMigrationSuffixes: .sql
+      # Whether to check during migration, default true
+      validateOnMigrate: true
+      # Set to true, when the migration finds that the database is not empty and there is a table with no metadata, it automatically performs a benchmark migration and creates a new schema_version table
+      baselineOnMigrate: true
+      schemas: public
 endpoints:
   health:
     enabled: true

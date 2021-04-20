@@ -6,6 +6,7 @@ import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.test.annotation.MicronautTest
 import life.qbic.variantstore.database.*
 import life.qbic.variantstore.model.ReferenceGenome
+import life.qbic.variantstore.model.Sample
 import life.qbic.variantstore.model.Variant
 import spock.lang.Specification
 
@@ -30,6 +31,7 @@ class PostgresManyToManySpec extends Specification {
 
         when:
         ReferenceGenome referenceGenome = new ReferenceGenome("bla", "blub", "blob")
+        Sample sample = new Sample("bla", "blub")
 
         // create a variant
         Variant variant = new Variant()
@@ -65,6 +67,7 @@ class PostgresManyToManySpec extends Specification {
         def vars = Arrays.asList(variant, variant2, variant3)
         referenceGenome.variants.addAll(vars)
 
+        //def sg = sampleRepository.save(sample)
         def rg = referenceGenomeRepository.save(referenceGenome)
 
         //def lis =  variantRepository.saveAll(vars)

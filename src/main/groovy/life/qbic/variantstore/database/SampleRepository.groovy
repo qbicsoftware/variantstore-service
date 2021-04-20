@@ -10,7 +10,7 @@ import life.qbic.variantstore.model.Sample
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface SampleRepository extends CrudRepository<Sample, Integer> {
+interface SampleRepository extends CrudRepository<Sample, Long> {
 
 
     @NonNull

@@ -52,11 +52,16 @@ class Sample {
 
 
      */
-    @Creator
     Sample(String identifier, String cancerEntity, Case entity) {
         this.identifier = identifier
         this.cancerEntity = cancerEntity
         this.entity = entity
+    }
+
+    @Creator
+    Sample(String identifier, String cancerEntity) {
+        this.identifier = identifier
+        this.cancerEntity = cancerEntity
     }
 
     Long getId() {
