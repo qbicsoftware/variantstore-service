@@ -13,9 +13,7 @@ services:
     command: --max_allowed_packet=32505856
     restart: always
     container_name: variantstore_db
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: "yes"
-      MYSQL_DATABASE: variantstore_db
+    env_file: docker-config.env
     volumes:
      - dbstorage:/data/db
      - ./models/variantstore-model.sql:/docker-entrypoint-initdb.d/variantstore-init.sql:ro
@@ -23,7 +21,7 @@ services:
     ports:
      - 3306:3306
     healthcheck:
-      test: "/usr/bin/mysql --user=root --password='' --database=variantstore_db --execute \"SELECT * FROM variant_has_variantcaller;\""
+      test: "/usr/bin/mysql --user=root --password=$$MYSQL_ROOT_PASSWORD --database=variantstore_db --execute \"SELECT * FROM variant_has_variantcaller;\""
       interval: 5s
       timeout: 10s
       retries: 100
@@ -39,9 +37,4 @@ services:
         condition: service_healthy
     ports:
       - 8080:8080
-    environment:
-      DB_HOST: variantstore_db:3306
-      DB_NAME: variantstore_db
-      DB_USER: root
-      DB_PWD: ''
-      VARIANTSTORE_SECURITY_ENABLED: 'false'
+    env_file: docker-config.env
