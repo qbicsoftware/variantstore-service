@@ -1,0 +1,19 @@
+# # This workflow runs all available tests and builds the .jar files
+name: Varianstore CI
+
+# Trigger the workflow on push and pull request activity
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v2
+      - name: Set up JDK 1.8
+        uses: actions/setup-java@v2
+        with:
+          java-version: 1.8
+          distribution: 'adopt'
+      - name: Build with Maven and run tests
+        run: mvn --batch-mode verify
