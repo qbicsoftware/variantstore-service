@@ -271,14 +271,14 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>spock</artifactId>
-            <version>1.14.3</version>
+            <version>1.15.1</version>
             <scope>test</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.testcontainers/mariadb -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mariadb</artifactId>
-            <version>1.14.3</version>
+            <version>1.15.1</version>
         </dependency>
         <!-- Micronaut security dependencies -->
         <dependency>
