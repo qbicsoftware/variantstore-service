@@ -10,10 +10,12 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      # set up JDK 1.8
       - name: Set up JDK 1.8
         uses: actions/setup-java@v2
         with:
           java-version: '8'
           distribution: 'adopt'
+      # build with maven and run tests
       - name: Build with Maven and run tests
         run: mvn --batch-mode verify
