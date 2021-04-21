@@ -20,6 +20,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     @Inject GeneRepository geneRepository
     @Inject ReferenceGenomeRepository referenceGenomeRepository
     @Inject VariantCallerRepository variantCallerRepository
+    @Inject VariantAnnotationRepository variantAnnotationRepository
 
     @Override
     List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start, String reference,
@@ -104,16 +105,15 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     }
 
     @Override
-    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map sampleIdentifiers,
+    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map genotypeSamples,
                                                  ArrayList<SimpleVariantContext> variantContext) throws VariantstoreStorageException {
         try {
             def caseId = caseRepository.save(metadata.getCase())
-            if (!sampleIdentifiers.isEmpty()) sampleRepository.saveAll(sampleIdentifiers.values().collect{sample -> sample}))
+            if (!genotypeSamples.isEmpty()) sampleRepository.saveAll(genotypeSamples.values())
 
             variantCallerRepository.save(metadata.getVariantCalling())
-
-            tryToStoreAnnotationSoftware(metadata.getVariantAnnotation())
             referenceGenomeRepository.save(metadata.getReferenceGenome())
+            variantAnnotationRepository.save(metadata.getVariantAnnotation())
         }
         catch (Exception) {
 
