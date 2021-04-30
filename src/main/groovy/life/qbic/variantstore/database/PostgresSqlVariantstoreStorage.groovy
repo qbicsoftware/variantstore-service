@@ -1,5 +1,6 @@
 package life.qbic.variantstore.database
 
+import groovy.sql.Sql
 import groovy.util.logging.Log4j2
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.MetadataContext
@@ -8,6 +9,8 @@ import life.qbic.variantstore.util.ListingArguments
 
 import javax.inject.Inject
 import javax.inject.Singleton
+import java.sql.PreparedStatement
+import java.sql.SQLException
 
 @Log4j2
 @Singleton
@@ -17,6 +20,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     @Inject ProjectRepository projectRepository
     @Inject CaseRepository caseRepository
     @Inject SampleRepository sampleRepository
+    @Inject ProjectRepository variantRepository
     @Inject GeneRepository geneRepository
     @Inject ReferenceGenomeRepository referenceGenomeRepository
     @Inject VariantCallerRepository variantCallerRepository
@@ -109,11 +113,33 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                                                  ArrayList<SimpleVariantContext> variantContext) throws VariantstoreStorageException {
         try {
             def caseId = caseRepository.save(metadata.getCase())
-            if (!genotypeSamples.isEmpty()) sampleRepository.saveAll(genotypeSamples.values())
+            if (!genotypeSamples.isEmpty())
+                List<Sample> samples = sampleRepository.saveAll(genotypeSamples.values())
 
-            variantCallerRepository.save(metadata.getVariantCalling())
-            referenceGenomeRepository.save(metadata.getReferenceGenome())
-            variantAnnotationRepository.save(metadata.getVariantAnnotation())
+            def variantCaller = variantCallerRepository.save(metadata.getVariantCalling())
+            def variantAnnotation = variantAnnotationRepository.save(metadata.getVariantAnnotation())
+            def referenceGenome = referenceGenomeRepository.save(metadata.getReferenceGenome())
+
+
+            /* INSERT variants, this should also add all connected information */
+            def consequencesToInsert = !variants.isEmpty() ? tryToStoreVariantsBatch(variants) : []
+
+
+            tryToStoreVariantInfo(variants)
+            tryToStoreVariantGenotypes(variants)
+
+            /* INSERT consequences */
+            def consGeneMap = !consequencesToInsert.isEmpty() ? tryToStoreConsequencesBatch(consequencesToInsert as
+                    List<Consequence>) : [:]
+
+            /* INSERT genes */
+            if (!consGeneMap.values().isEmpty()) tryToStoreGenes(consGeneMap.values().toList().flatten() as
+                    List<String>)
+
+            /* GET ids of genes */
+            def geneIdMap = !consGeneMap.isEmpty() ? tryToFindGenesByConsequence(consGeneMap as HashMap<Consequence,
+                    List<String>>) : [:]
+            consGeneMap.clear()
         }
         catch (Exception) {
 
@@ -124,5 +150,26 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     @Override
     void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws VariantstoreStorageException {
 
+    }
+
+    /**
+     * Store variants in batch in the store
+     * @param variants a list of variants
+     * @param list of consequences of the provded variants
+     */
+    private List tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants) {
+
+        ArrayList<SimpleVariantContext> insertedVars = []
+        try {
+            // maybe add batching here
+            insertedVars = variantRepository.saveAll(variants)
+        }
+        catch (SQLException e) {
+            e.printStackTrace()
+        }
+        finally {
+        }
+
+        return insertedVars
     }
 }

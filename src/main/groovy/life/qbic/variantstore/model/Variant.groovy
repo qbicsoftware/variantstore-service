@@ -63,26 +63,28 @@ class Variant implements SimpleVariantContext, Comparable {
      */
     @Transient
     @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variants")
-    //ArrayList consequences
     private Set<Consequence> consequences = new HashSet<>()
     /**
      * Describes whether a given variant is somatic
      */
     @MappedProperty("issomatic")
     Boolean isSomatic
-    /**
-     * The information given in a VCF file for a given variant
-     */
-    @Transient
-    VcfInfo vcfInfo
-    /**
-     * The genotype information for a given variant
-     */
-    @Transient
-    List<Genotype> genotypes
 
     @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variants")
     private Set<ReferenceGenome> referenceGenomes = new HashSet<>()
+    /**
+     * The information given in a VCF file for a given variant
+     */
+    //@Transient
+    //VcfInfo vcfInfo
+    /**
+     * The genotype information for a given variant
+     */
+    //@Transient
+    //List<Genotype> genotypes
+
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "variant")
+    Set<SampleVariant> sampleVariants
 
     @Creator
     Variant() {}

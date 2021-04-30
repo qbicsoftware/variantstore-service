@@ -4,6 +4,7 @@ import groovy.transform.EqualsAndHashCode
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.Relation
 import life.qbic.variantstore.util.VcfConstants
 
 /**
@@ -77,6 +78,9 @@ class Genotype {
      * The RMS mapping quality (MQ)
      */
     final Integer mappingQuality // MQ RMS mapping quality
+
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "genotype")
+    Set<SampleVariant> sampleVariants
 
     Genotype(htsjdk.variant.variantcontext.Genotype genotypeContext) {
         sampleName = genotypeContext.sampleName

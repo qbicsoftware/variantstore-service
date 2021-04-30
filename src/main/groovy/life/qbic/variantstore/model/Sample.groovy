@@ -42,6 +42,9 @@ class Sample {
     @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "entity_id")
     private Case entity
 
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "sample")
+    Set<SampleVariant> sampleVariants
+
 
     /*
     Sample(String identifier, String cancerEntity, String caseId) {

@@ -31,6 +31,10 @@ class PostgresManyToManySpec extends Specification {
 
         when:
         ReferenceGenome referenceGenome = new ReferenceGenome("bla", "blub", "blob")
+        ReferenceGenome referenceGenome2 = new ReferenceGenome("bla1", "blub", "blob")
+        ReferenceGenome referenceGenome3 = new ReferenceGenome("bla2", "blub", "blob")
+        ReferenceGenome referenceGenome4 = new ReferenceGenome("bla3", "blub", "blob")
+
         Sample sample = new Sample("bla", "blub")
 
         // create a variant
@@ -69,11 +73,18 @@ class PostgresManyToManySpec extends Specification {
 
         //def sg = sampleRepository.save(sample)
         def rg = referenceGenomeRepository.save(referenceGenome)
+        def rg2 = referenceGenomeRepository.save(referenceGenome2)
+        def rg3 = referenceGenomeRepository.save(referenceGenome3)
+        def rg4 = referenceGenomeRepository.save(referenceGenome4)
 
         //def lis =  variantRepository.saveAll(vars)
 
         then:
         rg.id
+        print(rg.id)
+        print(rg2.id)
+        print(rg3.id)
+        print(rg4.id)
         //lis.size() == 3
     }
 

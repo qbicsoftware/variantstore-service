@@ -5,6 +5,7 @@ import htsjdk.variant.variantcontext.CommonInfo
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.Relation
 import life.qbic.variantstore.util.VcfConstants
 
 /**
@@ -97,6 +98,9 @@ class VcfInfo {
      * Validated by follow-up experiment
      **/
     final Boolean validated
+
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "vcfinfo")
+    Set<SampleVariant> sampleVariants
 
     VcfInfo(CommonInfo commonInfo) {
         //TODO check if that isn`t AA (amino acid) annotation?
