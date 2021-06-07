@@ -1,0 +1,40 @@
+version: '2.2'
+
+# data volume for DB
+volumes:
+  dbstorage:
+
+# services (docker containers)
+services:
+  # MariaDB database
+  db:
+    image: mariadb:10.3
+    # Set max_allowed_packet to 256M
+    command: --max_allowed_packet=32505856
+    restart: always
+    container_name: variantstore_db
+    env_file: docker-config.env
+    volumes:
+     - dbstorage:/data/db
+     - ./models/variantstore-model.sql:/docker-entrypoint-initdb.d/variantstore-init.sql:ro
+     - ./models/transaction-db.sql:/docker-entrypoint-initdb.d/transaction-init.sql:ro
+    ports:
+     - 3306:3306
+    healthcheck:
+      test: "/usr/bin/mysql --user=root --password=$$MYSQL_ROOT_PASSWORD --database=variantstore_db --execute \"SELECT * FROM variant_has_variantcaller;\""
+      interval: 5s
+      timeout: 10s
+      retries: 100
+  # Variantstore service
+  variantstore:
+    container_name: variantstore_app
+    build: .
+    image: variantstore:latest
+    links:
+      - db
+    depends_on:
+      db:
+        condition: service_healthy
+    ports:
+      - 8080:8080
+    env_file: docker-config.env
