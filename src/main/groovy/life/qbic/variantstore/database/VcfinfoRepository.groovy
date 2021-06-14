@@ -8,7 +8,7 @@ import life.qbic.variantstore.model.VcfInfo
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface VcfinfoRepository extends CrudRepository<VcfInfo, BigInteger>{
+interface VcfinfoRepository extends CrudRepository<VcfInfo, Long>{
 
     VcfInfo findById(String id)
 

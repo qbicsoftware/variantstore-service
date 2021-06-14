@@ -34,7 +34,9 @@ class Case {
      * The samples associated with a case
      */
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "entity")
-    private final List<Sample> sample
+    List<Sample> sample
+
+    Case() {}
 
     Case(String id, Project project) {
         this.id = id
@@ -62,5 +64,9 @@ class Case {
 
     void setProject(Project project) {
         this.project = project
+    }
+
+    List<Sample> getSample() {
+        return sample
     }
 }

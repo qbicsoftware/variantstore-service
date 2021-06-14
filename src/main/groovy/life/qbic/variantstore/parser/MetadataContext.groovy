@@ -2,6 +2,7 @@ package life.qbic.variantstore.parser
 
 import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.model.Case
+import life.qbic.variantstore.model.Project
 import life.qbic.variantstore.model.ReferenceGenome
 import life.qbic.variantstore.model.VariantCaller
 import life.qbic.variantstore.model.Sample
@@ -37,14 +38,19 @@ class MetadataContext {
      * The associated samples
      */
     final List<Sample> samples
+    /**
+     * The associated project
+     */
+    final Project project
 
-    MetadataContext(boolean isSomatic, VariantCaller variantCalling, Annotation variantAnnotation, ReferenceGenome referenceGenome, Case patient, List<Sample> samples) {
+    MetadataContext(boolean isSomatic, VariantCaller variantCalling, Annotation variantAnnotation, ReferenceGenome referenceGenome, Case patient, List<Sample> samples, Project project) {
         this.isSomatic = isSomatic
         this.variantCalling = variantCalling
         this.variantAnnotation = variantAnnotation
         this.referenceGenome = referenceGenome
         this.samples = samples
         this.patient = patient
+        this.project = project
     }
 
     boolean getIsSomatic() {
@@ -69,5 +75,9 @@ class MetadataContext {
 
     List<Sample> getSamples() {
         return samples
+    }
+
+    Project getProject() {
+        return project
     }
 }

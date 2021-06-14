@@ -8,7 +8,7 @@ import life.qbic.variantstore.model.Annotation
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface AnnotationSoftwareRepository extends CrudRepository<Annotation, BigInteger>{
+interface AnnotationSoftwareRepository extends CrudRepository<Annotation, Long>{
 
     Annotation findById(String id)
 

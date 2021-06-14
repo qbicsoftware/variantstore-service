@@ -8,7 +8,7 @@ import life.qbic.variantstore.model.Consequence
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface ConsequenceRepository extends CrudRepository<Consequence, BigInteger>{
+interface ConsequenceRepository extends CrudRepository<Consequence, Long>{
 
     Consequence findById(String id)
 

@@ -21,6 +21,12 @@ interface SimpleVariantContext {
 
     List<Genotype> getGenotypes()
 
+    Set<VariantCaller> getVariantCaller()
+
+    Set<SampleVariant> getSampleVariants()
+
+    Set<ReferenceGenome> getReferenceGenomes()
+
     String getDatabaseIdentifier()
 
     Boolean getIsSomatic()

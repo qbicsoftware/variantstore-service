@@ -4,6 +4,7 @@ import groovy.transform.EqualsAndHashCode
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.MappedProperty
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
@@ -15,7 +16,7 @@ import io.swagger.v3.oas.annotations.media.Schema
  * @since: 1.0.0
  *
  */
-@MappedEntity(value = "referencegenome", namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase)
+@MappedEntity(value = "referencegenome", namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode
 @Schema(name="ReferenceGenome", description="A reference genome")
 class ReferenceGenome {
@@ -37,7 +38,7 @@ class ReferenceGenome {
     Set<Variant> variants = new HashSet<>()
 
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "referencegenome")
-    private List<Ensembl> ensemblInstances
+    private Set<Ensembl> ensemblInstances
 
     ReferenceGenome(String source, String build, String version) {
         this.source = source
@@ -53,11 +54,11 @@ class ReferenceGenome {
         this.id = id
     }
 
-    List<Ensembl> getEnsemblInstances() {
+    Set<Ensembl> getEnsemblInstances() {
         return ensemblInstances
     }
 
-    void setEnsemblInstances(List<Ensembl> ensemblInstances) {
+    void setEnsemblInstances(Set<Ensembl> ensemblInstances) {
         this.ensemblInstances = ensemblInstances
     }
 

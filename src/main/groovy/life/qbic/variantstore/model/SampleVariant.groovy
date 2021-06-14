@@ -6,7 +6,6 @@ import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.model.naming.NamingStrategies
 
-@MappedEntity
 @MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase)
 class SampleVariant {
 
@@ -25,4 +24,35 @@ class SampleVariant {
 
     @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "genotype_id")
     private Genotype genotype
+
+    SampleVariant(Sample sample, Variant variant, VcfInfo vcfinfo, Genotype genotype) {
+        this.sample = sample
+        this.variant = variant
+        this.vcfinfo = vcfinfo
+        this.genotype = genotype
+    }
+
+    Long getId() {
+        return id
+    }
+
+    void setId(Long id) {
+        this.id = id
+    }
+
+    Sample getSample() {
+        return sample
+    }
+
+    Variant getVariant() {
+        return variant
+    }
+
+    VcfInfo getVcfinfo() {
+        return vcfinfo
+    }
+
+    Genotype getGenotype() {
+        return genotype
+    }
 }

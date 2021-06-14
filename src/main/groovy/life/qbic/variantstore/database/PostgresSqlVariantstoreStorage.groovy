@@ -9,7 +9,6 @@ import life.qbic.variantstore.util.ListingArguments
 
 import javax.inject.Inject
 import javax.inject.Singleton
-import java.sql.PreparedStatement
 import java.sql.SQLException
 
 @Log4j2
@@ -25,6 +24,9 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     @Inject ReferenceGenomeRepository referenceGenomeRepository
     @Inject VariantCallerRepository variantCallerRepository
     @Inject VariantAnnotationRepository variantAnnotationRepository
+    @Inject VcfinfoRepository vcfinfoRepository
+    @Inject GenotypeRepository genotypeRepository
+    @Inject SampleVariantRepository sampleVariantRepository
 
     @Override
     List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start, String reference,
@@ -109,38 +111,41 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     }
 
     @Override
-    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map genotypeSamples,
-                                                 ArrayList<SimpleVariantContext> variantContext) throws VariantstoreStorageException {
+    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map sampleIdentifiers, ArrayList variants) throws
+            VariantstoreStorageException  {
         try {
+            def projId = projectRepository.save(metadata.getProject())
             def caseId = caseRepository.save(metadata.getCase())
-            if (!genotypeSamples.isEmpty())
-                List<Sample> samples = sampleRepository.saveAll(genotypeSamples.values())
+
+            if (!sampleIdentifiers.isEmpty()) {
+                List<Sample> samples = sampleRepository.saveAll(sampleIdentifiers.values())
+            }
 
             def variantCaller = variantCallerRepository.save(metadata.getVariantCalling())
             def variantAnnotation = variantAnnotationRepository.save(metadata.getVariantAnnotation())
             def referenceGenome = referenceGenomeRepository.save(metadata.getReferenceGenome())
 
-
             /* INSERT variants, this should also add all connected information */
-            def consequencesToInsert = !variants.isEmpty() ? tryToStoreVariantsBatch(variants) : []
 
-
-            tryToStoreVariantInfo(variants)
-            tryToStoreVariantGenotypes(variants)
+            !variants.isEmpty() ? tryToStoreVariantsBatch(variants, samples) : []
+            // def consequencesToInsert = !variants.isEmpty() ? tryToStoreVariantsBatch(variants) : []
+            //tryToStoreVariantInfo(variants)
+            //tryToStoreVariantGenotypes(variants)
 
             /* INSERT consequences */
-            def consGeneMap = !consequencesToInsert.isEmpty() ? tryToStoreConsequencesBatch(consequencesToInsert as
-                    List<Consequence>) : [:]
+            //def consGeneMap = !consequencesToInsert.isEmpty() ? tryToStoreConsequencesBatch(consequencesToInsert as
+            //        List<Consequence>) : [:]
 
             /* INSERT genes */
-            if (!consGeneMap.values().isEmpty()) tryToStoreGenes(consGeneMap.values().toList().flatten() as
-                    List<String>)
+            //if (!consGeneMap.values().isEmpty()) tryToStoreGenes(consGeneMap.values().toList().flatten() as
+            //        List<String>)
 
             /* GET ids of genes */
-            def geneIdMap = !consGeneMap.isEmpty() ? tryToFindGenesByConsequence(consGeneMap as HashMap<Consequence,
-                    List<String>>) : [:]
-            consGeneMap.clear()
+            //def geneIdMap = !consGeneMap.isEmpty() ? tryToFindGenesByConsequence(consGeneMap as HashMap<Consequence,
+            //        List<String>>) : [:]
+            //consGeneMap.clear()
         }
+
         catch (Exception) {
 
         }
@@ -157,14 +162,16 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
      * @param variants a list of variants
      * @param list of consequences of the provded variants
      */
-    private List tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants) {
+    private List tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants, ArrayList<Sample> samples) {
 
         ArrayList<SimpleVariantContext> insertedVars = []
         try {
             // maybe add batching here
             insertedVars = variantRepository.saveAll(variants)
+            //vcfinfoRepository.saveAll(variants.collect{variant -> variant.getVcfInfo()})
+            //genotypeRepository.saveAll(variants.collect{ variant -> variant.getGenotypes()}.flatten())
         }
-        catch (SQLException e) {
+        catch (Exception e) {
             e.printStackTrace()
         }
         finally {

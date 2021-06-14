@@ -12,7 +12,7 @@ abstract class PostgresTestContainerSpecification extends Specification implemen
 
     private static PostgreSQLContainer<?> container =
             new PostgreSQLContainer<>("postgres:13.2")
-                    .withInitScript('V1__variantstore-postgres-test.sql')
+                    //.withInitScript('V1__variantstore-postgres-test.sql')
                     .withDatabaseName('variantstore_db')
                     .withUsername('mohr')
                     .withPassword('password')

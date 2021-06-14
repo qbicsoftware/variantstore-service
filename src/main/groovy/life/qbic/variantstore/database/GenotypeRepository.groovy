@@ -8,7 +8,7 @@ import life.qbic.variantstore.model.Genotype
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface GenotypeRepository extends CrudRepository<Genotype, BigInteger>{
+interface GenotypeRepository extends CrudRepository<Genotype, Long>{
 
     Genotype findById(String id)
 

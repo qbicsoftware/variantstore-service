@@ -9,7 +9,7 @@ import life.qbic.variantstore.model.VariantCaller
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface VariantCallerRepository extends CrudRepository<VariantCaller, BigInteger> {
+interface VariantCallerRepository extends CrudRepository<VariantCaller, Long> {
 
     VariantCaller findById(String id)
 

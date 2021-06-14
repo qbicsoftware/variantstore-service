@@ -2,18 +2,25 @@ package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
 import htsjdk.variant.variantcontext.CommonInfo
+import io.micronaut.core.annotation.Creator
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.MappedProperty
 import io.micronaut.data.annotation.Relation
+import io.micronaut.data.model.DataType
+import io.micronaut.data.model.naming.NamingStrategies
+import io.micronaut.data.model.naming.NamingStrategy
+import life.qbic.variantstore.util.IntegerToListConverter
 import life.qbic.variantstore.util.VcfConstants
+import javax.persistence.Convert
 
 /**
  * A class to store information as given in the INFO column as defined in the Variant Call Format specification
  *
  * @since: 1.0.0
  */
-@MappedEntity
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode
 class VcfInfo {
 
@@ -25,7 +32,7 @@ class VcfInfo {
      */
     @GeneratedValue
     @Id
-    private String id
+    private Long id
     /**
      * The ancestral allele
      **/
@@ -33,10 +40,14 @@ class VcfInfo {
     /**
      * The allele count
      **/
+    @Convert(converter = IntegerToListConverter.class)
+    @MappedProperty(type = DataType.STRING)
     final List<Integer> alleleCount
     /**
      * The allele frequency
      **/
+    @Convert(converter = IntegerToListConverter.class)
+    @MappedProperty(type = DataType.STRING)
     final List<Float> alleleFrequency
     /**
      * The number of alleles
@@ -124,6 +135,7 @@ class VcfInfo {
         this.validated = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.VALIDATED.tag, false)
     }
 
+    @Creator
     VcfInfo(String ancestralAllele, List<Integer> alleleCount, List<Float> alleleFrequency, Integer numberAlleles,
             Integer baseQuality, String cigar, Boolean dbSnp, Boolean hapmapTwo, Boolean hapmapThree, Boolean
                     thousandGenomes, Integer combinedDepth, Integer endPos, Float rms, Integer mqZero, Integer
@@ -148,11 +160,11 @@ class VcfInfo {
         this.validated = validated
     }
 
-    String getId() {
+    Long getId() {
         return id
     }
 
-    void setId(String id) {
+    void setId(Long id) {
         this.id = id
     }
 
@@ -204,7 +216,7 @@ class VcfInfo {
         return endPos
     }
 
-    Integer getRms() {
+    Float getRms() {
         return rms
     }
 

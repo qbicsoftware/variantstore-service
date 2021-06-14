@@ -9,7 +9,7 @@ import life.qbic.variantstore.model.Ensembl
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface EnsemblRepository extends CrudRepository<Ensembl, Integer> {
+interface EnsemblRepository extends CrudRepository<Ensembl, Long> {
 
     Ensembl findById(String id)
 

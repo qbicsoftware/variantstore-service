@@ -10,7 +10,7 @@ import life.qbic.variantstore.model.TransactionStatus
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface CaseRepository extends CrudRepository<Case, BigInteger> {
+interface CaseRepository extends CrudRepository<Case, Long> {
 
     Case findById(String id)
 

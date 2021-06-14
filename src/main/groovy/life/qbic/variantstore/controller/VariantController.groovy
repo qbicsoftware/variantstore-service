@@ -1,6 +1,7 @@
 package life.qbic.variantstore.controller
 
 import groovy.util.logging.Log4j2
+import io.micronaut.data.annotation.Repository
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
@@ -10,6 +11,7 @@ import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import io.swagger.v3.oas.annotations.Operation
@@ -26,6 +28,7 @@ import life.qbic.variantstore.util.ListingArguments
 import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.inject.Named
+import javax.transaction.Transactional
 import java.util.concurrent.ExecutorService
 /**
  * Controller for variant requests.
@@ -188,7 +191,8 @@ class VariantController {
                             status = life.qbic.variantstore.model.Status.processing
                         }
 
-                        TransactionStatus transactionStatus = repository.save(newStatus)
+                        //TransactionStatus transactionStatus = repository.save(newStatus)
+                        TransactionStatus transactionStatus = null
                         service.storeVariantsInStore(metadata, file.inputStream, repository, transactionStatus)
                     }
             return HttpResponse.accepted(uri)

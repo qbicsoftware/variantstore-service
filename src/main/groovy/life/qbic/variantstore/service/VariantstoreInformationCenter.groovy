@@ -1,6 +1,8 @@
 package life.qbic.variantstore.service
 
 import groovy.util.logging.Log4j2
+import io.micronaut.context.annotation.Requires
+import life.qbic.variantstore.database.PostgresSqlVariantstoreStorage
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.EnsemblParser
 import life.qbic.variantstore.parser.MetadataContext
@@ -46,10 +48,11 @@ class VariantstoreInformationCenter implements VariantstoreService{
     /**
      * The Variantstore storage
      */
-    private final VariantstoreStorage storage
+    private final PostgresSqlVariantstoreStorage storage
 
+    //@Requires(property="foo", value="John")
     @Inject
-    VariantstoreInformationCenter(VariantstoreStorage storage) {
+    VariantstoreInformationCenter(PostgresSqlVariantstoreStorage storage) {
         this.storage = storage
     }
 
@@ -176,7 +179,9 @@ class VariantstoreInformationCenter implements VariantstoreService{
     @Transactional
     void storeVariantsInStore(String metadata, InputStream inputStream, TransactionStatusRepository repository, TransactionStatus transactionStatus) {
         MetadataReader meta = new MetadataReader(metadata)
-        Annotation annotationSoftware =  meta.getMetadataContext().getVariantAnnotation()
+        MetadataContext metadataContext = meta.getMetadataContext()
+
+        Annotation annotationSoftware =  metadataContext.getVariantAnnotation()
         AnnotationHandler.AnnotationTools annotationTool = annotationSoftware.getName().toUpperCase()  as AnnotationHandler.AnnotationTools
         SimpleVCFReader reader = new SimpleVCFReader(inputStream, annotationTool.getTag())
         SimpleVariantContext variant = null
@@ -190,10 +195,11 @@ class VariantstoreInformationCenter implements VariantstoreService{
                 variant = reader.iterator().next()
 
                 AnnotationHandler.addAnnotationsToVariant(variant, annotationSoftware)
-                variant.setIsSomatic(meta.getMetadataContext().getIsSomatic())
+                variant.setIdentifier(UUID.randomUUID().toString())
+                variant.setIsSomatic(metadataContext.getIsSomatic())
 
                 if (idx == 0) {
-                    sampleGenotypeMapping = determineGenotypeMapping(variant, meta.getMetadataContext())
+                    sampleGenotypeMapping = determineGenotypeMapping(variant, metadataContext)
                 }
 
                 if ((variant.referenceAllele.length() > MAX_ALLELE_LENGTH) || (variant.observedAllele.length() > MAX_ALLELE_LENGTH)) {
@@ -208,15 +214,21 @@ class VariantstoreInformationCenter implements VariantstoreService{
                 }
 
                 if (idx == MAX_NUMBER_OF_VARIANTS_PER_BATCH) {
-                    storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), sampleGenotypeMapping,variantsToInsert)
+                    storage.storeVariantsInStoreWithMetadata(metadataContext, sampleGenotypeMapping,variantsToInsert)
                     variantsToInsert.clear()
                     idx = 0
                 }
             }
-            storage.storeVariantsInStoreWithMetadata(meta.getMetadataContext(), sampleGenotypeMapping, variantsToInsert)
+
+            //variantsToInsert.each {it -> println(it.getConsequences()) }
+
+            storage.storeVariantsInStoreWithMetadata(metadataContext, sampleGenotypeMapping, variantsToInsert)
             variantsToInsert.clear()
-            repository.updateStatus(transactionStatus.getId(), Status.finished.toString())
+            //repository.updateStatus(transactionStatus.getId(), Status.finished.toString())
             log.info("...done.")
+        }
+        catch (Exception e) {
+            e.printStackTrace()
         }
         finally {
             reader.iterator().close()

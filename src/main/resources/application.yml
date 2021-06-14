@@ -92,18 +92,18 @@ flyway:
       enabled: false
     variantstore_postgres:
       enabled: true
-      locations: classpath:db/postgresql
-      createSchemas: false
+      #createSchemas: false
       ## Migrate sql script file name prefix, default V
-      sqlMigrationPrefix: V
+      #sqlMigrationPrefix: V
       ## Migrating sql script file name separator, default 2 underscores __
-      sqlMigrationSeparator: __
+      #sqlMigrationSeparator: __
       # Migrate the suffix of the name of the SQL script file
-      sqlMigrationSuffixes: .sql
+      #sqlMigrationSuffixes: .sql
       # Whether to check during migration, default true
-      validateOnMigrate: true
+      #validateOnMigrate: true
       # Set to true, when the migration finds that the database is not empty and there is a table with no metadata, it automatically performs a benchmark migration and creates a new schema_version table
-      baselineOnMigrate: true
+      #baselineOnMigrate: true
+      locations: classpath:db/postgresql
       schemas: public
 endpoints:
   health:

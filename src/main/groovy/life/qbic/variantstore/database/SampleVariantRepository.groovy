@@ -4,12 +4,12 @@ import io.micronaut.data.annotation.Repository
 import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.model.query.builder.sql.Dialect
 import io.micronaut.data.repository.CrudRepository
-import life.qbic.variantstore.model.Gene
+import life.qbic.variantstore.model.SampleVariant
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface GeneRepository extends CrudRepository<Gene, Long>{
+interface SampleVariantRepository extends CrudRepository<SampleVariant, Long> {
 
-    Gene findById(String id)
+    SampleVariant findById(String id)
 
 }

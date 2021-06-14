@@ -125,6 +125,21 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
+    Set<VariantCaller> getVariantCaller() {
+        return null
+    }
+
+    @Override
+    Set<SampleVariant> getSampleVariants() {
+        return null
+    }
+
+    @Override
+    Set<ReferenceGenome> getReferenceGenomes() {
+        return null
+    }
+
+    @Override
     void setIdentifier(String id) {
         this.identifier = id
     }

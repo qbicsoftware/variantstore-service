@@ -1,10 +1,14 @@
 package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.core.annotation.Creator
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
+import io.micronaut.data.annotation.Transient
+import io.micronaut.data.model.naming.NamingStrategies
+import io.micronaut.data.model.naming.NamingStrategy
 import life.qbic.variantstore.util.VcfConstants
 
 /**
@@ -12,7 +16,7 @@ import life.qbic.variantstore.util.VcfConstants
  *
  * @since: 1.0.0
  */
-@MappedEntity
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode(includes = 'genotype, readDepth, filter, likelihoods, genotypeLikelihoods, genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities, phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality')
 class Genotype {
 
@@ -21,10 +25,11 @@ class Genotype {
      */
     @GeneratedValue
     @Id
-    private String id
+    private Long id
     /**
      * The sample name associated with a genotype
      */
+    @Transient
     final String sampleName
     /**
      * The genotype, encoded as allele values separated by / or |
@@ -109,13 +114,14 @@ class Genotype {
                 .tag, -1) as Integer
     }
 
-    Genotype(sample, genotype, depth, filters, likelihoods, genotypeLikelihoods,
+    //@TODO check what to do with sampleName
+    @Creator
+    Genotype(genotype, readDepth, filter, likelihoods, genotypeLikelihoods,
              genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities,
              phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality) {
-        this.sampleName = sample
         this.genotype = genotype
-        this.readDepth = depth
-        this.filter = filters
+        this.readDepth = readDepth
+        this.filter = filter
         this.likelihoods = likelihoods
         this.genotypeLikelihoods = genotypeLikelihoods
         this.genotypeLikelihoodsHet = genotypeLikelihoodsHet
@@ -128,11 +134,11 @@ class Genotype {
         this.mappingQuality = mappingQuality
     }
 
-    String getId() {
+    Long getId() {
         return id
     }
 
-    void setId(String id) {
+    void setId(Long id) {
         this.id = id
     }
 

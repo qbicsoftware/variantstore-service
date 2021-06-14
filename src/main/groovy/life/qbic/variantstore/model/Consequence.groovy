@@ -3,10 +3,13 @@ package life.qbic.variantstore.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.core.annotation.Creator
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
+import io.micronaut.data.annotation.Transient
+import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -14,7 +17,7 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.1.0
  */
-@MappedEntity
+@MappedEntity(value = "consequence", namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode
 @CompileStatic
 @Schema(name = "Consequence", description = "A variant consequence")
@@ -107,6 +110,7 @@ class Consequence implements Comparable {
     /**
      * The identifier of the associated gene of a consequence
      */
+    @Transient
     final String geneId
     /**
      * The feature type of a consequence
@@ -155,6 +159,36 @@ class Consequence implements Comparable {
         this.strand = strand
         this.geneSymbol = geneSymbol
         this.geneId = geneId
+        this.featureType = featureType
+        this.distance = distance
+        this.warnings = warnings
+    }
+
+    @Creator
+    Consequence(String allele, String codingChange, String transcriptId, Integer transcriptVersion, String type,
+                String bioType, Boolean canonical, String aaChange, String cdnaPosition, String cdsPosition, String
+                        proteinPosition, Integer proteinLength, Integer cdnaLength, Integer cdsLength, String impact,
+                String exon, String intron, Integer strand, String geneSymbol, String featureType,
+                Integer distance, String warnings) {
+        this.allele = allele
+        this.codingChange = codingChange
+        this.transcriptId = transcriptId
+        this.transcriptVersion = transcriptVersion
+        this.type = type
+        this.bioType = bioType
+        this.canonical = canonical
+        this.aaChange = aaChange
+        this.cdnaPosition = cdnaPosition
+        this.cdsPosition = cdsPosition
+        this.proteinPosition = proteinPosition
+        this.proteinLength = proteinLength
+        this.cdnaLength = cdnaLength
+        this.cdsLength = cdsLength
+        this.impact = impact
+        this.exon = exon
+        this.intron = intron
+        this.strand = strand
+        this.geneSymbol = geneSymbol
         this.featureType = featureType
         this.distance = distance
         this.warnings = warnings
@@ -302,4 +336,5 @@ class Consequence implements Comparable {
     Set<Variant> getVariants() {
         return variants
     }
+
 }

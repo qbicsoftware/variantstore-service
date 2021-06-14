@@ -3,6 +3,7 @@ package life.qbic.variantstore.parser
 import groovy.json.JsonSlurper
 import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.model.Case
+import life.qbic.variantstore.model.Project
 import life.qbic.variantstore.model.ReferenceGenome
 import life.qbic.variantstore.model.VariantCaller
 import life.qbic.variantstore.model.Sample
@@ -25,13 +26,29 @@ class MetadataReader {
     MetadataReader(File file) {
         def slurper = new JsonSlurper()
         def jsonContent = slurper.parse(file)
-        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent))
+
+        Case entity = parseCase(jsonContent)
+        List<Sample> samples = parseSample(jsonContent)
+        Project project = parseProject(jsonContent)
+
+        entity.setProject(project)
+        samples.each {sample -> sample.setEntity(entity) }
+
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), entity, samples, project)
     }
 
     MetadataReader(String content) {
         def slurper = new JsonSlurper()
         def jsonContent = slurper.parseText(content)
-        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent))
+
+        Case entity = parseCase(jsonContent)
+        List<Sample> samples = parseSample(jsonContent)
+        Project project = parseProject(jsonContent)
+
+        entity.setProject(project)
+        samples.each {sample -> sample.setEntity(entity) }
+
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), entity, samples, project)
     }
 
     MetadataContext getMetadataContext() {
@@ -85,7 +102,7 @@ class MetadataReader {
      * @return true if variants are somatic
      */
     static Case parseCase(jsonContent) {
-        return new Case(jsonContent.case.identifier)
+        return new Case(jsonContent.case.identifier, new Project())
     }
 
     /**
@@ -97,8 +114,17 @@ class MetadataReader {
         def samples = []
         jsonContent.samples.each { sample ->
             def cancerEntity = sample.cancerEntity ?: ''
-            samples.add(new Sample(sample.identifier, cancerEntity, jsonContent.case.identifier))
+            samples.add(new Sample(sample.identifier, cancerEntity, new Case()))
         }
         return samples
+    }
+
+    /**
+     * Parse information on associated project.
+     * @param jsonContent the metadata content
+     * @return the associated project
+     */
+    static Project parseProject(jsonContent) {
+        return new Project(jsonContent.project.identifier)
     }
 }

@@ -9,7 +9,7 @@ import life.qbic.variantstore.model.Project
 
 @Repository("variantstore-postgres")
 @JdbcRepository(dialect = Dialect.POSTGRES)
-interface ProjectRepository extends CrudRepository<Project, Integer> {
+interface ProjectRepository extends CrudRepository<Project, String> {
 
     @NonNull
     @Override

@@ -12,7 +12,6 @@ import life.qbic.variantstore.model.Sample
 @JdbcRepository(dialect = Dialect.POSTGRES)
 interface SampleRepository extends CrudRepository<Sample, Long> {
 
-
     @NonNull
     @Override
     List<Sample> findAll()

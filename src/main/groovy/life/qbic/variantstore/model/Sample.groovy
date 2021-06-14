@@ -55,13 +55,13 @@ class Sample {
 
 
      */
+    @Creator
     Sample(String identifier, String cancerEntity, Case entity) {
         this.identifier = identifier
         this.cancerEntity = cancerEntity
         this.entity = entity
     }
 
-    @Creator
     Sample(String identifier, String cancerEntity) {
         this.identifier = identifier
         this.cancerEntity = cancerEntity
@@ -73,6 +73,10 @@ class Sample {
 
     void setId(Long id) {
         this.id = id
+    }
+
+    void setEntity(Case entity) {
+        this.entity = entity
     }
 
     @Schema(description="The sample identifier")

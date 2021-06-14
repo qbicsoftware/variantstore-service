@@ -5,6 +5,7 @@ import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
+import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -12,7 +13,7 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.0.0
  */
-@MappedEntity
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode
 @Schema(name="Variant Caller", description="A variant calling software")
 class VariantCaller implements Software {

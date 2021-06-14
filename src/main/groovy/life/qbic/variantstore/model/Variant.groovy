@@ -70,18 +70,21 @@ class Variant implements SimpleVariantContext, Comparable {
     @MappedProperty("issomatic")
     Boolean isSomatic
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variants")
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.NONE, mappedBy = "variants")
     private Set<ReferenceGenome> referenceGenomes = new HashSet<>()
+
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.NONE, mappedBy = "variants")
+    private Set<VariantCaller> variantCaller = new HashSet<>()
     /**
      * The information given in a VCF file for a given variant
      */
-    //@Transient
-    //VcfInfo vcfInfo
+    @Transient
+    VcfInfo vcfInfo
     /**
      * The genotype information for a given variant
      */
-    //@Transient
-    //List<Genotype> genotypes
+    @Transient
+    List<Genotype> genotypes
 
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "variant")
     Set<SampleVariant> sampleVariants
@@ -106,8 +109,6 @@ class Variant implements SimpleVariantContext, Comparable {
         if (genotypes.empty) genotypes.add(new Genotype())
         this.genotypes = genotypes
     }
-
-
 
     void setId(Long id) {
         this.id = id
@@ -172,12 +173,35 @@ class Variant implements SimpleVariantContext, Comparable {
         this.genotypes = genotypes
     }
 
+    @Override
     Set<ReferenceGenome> getReferenceGenomes() {
         return referenceGenomes
     }
 
+    @Override
+    Set<VariantCaller> getVariantCaller() {
+        return variantCaller
+    }
+
+    @Override
+    Set<SampleVariant> getSampleVariants() {
+        return sampleVariants
+    }
+
     void setReferenceGenomes(Set<ReferenceGenome> referenceGenomes) {
         this.referenceGenomes = referenceGenomes
+    }
+
+    void setConsequences(Set<Consequence> consequences) {
+        this.consequences = consequences
+    }
+
+    void setVariantCaller(Set<VariantCaller> variantCaller) {
+        this.variantCaller = variantCaller
+    }
+
+    void setSampleVariants(Set<SampleVariant> sampleVariants) {
+        this.sampleVariants = sampleVariants
     }
 
     @Schema(description = "The chromosome")
@@ -254,6 +278,8 @@ class Variant implements SimpleVariantContext, Comparable {
     List<Genotype> getGenotypes() {
         return genotypes
     }
+
+
 
 
 
