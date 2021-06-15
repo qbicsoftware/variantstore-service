@@ -1,7 +1,7 @@
 package life.qbic.variantstore.util
 
 import io.micronaut.http.uri.UriBuilder;
-import javax.annotation.Nullable
+import io.micronaut.core.annotation.Nullable
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Positive
 

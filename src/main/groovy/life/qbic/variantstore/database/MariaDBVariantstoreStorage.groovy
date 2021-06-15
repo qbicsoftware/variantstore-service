@@ -5,6 +5,7 @@ import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
 import groovy.util.logging.Log4j2
+import io.micronaut.core.annotation.NonNull
 import life.qbic.micronaututils.QBiCDataSource
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.MetadataContext
@@ -13,7 +14,6 @@ import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.validation.constraints.NotNull
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -304,7 +304,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Case> findCases(@NotNull ListingArguments args) {
+    List<Case> findCases(@NonNull ListingArguments args) {
         Sql sql = requestNewConnection()
         try {
             if (args.getGene().isPresent()) {
@@ -341,7 +341,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Sample> findSamples(@NotNull ListingArguments args) {
+    List<Sample> findSamples(@NonNull ListingArguments args) {
         Sql sql = requestNewConnection()
         try {
             if (args.getCancerEntity().isPresent()) {
@@ -359,7 +359,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
+    List<Variant> findVariants(@NonNull ListingArguments args, String referenceGenome, Boolean
             withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
         Sql sql = requestNewConnection()
         try {
@@ -473,7 +473,7 @@ consequence.warnings=?""",
      * {@inheritDoc}
      */
     @Override
-    List<Gene> findGenes(@NotNull ListingArguments args) {
+    List<Gene> findGenes(@NonNull ListingArguments args) {
         Sql sql = requestNewConnection()
         try {
             if (args.getSampleId()) {

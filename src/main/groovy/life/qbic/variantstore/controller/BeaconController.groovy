@@ -8,6 +8,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -42,6 +43,7 @@ class BeaconController {
         this.service = service
     }
 
+    @TransactionalAdvice
     @Get(uri = "/query", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Query the Beacon",
             description = "Answers the question: \"Have you observed this genotype?\"",

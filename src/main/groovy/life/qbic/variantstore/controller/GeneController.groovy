@@ -10,6 +10,7 @@ import io.micronaut.http.annotation.Post
 import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -51,6 +52,7 @@ class GeneController {
      * @param identifier the gene identifier
      * @return The found gene or 404 Not Found
      */
+    @TransactionalAdvice
     @Get(uri = "/{id}{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a gene",
             description = "The gene with the specified identifier is returned.",
@@ -83,6 +85,7 @@ class GeneController {
      * @param args the filter arguments
      * @return the found genes or 404 Not Found
      */
+    @TransactionalAdvice
     @Operation(summary = "Request a set of genes",
             description = "The genes matching the supplied properties are returned.",
             tags = "Gene")

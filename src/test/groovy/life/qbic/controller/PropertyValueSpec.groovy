@@ -1,7 +1,7 @@
 package life.qbic.controller
 
 import io.micronaut.context.ApplicationContext
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 
 import javax.inject.Inject
 

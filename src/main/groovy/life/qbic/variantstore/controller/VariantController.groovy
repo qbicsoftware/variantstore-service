@@ -10,6 +10,8 @@ import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.core.annotation.Nullable
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import io.reactivex.Flowable
 import io.reactivex.schedulers.Schedulers
 import io.swagger.v3.oas.annotations.Operation
@@ -23,7 +25,6 @@ import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
 
-import javax.annotation.Nullable
 import javax.inject.Inject
 import javax.inject.Named
 import java.util.concurrent.ExecutorService
@@ -71,6 +72,7 @@ class VariantController {
      * @param identifier the variant identifier
      * @return the found variant or 404 Not Found
      */
+    @TransactionalAdvice
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a variant",
             description = "The variant with the specified identifier is returned.",
@@ -107,6 +109,7 @@ class VariantController {
      * @param vcfVersion the Variant Call Format version
      * @return the found variants or 404 Not Found
      */
+    @TransactionalAdvice
     @Get(uri = "{?args*}{?format,referenceGenome,withConsequences,annotationSoftware,withGenotypes,vcfVersion}", produces = [MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN])
     @Operation(summary = "Request a set of variats",
             description = "The variants matching the supplied properties are returned.",

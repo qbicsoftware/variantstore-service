@@ -7,13 +7,15 @@ import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.test.annotation.TransactionMode
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import life.qbic.variantstore.controller.SampleController
 import spock.lang.Unroll
 
 import javax.inject.Inject
+import javax.transaction.Transactional
 
-@MicronautTest(transactional = false)
+@MicronautTest
 class SampleControllerSpec extends TestContainerSpecification {
 
     @Inject
