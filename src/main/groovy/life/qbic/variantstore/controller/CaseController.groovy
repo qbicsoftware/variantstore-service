@@ -8,6 +8,7 @@ import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -47,6 +48,7 @@ class CaseController {
      * @param identifier the case identifier
      * @return the found case or 404 Not Found
      */
+    @TransactionalAdvice
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a case",
             description = "The case with the specified identifier is returned.",
@@ -80,6 +82,7 @@ class CaseController {
      * @param args the filter arguments
      * @return The found cases or 404 Not Found
      */
+    @TransactionalAdvice
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a set of cases",
             description = "The cases matching the supplied properties are returned.",

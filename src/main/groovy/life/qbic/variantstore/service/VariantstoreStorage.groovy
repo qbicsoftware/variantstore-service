@@ -13,7 +13,7 @@ import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.util.ListingArguments
 import javax.inject.Singleton
-import javax.validation.constraints.NotNull
+import io.micronaut.core.annotation.NonNull
 
 /**
  * The Variantstore storage interface.
@@ -62,21 +62,21 @@ interface VariantstoreStorage {
      * @param args further optional arguments to specify Ensembl version e.g.
      * @return list of found genes
      */
-    List<Gene> findGeneById(String identifier, @NotNull ListingArguments args)
+    List<Gene> findGeneById(String identifier, @NonNull ListingArguments args)
 
     /**
      * Find cases for specified filtering options.
      * @param args the provided filtering options
      * @return list of found cases
      */
-    List<Case> findCases(@NotNull ListingArguments args)
+    List<Case> findCases(@NonNull ListingArguments args)
 
     /**
      * Find samples for specified filtering options.
      * @param args the provided filtering options
      * @return list of found samples
      */
-    List<Sample> findSamples(@NotNull ListingArguments args)
+    List<Sample> findSamples(@NonNull ListingArguments args)
 
     /**
      * Find variants for specified (filtering) options.
@@ -88,7 +88,7 @@ interface VariantstoreStorage {
      * @param withGenotypes true if connected genotype information should be returned
      * @return list of found variants
      */
-    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
+    List<Variant> findVariants(@NonNull ListingArguments args, String referenceGenome, Boolean
             withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
 
     /**
@@ -110,7 +110,7 @@ interface VariantstoreStorage {
      * @param args the provided filtering options
      * @return list of found genes
      */
-    List<Gene> findGenes(@NotNull ListingArguments args)
+    List<Gene> findGenes(@NonNull ListingArguments args)
 
     /**
      * Store case in the store.

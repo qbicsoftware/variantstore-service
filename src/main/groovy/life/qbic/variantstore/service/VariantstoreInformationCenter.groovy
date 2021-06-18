@@ -13,8 +13,9 @@ import life.qbic.variantstore.util.ListingArguments
 import life.qbic.variantstore.util.VariantExporter
 import javax.inject.Inject
 import javax.inject.Singleton
-import javax.transaction.Transactional
-import javax.validation.constraints.NotNull
+
+import io.micronaut.core.annotation.NonNull
+
 
 /**
  * A VariantstoreService implementation.
@@ -60,7 +61,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     List<Case> getCaseForCaseId(String caseId) {
         return storage.findCaseById(caseId)
     }
@@ -69,7 +69,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     List<SimpleVariantContext> getVariantForVariantId(String variantId) {
         return storage.findVariantById(variantId)
     }
@@ -78,8 +77,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
-    List<Gene> getGeneForGeneId(String geneId, @NotNull ListingArguments args) {
+    List<Gene> getGeneForGeneId(String geneId, @NonNull ListingArguments args) {
         return storage.findGeneById(geneId, args)
     }
 
@@ -87,7 +85,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
                                         String reference, String observed, String assemblyId) {
 
@@ -101,7 +98,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     List<Sample> getSampleForSampleId(String sampleId) {
         return storage.findSampleById(sampleId)
     }
@@ -110,8 +106,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
-    List<Case> getCasesForSpecifiedProperties(@NotNull ListingArguments args) {
+    List<Case> getCasesForSpecifiedProperties(@NonNull ListingArguments args) {
         return storage.findCases(args)
     }
 
@@ -119,8 +114,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
-    List<Sample> getSamplesForSpecifiedProperties(@NotNull ListingArguments args) {
+    List<Sample> getSamplesForSpecifiedProperties(@NonNull ListingArguments args) {
         return storage.findSamples(args)
     }
 
@@ -128,8 +122,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
-    List<Gene> getGenesForSpecifiedProperties(@NotNull ListingArguments args) {
+    List<Gene> getGenesForSpecifiedProperties(@NonNull ListingArguments args) {
         return storage.findGenes(args)
     }
 
@@ -137,7 +130,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     String getVcfContentForVariants(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean
             withGenotypes,
                                     String referenceGenome, String annotationSoftware, String
@@ -155,7 +147,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     String getFhirContentForVariants(List<SimpleVariantContext> variants, Boolean withConsequences, String referenceGenome) {
         return VariantExporter.exportVariantsToFHIR(variants.sort { a, b -> (a.chromosome?.isInteger() ? a.chromosome
                 .toInteger() : a.chromosome) <=> (b.chromosome?.isInteger() ? b.chromosome.toInteger() : b
@@ -165,7 +156,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     List<SimpleVariantContext> getVariantsForSpecifiedProperties(ListingArguments args, String referenceGenome, Boolean
             withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
         def variants = storage.findVariants(args, referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes)
@@ -176,7 +166,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     void storeVariantsInStore(String metadata, InputStream inputStream, TransactionStatusRepository repository, TransactionStatus transactionStatus) {
         MetadataReader meta = new MetadataReader(metadata)
         MetadataContext metadataContext = meta.getMetadataContext()
@@ -241,7 +230,6 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    @Transactional
     void storeGeneInformationInStore(EnsemblParser ensembl) {
         log.info("Storing provided gene information in store")
         storage.storeGenesWithMetadata(ensembl.version, ensembl.date, ensembl.referenceGenome, ensembl.genes)
