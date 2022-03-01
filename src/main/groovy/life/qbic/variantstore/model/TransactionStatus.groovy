@@ -3,15 +3,14 @@ package life.qbic.variantstore.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
-import io.micronaut.data.annotation.MappedEntity
-import io.micronaut.data.model.naming.NamingStrategies
 
 /**
  * A DTO representing the status of a transaction
  *
  * @since: 1.1.0
  */
-@MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
+//@MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
+//@Todo handle transaction status
 class TransactionStatus{
 
     /**

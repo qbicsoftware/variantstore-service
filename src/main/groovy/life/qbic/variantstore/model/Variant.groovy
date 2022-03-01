@@ -1,10 +1,14 @@
 package life.qbic.variantstore.model
 
+import com.fasterxml.jackson.annotation.JsonIgnore
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.builder.Builder
 import htsjdk.variant.variantcontext.VariantContext
 import io.micronaut.core.annotation.Creator
 import io.micronaut.data.annotation.*
+import io.micronaut.data.jdbc.annotation.JoinColumn
+import io.micronaut.data.jdbc.annotation.JoinTable
 import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
@@ -13,14 +17,17 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.0.0
  */
-@MappedEntity(namingStrategy = NamingStrategies.LowerCase)
-@EqualsAndHashCode
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
+@EqualsAndHashCode(excludes = ["vcfInfo", "genotypes"])
 @Schema(name = "Variant", description = "A genomic variant")
+@Builder
 class Variant implements SimpleVariantContext, Comparable {
 
     /**
      * The id of a variant
      */
+    // @TODO However, using @GeneratedValue(strategy = GenerationType.SEQUENCE) on a PostgreSQL has obtained a better
+    //  result than the other two & runs 3x times slower than providing an explicit ID & without @GenerateValue.
     @GeneratedValue
     @Id
     private Long id
@@ -59,22 +66,38 @@ class Variant implements SimpleVariantContext, Comparable {
     @MappedProperty("obs")
     String observedAllele
     /**
-     * The consequences of a given variant
-     */
-    @Transient
-    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variants")
-    private Set<Consequence> consequences = new HashSet<>()
-    /**
      * Describes whether a given variant is somatic
      */
-    @MappedProperty("issomatic")
-    Boolean isSomatic
-
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.NONE, mappedBy = "variants")
-    private Set<ReferenceGenome> referenceGenomes = new HashSet<>()
-
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.NONE, mappedBy = "variants")
-    private Set<VariantCaller> variantCaller = new HashSet<>()
+    @MappedProperty("somatic")
+    boolean somatic
+    /**
+     * The consequences of a given variant
+     */
+    @JoinTable(name = "variant_consequence",
+            joinColumns = @JoinColumn(name = "variant_id"),
+            inverseJoinColumns = @JoinColumn(name = "consequence_id")
+    )
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
+    private Set<Consequence> consequences
+    /**
+     * TODO
+     */
+    // TODO changed the assignment of join and inverseJoinColumn here, check if insert still works properly!
+    @JoinTable(name = "referencegenome_variant",
+            joinColumns = @JoinColumn(name = "variant_id"),
+            inverseJoinColumns = @JoinColumn(name = "referencegenome_id")
+    )
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
+    private Set<ReferenceGenome> referenceGenomes
+    /**
+     * TODO
+     */
+    @JoinTable(name = "variantcaller_variant",
+            joinColumns = @JoinColumn(name = "variant_id"),
+            inverseJoinColumns = @JoinColumn(name = "variantcaller_id")
+    )
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
+    private Set<VariantCaller> variantCaller
     /**
      * The information given in a VCF file for a given variant
      */
@@ -85,8 +108,11 @@ class Variant implements SimpleVariantContext, Comparable {
      */
     @Transient
     List<Genotype> genotypes
-
-    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "variant")
+    /**
+     * TODO
+     */
+    @JsonIgnore
+    @Relation(value = Relation.Kind.ONE_TO_MANY, cascade = Relation.Cascade.ALL, mappedBy = "variant")
     Set<SampleVariant> sampleVariants
 
     @Creator
@@ -105,8 +131,6 @@ class Variant implements SimpleVariantContext, Comparable {
         consequences = annotationType ? context.getAttributeAsList(annotationType) : null
         context.getGenotypes().each { genotype -> genotypes.add(new Genotype(genotype))
         }
-
-        if (genotypes.empty) genotypes.add(new Genotype())
         this.genotypes = genotypes
     }
 
@@ -149,12 +173,8 @@ class Variant implements SimpleVariantContext, Comparable {
         this.observedAllele = observedAllele
     }
 
-    void setIsSomatic(Boolean isSomatic) {
-        this.isSomatic = isSomatic
-    }
-
-    void setConsequences(ArrayList consequences) {
-        this.consequences = consequences
+    void setSomatic(boolean somatic) {
+        this.somatic = somatic
     }
 
     void setVCF(VcfInfo vcfInfo) {
@@ -242,15 +262,15 @@ class Variant implements SimpleVariantContext, Comparable {
     @Schema(description = "The consequences")
     @JsonProperty("consequences")
     @Override
-    ArrayList<Consequence> getConsequences() {
+    Set<Consequence> getConsequences() {
         return consequences
     }
 
     @Schema(description = "Is it a somatic variant?")
-    @JsonProperty("isSomatic")
+    @JsonProperty("somatic")
     @Override
-    Boolean getIsSomatic() {
-        return isSomatic
+    boolean isSomatic() {
+        return somatic
     }
 
     @Schema(description = "The variant identifier")
@@ -279,10 +299,6 @@ class Variant implements SimpleVariantContext, Comparable {
         return genotypes
     }
 
-
-
-
-
     /**
      * Generate variant content in Variant Call Format.
      * @return variant information in Variant Call Format
@@ -292,6 +308,16 @@ class Variant implements SimpleVariantContext, Comparable {
         return new StringBuilder().append(chromosome + "\t").append(startPosition + "\t").append(databaseIdentifier +
                 "\t").append(referenceAllele + "\t").append(observedAllele + "\t").append("." + "\t").append("." +
                 "\t").append(vcfInfo)
+    }
+
+    void addVariantCaller(VariantCaller callingSoftware){
+        if(variantCaller==null) variantCaller = [] as Set<VariantCaller>
+        variantCaller.add(callingSoftware)
+    }
+
+    void addReferenceGenome(ReferenceGenome refGenome){
+        if(referenceGenomes==null) referenceGenomes = [] as Set<ReferenceGenome>
+        referenceGenomes.add(refGenome)
     }
 
 }

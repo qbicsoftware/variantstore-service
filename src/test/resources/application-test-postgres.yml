@@ -3,6 +3,7 @@ micronaut:
         name: variantstore
     server:
         port: -1
+        thread-selection: AUTO
     security:
         enabled: false
         intercept-url-map:
@@ -34,17 +35,22 @@ micronaut:
         oauth2:
             enabled: false
 datasources:
-  variantstore_postgres:
-      url: jdbc:postgresql://localhost:5432/variantstore_db
-      username: mohr
-      password: ""
-      driverClassName: org.postgresql.Driver
+    variantstore_postgres:
+        url: jdbc:tc:postgresql:13:///postgres
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+        #url: jdbc:postgresql://localhost:5432/variantstore_db
+        #username: mohr
+        #password: ""
+        #driverClassName: org.postgresql.Driver
+
 flyway:
     datasources:
-       variantstore_postgres:
-          enabled: true
-          #schemas: variantstore_model
-          baselineOnMigrate: true
-          locations: classpath:db/postgresql
+        variantstore_postgres:
+            enabled: true
+            #schemas: variantstore_model
+            baselineOnMigrate: true
+            locations: classpath:db/postgresql
 userroles:
     config: "src/main/resources/test.yml"
+database:
+    specifier: variantstore-postgres

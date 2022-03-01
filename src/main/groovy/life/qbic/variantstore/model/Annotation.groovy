@@ -38,8 +38,8 @@ class Annotation implements Software{
      */
     final String doi
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
-    Set<Consequence> consequences = new HashSet<>()
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "annotations")
+    Set<Consequence> consequences
 
     Annotation(String name, String version, String doi) {
         this.name = name

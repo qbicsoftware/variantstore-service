@@ -31,8 +31,10 @@ class MetadataReader {
         List<Sample> samples = parseSample(jsonContent)
         Project project = parseProject(jsonContent)
 
-        entity.setProject(project)
-        samples.each {sample -> sample.setEntity(entity) }
+        //project.setCases(bla)
+        //entity.setProject(project)
+        //project.getC
+        //samples.each {sample -> sample.setEntity(entity) }
 
         this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), entity, samples, project)
     }
@@ -44,9 +46,6 @@ class MetadataReader {
         Case entity = parseCase(jsonContent)
         List<Sample> samples = parseSample(jsonContent)
         Project project = parseProject(jsonContent)
-
-        entity.setProject(project)
-        samples.each {sample -> sample.setEntity(entity) }
 
         this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), entity, samples, project)
     }
@@ -102,7 +101,9 @@ class MetadataReader {
      * @return true if variants are somatic
      */
     static Case parseCase(jsonContent) {
-        return new Case(jsonContent.case.identifier, new Project())
+        Case newCase = new Case()
+        newCase.setIdentifier(jsonContent.case.identifier)
+        return newCase
     }
 
     /**
@@ -114,7 +115,8 @@ class MetadataReader {
         def samples = []
         jsonContent.samples.each { sample ->
             def cancerEntity = sample.cancerEntity ?: ''
-            samples.add(new Sample(sample.identifier, cancerEntity, new Case()))
+            def newSample = new Sample(sample.identifier, cancerEntity)
+            samples.add(newSample)
         }
         return samples
     }
@@ -125,6 +127,8 @@ class MetadataReader {
      * @return the associated project
      */
     static Project parseProject(jsonContent) {
-        return new Project(jsonContent.project.identifier)
+        Project project = new Project()
+        project.setIdentifier(jsonContent.project.identifier)
+        return project
     }
 }

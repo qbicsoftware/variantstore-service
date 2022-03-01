@@ -15,16 +15,15 @@ import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
+import jakarta.inject.Inject
 import life.qbic.variantstore.model.Gene
 import life.qbic.variantstore.parser.EnsemblParser
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.ListingArguments
 
-import javax.inject.Inject
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
-
 /**
  * Controller for gene requests
  *
@@ -52,7 +51,7 @@ class GeneController {
      * @param identifier the gene identifier
      * @return The found gene or 404 Not Found
      */
-    @TransactionalAdvice
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "/{id}{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a gene",
             description = "The gene with the specified identifier is returned.",
@@ -66,8 +65,8 @@ class GeneController {
     HttpResponse getGene(@PathVariable(name="id") String identifier, ListingArguments args) {
         log.info("Resource request for gene: $identifier")
         try {
-            List<Gene> genes = service.getGeneForGeneId(identifier, args)
-            return genes ? HttpResponse.ok(genes.get(0)) : HttpResponse.notFound("Gene not found.")
+            Set<Gene> genes = service.getGeneForGeneId(identifier, args)
+            return genes ? HttpResponse.ok(genes[0]) : HttpResponse.notFound("Gene not found.").body("")
         }
         catch (IllegalArgumentException e) {
             log.error(e)
@@ -85,7 +84,7 @@ class GeneController {
      * @param args the filter arguments
      * @return the found genes or 404 Not Found
      */
-    @TransactionalAdvice
+    @TransactionalAdvice('${database.specifier}')
     @Operation(summary = "Request a set of genes",
             description = "The genes matching the supplied properties are returned.",
             tags = "Gene")
@@ -97,8 +96,9 @@ class GeneController {
     HttpResponse getGenes(ListingArguments args) {
         log.info("Resource request for genes with filtering options.")
         try {
-            List<Gene> genes = service.getGenesForSpecifiedProperties(args)
-            return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("No genes found matching provided attributes.")
+            Set<Gene> genes = service.getGenesForSpecifiedProperties(args)
+            return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("No genes found matching provided " +
+                    "attributes.").body("")
         }
         catch (Exception e) {
             log.error(e)

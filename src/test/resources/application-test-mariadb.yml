@@ -34,19 +34,19 @@ micronaut:
                 enabled: true
         oauth2:
             enabled: false
-#datasources:
-#    default:
-#        url: jdbc:postgresql://localhost:5432/variantstoredb
-#        default-schema: public
-#        username: mohr
-#        password: password
-#        driverClassName: org.postgresql.Driver
-#flyway:
-#    datasources:
-#       default:
-#          enabled: true
-          #clean-schema: true
-#          baselineOnMigrate: true
-#          locations: classpath:db/postgresql
+datasources:
+    variantstore_mariadb:
+        # &useMysqlMetadata=true
+        url: jdbc:tc:mariadb:///oncostore?user=root?password=?
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+flyway:
+    datasources:
+        variantstore_mariadb:
+            enabled: true
+            #schemas: variantstore_model
+            baselineOnMigrate: true
+            locations: classpath:db/mariadb
 userroles:
     config: "src/main/resources/test.yml"
+database:
+    specifier: variantstore-mariadb

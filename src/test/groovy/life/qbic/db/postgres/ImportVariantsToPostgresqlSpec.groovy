@@ -1,63 +1,47 @@
 package life.qbic.db.postgres
 
-import io.micronaut.context.ApplicationContext
-import io.micronaut.http.HttpRequest
-import io.micronaut.http.HttpResponse
-import io.micronaut.http.HttpStatus
-import io.micronaut.http.MediaType
-import io.micronaut.http.client.RxHttpClient
-import io.micronaut.http.client.annotation.Client
-import io.micronaut.http.client.multipart.MultipartBody
-import io.micronaut.runtime.server.EmbeddedServer
-import io.micronaut.test.annotation.MicronautTest
-import life.qbic.variantstore.database.CaseRepository
-import life.qbic.variantstore.database.GenotypeRepository
-import life.qbic.variantstore.database.ProjectRepository
-import life.qbic.variantstore.database.ReferenceGenomeRepository
-import life.qbic.variantstore.database.SampleRepository
-import life.qbic.variantstore.database.SampleVariantRepository
-import life.qbic.variantstore.database.VariantAnnotationRepository
-import life.qbic.variantstore.database.VariantCallerRepository
-import life.qbic.variantstore.database.VariantRepository
-import life.qbic.variantstore.database.VcfinfoRepository
-import life.qbic.variantstore.model.Annotation
-import life.qbic.variantstore.model.ReferenceGenome
-import life.qbic.variantstore.model.Sample
-import life.qbic.variantstore.model.SimpleVariantContext
-import life.qbic.variantstore.model.Variant
-import life.qbic.variantstore.model.VariantCaller
+import io.micronaut.runtime.EmbeddedApplication
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
+import life.qbic.variantstore.database.*
+import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.parser.MetadataReader
 import life.qbic.variantstore.parser.SimpleVCFReader
+import life.qbic.variantstore.repositories.CaseRepository
+import life.qbic.variantstore.repositories.ConsequenceRepository
+import life.qbic.variantstore.repositories.GeneRepository
+import life.qbic.variantstore.repositories.GenotypeRepository
+import life.qbic.variantstore.repositories.ProjectRepository
+import life.qbic.variantstore.repositories.ReferenceGenomeRepository
+import life.qbic.variantstore.repositories.SampleRepository
+import life.qbic.variantstore.repositories.SampleVariantRepository
+import life.qbic.variantstore.repositories.VariantAnnotationRepository
+import life.qbic.variantstore.repositories.VariantCallerRepository
+import life.qbic.variantstore.repositories.VariantRepository
+import life.qbic.variantstore.repositories.VcfinfoRepository
 import life.qbic.variantstore.util.AnnotationHandler
+import life.qbic.variantstore.util.VcfConstants
 import spock.lang.Specification
 
-
-import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 class ImportVariantsToPostgresqlSpec extends Specification {
 
-    @Inject
-    private ApplicationContext applicationContext
-
-    @Inject
-    EmbeddedServer embeddedServer
-
-    @Inject
-    @Client('/')
-    RxHttpClient httpClient
-
+    @Inject EmbeddedApplication<?> application
     @Inject ProjectRepository projectRepository
     @Inject CaseRepository caseRepository
+    @Inject ConsequenceRepository consequenceRepository
     @Inject SampleRepository sampleRepository
     @Inject VariantRepository variantRepository
     @Inject ReferenceGenomeRepository referenceGenomeRepository
     @Inject SampleVariantRepository sampleVariantRepository
     @Inject VcfinfoRepository vcfInfoRepository
+    @Inject GeneRepository geneRepository
     @Inject GenotypeRepository genotypeRepository
     @Inject VariantCallerRepository variantCallerRepository
     @Inject VariantAnnotationRepository variantAnnotationRepository
+    @Inject PostgresSqlVariantstoreStorage storage
 
     HashMap determineGenotypeMapping(SimpleVariantContext variant, MetadataContext meta) {
         // get sample identifiers provided in VCF file and compare them with the samples provided in metadata JSON
@@ -84,10 +68,10 @@ class ImportVariantsToPostgresqlSpec extends Specification {
                     if (searchIndex > -1) {
                         sampleGenotypeMapping[genotypesIdentifiers[searchIndex]] = sample
                     } else {
-                        if (sample.cancerEntity && genotypesIdentifiers.findIndexOf { "TUMOR" } > -1) {
-                            sampleGenotypeMapping["NORMAL"] = sample
-                        } else if (!sample.cancerEntity && genotypesIdentifiers.findIndexOf { "NORMAL" } > -1) {
-                            sampleGenotypeMapping["TUMOR"] = sample
+                        if (sample.cancerEntity && genotypesIdentifiers.findIndexOf { VcfConstants.TUMOR } > -1) {
+                            sampleGenotypeMapping[VcfConstants.NORMAL] = sample
+                        } else if (!sample.cancerEntity && genotypesIdentifiers.findIndexOf { VcfConstants.NORMAL } > -1) {
+                            sampleGenotypeMapping[VcfConstants.TUMOR] = sample
                         }
                     }
                 }
@@ -97,40 +81,43 @@ class ImportVariantsToPostgresqlSpec extends Specification {
         return sampleGenotypeMapping
     }
 
-    void "should import variants from VCF file"() {
+    void "should import variants from VCF file with metadata and duplicates should be handled properly"() {
         when:
         def metadata = '{"project": {"identifier": "QTEST"}, "case": {"identifier": "do1234"}, "variant_annotation": {"version": "bioconda::4.3.1t", "name": "snpeff", "doi": "10.4161/fly.19695"}, "is_somatic": "true", "samples": [{"identifier": "S123456", "cancerEntity": "HCC"}, {"identifier": "S341", "cancerEntity": ""}], "reference_genome": {"source": "GATK", "version": "unknown", "build": "hg38"}, "variant_calling": {"version": "bioconda::2.9.10", "name": "Strelka", "doi": "10.1038/s41592-018-0051-x"}}'
 
         MetadataReader meta = new MetadataReader(metadata)
         MetadataContext metadataContext = meta.getMetadataContext()
 
-        String path = "src/test/resources/Strelka_do22836T_vs_do22836N_somatic_indels_snpEff.ann.vcf"
+        def projectsAvailable = projectRepository.findAll().size()
+        def casesAvailable = caseRepository.findAll().size()
+        def samplesAvailable = sampleRepository.findAll().size()
+        def variantAvailable =  variantRepository.findAll().size()
+        def refGenomeAvailable = referenceGenomeRepository.findAll().size()
+        def variantCallerAvailable = variantCallerRepository.findAll().size()
+        def variantAnnotationAvailable = variantAnnotationRepository.findAll().size()
+        def consequenceAvailable = consequenceRepository.findAll().size()
+        def geneAvailable = geneRepository.findAll().size()
+        def sampleVariantAvailable = sampleVariantRepository.findAll().size()
+
+        String path = "src/test/resources/data/Strelka_somatic_indels_snpEff.ann.vcf"
         File file = new File(path)
 
         Annotation annotationSoftware =  metadataContext.getVariantAnnotation()
         AnnotationHandler.AnnotationTools annotationTool = annotationSoftware.getName().toUpperCase()  as AnnotationHandler.AnnotationTools
         SimpleVCFReader reader = new SimpleVCFReader(file.newInputStream(), annotationTool.getTag())
 
-        ReferenceGenome refGen = metadataContext.getReferenceGenome()
-        ReferenceGenome ref2 = new ReferenceGenome("bla", "blub", "blu")
-
-        VariantCaller varCaller = metadataContext.getVariantCalling()
-
         SimpleVariantContext variant = null
-        def sampleGenotypeMapping = [:]
+        HashMap<String, Sample> sampleGenotypeMapping = new HashMap<String, Sample>()
         def idx = 0
 
         ArrayList<SimpleVariantContext> variantsToInsert = null
 
         while (reader.iterator().hasNext()) {
-            variant = reader.iterator().next()
+            variant = (Variant) reader.iterator().next()
 
             AnnotationHandler.addAnnotationsToVariant(variant, annotationSoftware)
             variant.setIdentifier(UUID.randomUUID().toString())
-            variant.setIsSomatic(metadataContext.getIsSomatic())
-            //variant.referenceGenomes.add(refGen)
-            //variant.referenceGenomes.add(ref2)
-            variant.variantCaller.add(varCaller)
+            variant.setSomatic(metadataContext.getIsSomatic())
 
             if (idx == 0) {
                 sampleGenotypeMapping = determineGenotypeMapping(variant, metadataContext)
@@ -146,62 +133,23 @@ class ImportVariantsToPostgresqlSpec extends Specification {
             }
         }
 
-        def projId = projectRepository.save(metadataContext.getProject())
-        def caseId = caseRepository.save(metadataContext.getCase())
-        def samples = sampleRepository.saveAll(sampleGenotypeMapping.values())
+        storage.storeVariantsInStoreWithMetadata(metadataContext, sampleGenotypeMapping, variantsToInsert)
+        storage.storeVariantsInStoreWithMetadata(metadataContext, sampleGenotypeMapping, variantsToInsert)
 
-        //ArrayList<Variant> vars = variantRepository.saveAll(variantsToInsert)
-        //println(vars)
+        def availableConsequences = []
+        variantsToInsert.each {availableConsequences.addAll(it.consequences.flatten())}
+        def numberConsequences = availableConsequences.size()
 
-        Variant variant2 = new Variant()
-        variant2.setIdentifier("ASDASDsaD")
-        variant2.setDatabaseIdentifier("DB1")
-        variant2.setChromosome("chr1")
-        variant2.setStartPosition(123123 as BigInteger)
-        variant2.setEndPosition(1487456 as BigInteger)
-        variant2.setReferenceAllele("A")
-        variant2.setObservedAllele("G")
-        variant2.setIsSomatic(true)
-
-        //def registeredVars = variantsToInsert.collect {var -> variantRepository.findById(var.id).get()}
-        refGen.variants.addAll(variantsToInsert)
-        //referenceGenomeRepository.save(refGen)
-
-        ref2.variants.addAll(variantsToInsert)
-        //varCaller.variants.addAll(registeredVars)
-        //def ref2registered = referenceGenomeRepository.save(ref2)
-
-        referenceGenomeRepository.saveAll([ref2, refGen])
-
-        //registeredVars.each {println(it.id)}
-
-        //def referenceGenome = referenceGenomeRepository.save(refGen)
-        //def registeredVars = vars.collect {var -> variantRepository.findById(var.id).get()}
-
-        //println(registeredVars)
-        //varCaller.variants.addAll(variantsToInsert)
-        //def variantCaller = variantCallerRepository.save(varCaller)
-
-        //def registeredVars = variantsToInsert.collect { Variant var -> variantRepository.findById(var.id).get()}
-
-        //refGen.variants.addAll(registeredVars)
-        //def referenceGenome = referenceGenomeRepository.save(refGen)
-
-        //def variantAnnotation = variantAnnotationRepository.save(metadataContext.getVariantAnnotation())
-
-        //storage.storeVariantsInStoreWithMetadata(metadataContext, sampleGenotypeMapping,variantsToInsert)
-        variantsToInsert.clear()
-
-        /*
-        HttpResponse response = httpClient.toBlocking().exchange(HttpRequest.POST("/variants",
-                MultipartBody.builder()
-                .addPart("metadata", '{\"project\": {\"identifier\": \"QTEST\"}, \"case\": {\"identifier\": \"do1234\"}, \"variant_annotation\": {\"version\": \"bioconda::4.3.1t\", \"name\": \"snpeff\", \"doi\": \"10.4161/fly.19695\"}, \"is_somatic\": \"true\", \"samples\": [{\"identifier\": \"S123456\", \"cancerEntity\": \"HCC\"}], \"reference_genome\": {\"source\": \"GATK\", \"version\": \"unknown\", \"build\": \"hg38\"}, \"variant_calling\": {\"version\": \"bioconda::2.9.10\", \"name\": \"Strelka\", \"doi\": \"10.1038/s41592-018-0051-x\"}}')
-                .addPart("files", "@${path}")
-                .build())
-                .contentType(MediaType.MULTIPART_FORM_DATA_TYPE))
-
-         */
         then:
-        metadataContext
+        projectRepository.list().size() == projectsAvailable + 1
+        caseRepository.list().size() == casesAvailable + 1
+        sampleRepository.findAll().size() == samplesAvailable + metadataContext.samples.size()
+        variantRepository.list().size() == variantAvailable + variantsToInsert.size()
+        referenceGenomeRepository.list().size() == refGenomeAvailable + 1
+        variantCallerRepository.list().size() == variantCallerAvailable + 1
+        variantAnnotationRepository.findAll().size() == variantAnnotationAvailable + 1
+        consequenceRepository.list().size() == consequenceAvailable + numberConsequences
+        geneRepository.findAll().size() > geneAvailable
+        sampleVariantRepository.findAll().size() == sampleVariantAvailable + 4
     }
 }

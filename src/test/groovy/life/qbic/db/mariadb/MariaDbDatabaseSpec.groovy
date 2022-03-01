@@ -1,23 +1,21 @@
-package life.qbic.controller
+package life.qbic.db.mariadb
 
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
-import life.qbic.micronaututils.QBiCDataSource
+import jakarta.inject.Inject
 import life.qbic.variantstore.service.VariantstoreStorage
-import javax.inject.Inject
+import spock.lang.Specification
 
 @MicronautTest(transactional = false)
-class DatabaseSpec extends TestContainerSpecification {
+class MariaDbDatabaseSpec extends Specification {
 
     @Inject
     VariantstoreStorage storage
 
     def "confirm that storage connection is alive"() {
         when:
-        QBiCDataSource dataSource = storage.dataSource
+        storage.dataSource
 
         then:
-        dataSource
-        dataSource.connection
+        storage.dataSource.connection
     }
 }
-

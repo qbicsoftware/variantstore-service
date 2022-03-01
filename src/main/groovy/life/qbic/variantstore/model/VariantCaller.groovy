@@ -37,8 +37,8 @@ class VariantCaller implements Software {
      */
     final String doi
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
-    Set<Variant> variants = new HashSet<>()
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "variantCaller")
+    Set<Variant> variants
 
     VariantCaller(String name, String version, String doi) {
         this.name = name
@@ -76,4 +76,10 @@ class VariantCaller implements Software {
     void setVariants(Set<Variant> variants) {
         this.variants = variants
     }
+
+    void addVariant(Variant variant){
+        if(variants==null) variants = [].toSet() as Set<Variant>
+        variants.add(variant)
+    }
+
 }

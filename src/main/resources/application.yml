@@ -3,9 +3,9 @@ micronaut:
     name: variantstore
   server:
     port: ${variantstore-port:8080}
-    maxRequestSize: 100MB
+    maxRequestSize: 100
     multipart:
-      maxFileSize: 100MB
+      maxFileSize: 100
     thread-selection: AUTO
   logger:
     levels:
@@ -64,27 +64,23 @@ micronaut:
             url: ${variantstore-oauth2-token-url}
             auth-method: client-secret-jwt
 datasources:
-  default:
-    url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-    username: ${db-user}
-    password: ${db-pwd}
-    driverClassName: org.mariadb.jdbc.Driver
-  transactions:
-    url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-    username: ${db-user}
-    password: ${db-pwd}
-    driverClassName: org.mariadb.jdbc.Driver
-  variantstore_postgres:
-    url: jdbc:postgresql://localhost:5432/variantstore_db
-    username: mohr
-    password: ""
-    driverClassName: org.postgresql.Driver
-#flyway:
-#  datasources:
-#    default:
-#      enabled: false
-#    transactions:
-#      enabled: false
+  #variantstore_mariadb:
+  #  url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-user}
+  #  password: ${db-pwd}
+  #  driverClassName: org.mariadb.jdbc.Driver
+  #transactions:
+  #  url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-user}
+  #  password: ${db-pwd}
+  #  driverClassName: org.mariadb.jdbc.Driver
+  #variantstore_postgres:
+  #  url: jdbc:postgresql://${db-host}/${db-name}
+  #  username: ${db-user}
+  #  password: ${db-pwd}
+  #  driverClassName: org.postgresql.Driver
+  #  dialect: POSTGRES
+  #  schema-generate: none
 flyway:
   datasources:
     default:
@@ -92,18 +88,7 @@ flyway:
     transactions:
       enabled: false
     variantstore_postgres:
-      enabled: true
-      #createSchemas: false
-      ## Migrate sql script file name prefix, default V
-      #sqlMigrationPrefix: V
-      ## Migrating sql script file name separator, default 2 underscores __
-      #sqlMigrationSeparator: __
-      # Migrate the suffix of the name of the SQL script file
-      #sqlMigrationSuffixes: .sql
-      # Whether to check during migration, default true
-      #validateOnMigrate: true
-      # Set to true, when the migration finds that the database is not empty and there is a table with no metadata, it automatically performs a benchmark migration and creates a new schema_version table
-      #baselineOnMigrate: true
+      enabled: false
       locations: classpath:db/postgresql
       schemas: public
 endpoints:

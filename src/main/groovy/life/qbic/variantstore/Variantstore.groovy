@@ -23,6 +23,6 @@ import io.swagger.v3.oas.annotations.info.License
 class Variantstore {
     static void main(String[] args) {
         log.info("Variantstore service started.")
-        Micronaut.run(Variantstore.class)
+        Micronaut.run(Variantstore.class, args)
     }
 }

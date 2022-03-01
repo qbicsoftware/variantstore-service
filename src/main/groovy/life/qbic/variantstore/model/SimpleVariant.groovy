@@ -19,7 +19,7 @@ class SimpleVariant implements SimpleVariantContext{
     VcfInfo vcfInfo
     List<Genotype> genotypes
     String identifier
-    Boolean isSomatic
+    boolean isSomatic
     ArrayList consequences
     String databaseId
 
@@ -96,7 +96,7 @@ class SimpleVariant implements SimpleVariantContext{
 
     @JsonProperty("consequences")
     @Override
-    List<Consequence> getConsequences() {
+    Set<Consequence> getConsequences() {
         return consequences
     }
 
@@ -107,7 +107,7 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    Boolean getIsSomatic() {
+    boolean isSomatic() {
         return isSomatic
     }
 
@@ -145,12 +145,12 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    void setIsSomatic(Boolean isSomatic) {
+    void setSomatic(boolean isSomatic) {
         this.isSomatic = isSomatic
     }
 
     @Override
-    void setConsequences(ArrayList consequences) {
+    void setConsequences(Set consequences) {
         this.consequences = consequences
     }
 }

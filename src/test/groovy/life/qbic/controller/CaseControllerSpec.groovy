@@ -3,18 +3,19 @@ package life.qbic.controller
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
+import io.micronaut.rxjava3.http.client.Rx3HttpClient
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import life.qbic.variantstore.controller.CaseController
+import spock.lang.Specification
 import spock.lang.Unroll
 
-import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-class CaseControllerSpec extends TestContainerSpecification{
+class CaseControllerSpec extends Specification{
 
     @Inject
     ApplicationContext applicationContext
@@ -24,7 +25,7 @@ class CaseControllerSpec extends TestContainerSpecification{
 
     @Inject
     @Client('/')
-    RxHttpClient httpClient
+    Rx3HttpClient httpClient
 
     def "verify CaseController bean exists"() {
         given:

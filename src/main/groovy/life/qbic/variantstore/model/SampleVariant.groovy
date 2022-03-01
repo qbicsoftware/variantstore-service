@@ -1,29 +1,42 @@
 package life.qbic.variantstore.model
 
+import io.micronaut.core.annotation.Nullable
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.MappedProperty
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.model.naming.NamingStrategies
 
-@MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase)
+/**
+ *
+ *
+ * @since: 1.1.0
+ */
+@MappedEntity(value = "sample_variant", namingStrategy = NamingStrategies.LowerCase.class)
 class SampleVariant {
 
     @GeneratedValue
     @Id
     private Long id
 
-    @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "sample_id")
-    private Sample sample
+    @MappedProperty(value = "sample_id")
+    @Relation(value = Relation.Kind.MANY_TO_ONE)
+    Sample sample
 
-    @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "variant_id")
-    private Variant variant
+    @MappedProperty(value = "variant_id")
+    @Relation(value = Relation.Kind.MANY_TO_ONE)
+    Variant variant
 
-    @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "vcfinfo_id")
-    private VcfInfo vcfinfo
+    @Nullable
+    @MappedProperty(value = "vcfinfo_id")
+    @Relation(value = Relation.Kind.MANY_TO_ONE)
+    VcfInfo vcfinfo
 
-    @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "genotype_id")
-    private Genotype genotype
+    @Nullable
+    @MappedProperty(value = "genotype_id")
+    @Relation(value = Relation.Kind.MANY_TO_ONE)
+    Genotype genotype
 
     SampleVariant(Sample sample, Variant variant, VcfInfo vcfinfo, Genotype genotype) {
         this.sample = sample
@@ -34,6 +47,22 @@ class SampleVariant {
 
     Long getId() {
         return id
+    }
+
+    void setSample(Sample sample) {
+        this.sample = sample
+    }
+
+    void setVariant(Variant variant) {
+        this.variant = variant
+    }
+
+    void setVcfinfo(VcfInfo vcfinfo) {
+        this.vcfinfo = vcfinfo
+    }
+
+    void setGenotype(Genotype genotype) {
+        this.genotype = genotype
     }
 
     void setId(Long id) {

@@ -8,6 +8,12 @@ package life.qbic.variantstore.util
 class VcfConstants {
 
     /**
+     * Sample types
+     */
+    public static final String TUMOR = "TUMOR"
+    public static final String NORMAL = "NORMAL"
+
+    /**
      * A delimiter for property values
      */
     static final String PROPERTY_DELIMITER = ";"

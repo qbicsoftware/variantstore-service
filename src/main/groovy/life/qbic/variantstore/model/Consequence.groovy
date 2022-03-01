@@ -1,7 +1,6 @@
 package life.qbic.variantstore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
-import groovy.transform.CompileStatic
 import groovy.transform.EqualsAndHashCode
 import io.micronaut.core.annotation.Creator
 import io.micronaut.data.annotation.GeneratedValue
@@ -9,6 +8,8 @@ import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.annotation.Transient
+import io.micronaut.data.jdbc.annotation.JoinColumn
+import io.micronaut.data.jdbc.annotation.JoinTable
 import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
@@ -18,8 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema
  * @since: 1.1.0
  */
 @MappedEntity(value = "consequence", namingStrategy = NamingStrategies.LowerCase)
-@EqualsAndHashCode
-@CompileStatic
+@EqualsAndHashCode(includeFields=true, excludes = "id, geneId")
 @Schema(name = "Consequence", description = "A variant consequence")
 class Consequence implements Comparable {
 
@@ -32,111 +32,122 @@ class Consequence implements Comparable {
     /**
      * The genomic allele of a consequence
      */
-    final String allele
+    String allele
     /**
      * The coding change in HGVS notation of a consequence
      */
-    final String codingChange
+    String codingChange
     /**
      * The transcript identifier of a consequence
      */
-    final String transcriptId
+    String transcriptId
     /**
      * The transcript version of a consequence
      */
-    final Integer transcriptVersion
+    Integer transcriptVersion
     /**
      * The type of a consequence
      */
-    final String type
+    String type
     /**
      * The biological type of a consequence
      */
-    final String bioType
+    String bioType
     /**
      * Indicating if the associated transcript is denoted as canonical
      */
-    final Boolean canonical
+    boolean canonical
     /**
      * The amino acid change of a consequence
      */
-    final String aaChange
+    String aaChange
     // the following three positions can be ranges (including -) therefore we will just use (for now) the string as
     // annotated
     /**
      * The cdna position of a consequence
      */
-    final String cdnaPosition
+    String cdnaPosition
     /**
      * The cds position of a consequence
      */
-    final String cdsPosition
+    String cdsPosition
     /**
      * The associated protein position of a consequence
      */
-    final String proteinPosition
+    String proteinPosition
     /**
      * The length of the associated protein of a consequence
      */
-    final Integer proteinLength
+    Integer proteinLength
     /**
      * The length of the associated cDNA sequence
      */
-    final Integer cdnaLength
+    Integer cdnaLength
     /**
      * The length of the associated cds sequence
      */
-    final Integer cdsLength
+    Integer cdsLength
     /**
      * The impact of a consequence
      */
-    final String impact
+    String impact
     /**
      * The associated exon of a consequence
      */
-    final String exon
+    String exon
     /**
      * The associated intron of a consequence
      */
-    final String intron
+    String intron
     /**
      * The associated strand of a consequence
      */
-    final Integer strand
+    Integer strand
     /**
      * The symbol of the associated gene of a consequence
      */
-    final String geneSymbol
+    String geneSymbol
     /**
      * The identifier of the associated gene of a consequence
      */
     @Transient
-    final String geneId
+    String geneId
     /**
      * The feature type of a consequence
      */
-    final String featureType
+    String featureType
     /**
      * The shortest distance from variant to transcript
      */
-    final Integer distance
+    Integer distance
     /**
      * The warnings associated with a consequence
      */
-    final String warnings
+    String warnings
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
-    Set<Annotation> annotations = new HashSet<>()
+    @JoinTable(name = "annotationsoftware_consequence",
+            joinColumns = @JoinColumn(name = "consequence_id"),
+            inverseJoinColumns = @JoinColumn(name = "annotationsoftware_id")
+    )
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
+    Set<Annotation> annotations
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "gene")
-    private Set<Gene> genes = new HashSet<>()
+    @JoinTable(name = "gene_consequence",
+            joinColumns = @JoinColumn(name = "consequence_id"),
+            inverseJoinColumns = @JoinColumn(name = "gene_id")
+    )
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
+    Set<Gene> genes
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
-    Set<Variant> variants = new HashSet<>()
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "consequences")
+    Set<Variant> variants
+
+    @Creator
+    Consequence() {}
 
     Consequence(String allele, String codingChange, String transcriptId, Integer transcriptVersion, String type,
-                String bioType, Boolean canonical, String aaChange, String cdnaPosition, String cdsPosition, String
-                        proteinPosition, Integer proteinLength, Integer cdnaLength, Integer cdsLength, String impact,
+                String bioType, Boolean canonical, String aaChange, String cdnaPosition, String cdsPosition,
+                String proteinPosition, Integer proteinLength, Integer cdnaLength, Integer cdsLength, String impact,
                 String exon, String intron, Integer strand, String geneSymbol, String geneId, String featureType,
                 Integer distance, String warnings) {
         this.allele = allele
@@ -164,10 +175,9 @@ class Consequence implements Comparable {
         this.warnings = warnings
     }
 
-    @Creator
     Consequence(String allele, String codingChange, String transcriptId, Integer transcriptVersion, String type,
-                String bioType, Boolean canonical, String aaChange, String cdnaPosition, String cdsPosition, String
-                        proteinPosition, Integer proteinLength, Integer cdnaLength, Integer cdsLength, String impact,
+                String bioType, Boolean canonical, String aaChange, String cdnaPosition, String cdsPosition,
+                String proteinPosition, Integer proteinLength, Integer cdnaLength, Integer cdsLength, String impact,
                 String exon, String intron, Integer strand, String geneSymbol, String featureType,
                 Integer distance, String warnings) {
         this.allele = allele
@@ -241,7 +251,7 @@ class Consequence implements Comparable {
     }
 
     @JsonProperty("canonical")
-    Boolean getCanonical() {
+    boolean isCanonical() {
         return canonical
     }
 
@@ -325,16 +335,33 @@ class Consequence implements Comparable {
         return intron
     }
 
-    Set<Annotation> getAnnotations() {
-        return annotations
-    }
-
     Set<Gene> getGenes() {
         return genes
     }
 
     Set<Variant> getVariants() {
         return variants
+    }
+
+    void setGenes(Set<Gene> genes) {
+        this.genes = genes
+    }
+
+    void setVariants(Set<Variant> variants) {
+        this.variants = variants
+    }
+
+    void setDistance(Integer distance) {
+        this.distance = distance
+    }
+
+    void setWarnings(String warnings) {
+        this.warnings = warnings
+    }
+
+    void addAnnotationTool(Annotation annotation){
+        if(annotations==null) annotations = [] as Set<Annotation>
+        annotations.add(annotation)
     }
 
 }

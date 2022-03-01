@@ -2,10 +2,17 @@ package life.qbic.variantstore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.builder.Builder
+import io.micronaut.core.annotation.Creator
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.MappedProperty
 import io.micronaut.data.annotation.Relation
+import io.micronaut.data.jdbc.annotation.JoinColumn
+import io.micronaut.data.jdbc.annotation.JoinTable
+import io.micronaut.data.model.DataType
+import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
@@ -13,9 +20,10 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.1.0
  */
-@MappedEntity
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
 @EqualsAndHashCode
 @Schema(name = "Gene", description = "A Gene")
+@Builder
 class Gene {
 
     /**
@@ -23,57 +31,68 @@ class Gene {
      */
     @GeneratedValue
     @Id
-    private String id
+    private Long id
     /**
      * The chromosome of a gene
      */
-    final String chromosome
+    @MappedProperty("chr")
+    String chromosome
     /**
      * The symbol of a gene
      */
-    final String symbol
+    String symbol
     /**
      * The name of a gene
      */
-    final String name
+    String name
     /**
      * The biological classification (such as pseudogene and protein coding) of a gene
      */
-    final String bioType
+    String bioType
     /**
      * The description available for a gene
      */
-    final String description
+    String description
     /**
      * The start position of a gene
      */
-    final BigInteger geneStart
+    @MappedProperty("start")
+    BigInteger geneStart
     /**
      * The end position of a gene
      */
-    final BigInteger geneEnd
+    @MappedProperty("end")
+    BigInteger geneEnd
     /**
      * The identifier of a gene
      */
-    final String geneId
+    String geneId
     /**
      * The strand of a gene
      */
-    final String strand
+    String strand
     /**
      * The version of a gene
      */
-    final Integer version
+    Integer version
     /**
      * The associated synonyms of a gene
      */
-    final List<String> synonyms
+    @MappedProperty(type = DataType.STRING_ARRAY)
+    List<String> synonyms
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
-    Set<Consequence> consequences = new HashSet<>()
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "genes")
+    Set<Consequence> consequences
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
+    @JoinTable(name = "ensembl_gene",
+            joinColumns = @JoinColumn(name = "gene_id"),
+            inverseJoinColumns = @JoinColumn(name = "ensembl_id")
+    )
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
     Set<Ensembl> ensembles = new HashSet<>()
+
+    @Creator
+    Gene() {}
 
     Gene(String bioType, String chromosome, String symbol, String name, BigInteger geneStart, BigInteger geneEnd,
          String geneId, String description, String strand, Integer version, List<String> synonyms) {
@@ -90,11 +109,11 @@ class Gene {
         this.synonyms = synonyms
     }
 
-    String getId() {
+    Long getId() {
         return id
     }
 
-    void setId(String id) {
+    void setId(Long id) {
         this.id = id
     }
 
@@ -178,5 +197,49 @@ class Gene {
 
     void setEnsembles(Set<Ensembl> ensembles) {
         this.ensembles = ensembles
+    }
+
+    void setChromosome(String chromosome) {
+        this.chromosome = chromosome
+    }
+
+    void setSymbol(String symbol) {
+        this.symbol = symbol
+    }
+
+    void setName(String name) {
+        this.name = name
+    }
+
+    void setBioType(String bioType) {
+        this.bioType = bioType
+    }
+
+    void setDescription(String description) {
+        this.description = description
+    }
+
+    void setGeneStart(BigInteger geneStart) {
+        this.geneStart = geneStart
+    }
+
+    void setGeneEnd(BigInteger geneEnd) {
+        this.geneEnd = geneEnd
+    }
+
+    void setGeneId(String geneId) {
+        this.geneId = geneId
+    }
+
+    void setStrand(String strand) {
+        this.strand = strand
+    }
+
+    void setVersion(Integer version) {
+        this.version = version
+    }
+
+    void setSynonyms(List<String> synonyms) {
+        this.synonyms = synonyms
     }
 }

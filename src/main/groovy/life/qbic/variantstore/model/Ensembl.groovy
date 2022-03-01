@@ -3,9 +3,16 @@ package life.qbic.variantstore.model
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.MappedProperty
 import io.micronaut.data.annotation.Relation
+import io.micronaut.data.jdbc.annotation.JoinColumn
+import io.micronaut.data.jdbc.annotation.JoinTable
 
-
+/**
+ *
+ *
+ * @since: 1.1.0
+ */
 @MappedEntity
 class Ensembl {
 
@@ -23,10 +30,15 @@ class Ensembl {
     /**
      * The reference genome associated with a Ensembl DB instance
      */
-    @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "referencegenome_id")
-    private ReferenceGenome referenceGenome
+    @Relation(value = Relation.Kind.MANY_TO_ONE)
+    @MappedProperty(value = "referencegenome_id")
+    ReferenceGenome referenceGenome
 
-    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "gene_id")
+    @JoinTable(name = "ensembl_gene",
+            joinColumns = @JoinColumn(name = "ensembl_id"),
+            inverseJoinColumns = @JoinColumn(name = "gene_id")
+    )
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
     private Set<Gene> genes = new HashSet<>()
 
     Ensembl(Integer version, String date) {

@@ -2,11 +2,11 @@ package life.qbic.controller
 
 import io.micronaut.context.ApplicationContext
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 
-import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-class PropertyValueSpec extends TestContainerSpecification{
+class PropertyValueSpec {
     @Inject
     ApplicationContext applicationContext
 

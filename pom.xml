@@ -11,23 +11,24 @@
     <parent>
         <groupId>io.micronaut</groupId>
         <artifactId>micronaut-parent</artifactId>
-        <version>2.5.5</version>
+        <version>3.3.0</version>
     </parent>
 
     <properties>
         <jdk.version>1.8</jdk.version>
         <swagger.version>2.1.0</swagger.version>
-        <micronaut.version>2.5.5</micronaut.version>
+        <micronaut.version>3.3.3</micronaut.version>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
-        <micronaut.data.version>2.4.3</micronaut.data.version>
-        <groovyVersion>3.0.7</groovyVersion>
+        <micronaut.data.version>3.2.2</micronaut.data.version>
+        <groovyVersion>3.0.9</groovyVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
         <exec.mainClass>life.qbic.variantstore.Variantstore</exec.mainClass>
         <maven-surefire-plugin.version>2.22.2</maven-surefire-plugin.version>
         <maven-failsafe-plugin.version>2.22.2</maven-failsafe-plugin.version>
     </properties>
+
     <pluginRepositories>
         <pluginRepository>
             <id>maven-central-plugins</id>
@@ -46,6 +47,7 @@
             <url>https://qbic-repo.qbic.uni-tuebingen.de/repository/maven-releases</url>
         </pluginRepository>
     </pluginRepositories>
+
     <repositories>
         <repository>
             <releases>
@@ -91,7 +93,13 @@
             <url>https://qbic-repo.am10.uni-tuebingen.de/repository/maven-releases</url>
         </repository>
     </repositories>
+
     <dependencies>
+        <dependency>
+            <groupId>io.micronaut</groupId>
+            <artifactId>micronaut-inject-groovy</artifactId>
+            <scope>provided</scope>
+        </dependency>
         <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy</artifactId>
@@ -138,18 +146,13 @@
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
-            <artifactId>micronaut-inject-groovy</artifactId>
-            <scope>provided</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.micronaut</groupId>
             <artifactId>micronaut-validation</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
             <groupId>jakarta.persistence</groupId>
             <artifactId>jakarta.persistence-api</artifactId>
-            <version>2.2.3</version>
+            <version>3.0.0</version>
         </dependency>
         <dependency>
             <groupId>io.micronaut</groupId>
@@ -163,36 +166,53 @@
             <version>${micronaut.version}</version>
             <scope>compile</scope>
         </dependency>
-        <dependency>
+        <!-- <dependency>
             <groupId>life.qbic</groupId>
             <artifactId>micronaut-utils-lib</artifactId>
             <version>1.1.0</version>
-        </dependency>
+        </dependency> -->
         <dependency>
             <groupId>io.micronaut.groovy</groupId>
             <artifactId>micronaut-runtime-groovy</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
-            <groupId>io.micronaut.configuration</groupId>
+            <groupId>io.micronaut.flyway</groupId>
             <artifactId>micronaut-flyway</artifactId>
-            <version>2.0.0.RC1</version>
+            <scope>compile</scope>
+        </dependency>
+        <!-- https://mvnrepository.com/artifact/org.flywaydb/flyway-mysql -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-mysql</artifactId>
+            <version>8.5.0</version>
         </dependency>
         <dependency>
             <groupId>org.mariadb.jdbc</groupId>
             <artifactId>mariadb-java-client</artifactId>
-            <version>2.7.1</version>
+            <version>2.7.3</version>
             <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>org.postgresql</groupId>
             <artifactId>postgresql</artifactId>
-            <version>42.2.19</version>
+            <version>42.2.23</version>
+            <scope>runtime</scope>
         </dependency>
         <dependency>
             <groupId>com.h2database</groupId>
             <artifactId>h2</artifactId>
             <scope>runtime</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-api</artifactId>
+            <version>2.17.0</version>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.logging.log4j</groupId>
+            <artifactId>log4j-core</artifactId>
+            <version>2.17.0</version>
         </dependency>
         <dependency>
             <groupId>ch.qos.logback</groupId>
@@ -208,16 +228,6 @@
         <dependency>
             <groupId>io.micronaut.data</groupId>
             <artifactId>micronaut-data-jdbc</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.micronaut.data</groupId>
-            <artifactId>micronaut-data-model</artifactId>
-            <scope>compile</scope>
-        </dependency>
-        <dependency>
-            <groupId>io.micronaut.data</groupId>
-            <artifactId>micronaut-data-runtime</artifactId>
             <scope>compile</scope>
         </dependency>
         <dependency>
@@ -240,13 +250,14 @@
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>mariadb</artifactId>
-            <version>1.15.1</version>
+            <version>1.16.3</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/org.testcontainers/postgresql -->
         <dependency>
             <groupId>org.testcontainers</groupId>
             <artifactId>postgresql</artifactId>
-            <version>1.14.3</version>
+            <version>1.16.0</version>
+            <scope>test</scope>
         </dependency>
         <!-- Micronaut security dependencies -->
         <dependency>
@@ -265,21 +276,25 @@
             <scope>compile</scope>
         </dependency>
         <dependency>
+            <groupId>io.micronaut.openapi</groupId>
+            <artifactId>micronaut-openapi</artifactId>
+            <version>4.0.0</version>
+        </dependency>
+        <dependency>
             <groupId>io.swagger.core.v3</groupId>
             <artifactId>swagger-annotations</artifactId>
-            <version>2.0.8</version>
-            <scope>compile</scope>
+            <version>2.1.12</version>
+        </dependency>
+        <dependency>
+            <groupId>io.swagger.core.v3</groupId>
+            <artifactId>swagger-models</artifactId>
+            <version>2.1.12</version>
         </dependency>
         <!-- https://mvnrepository.com/artifact/com.github.samtools/htsjdk -->
         <dependency>
             <groupId>com.github.samtools</groupId>
             <artifactId>htsjdk</artifactId>
             <version>2.22.0</version>
-        </dependency>
-        <dependency>
-            <groupId>io.micronaut.configuration</groupId>
-            <artifactId>micronaut-openapi</artifactId>
-            <scope>provided</scope>
         </dependency>
         <!-- https://mvnrepository.com/artifact/ca.uhn.hapi.fhir/hapi-fhir-base -->
         <dependency>
@@ -296,6 +311,31 @@
             <groupId>ca.uhn.hapi.fhir</groupId>
             <artifactId>hapi-fhir-validation-resources-r4</artifactId>
             <version>5.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>1.18.22</version>
+            <scope>provided</scope>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.rxjava3</groupId>
+            <artifactId>micronaut-rxjava3</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>io.micronaut.rxjava3</groupId>
+            <artifactId>micronaut-rxjava3-http-client</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>com.github.javafaker</groupId>
+            <artifactId>javafaker</artifactId>
+            <version>1.0.2</version>
+        </dependency>
+        <dependency>
+            <groupId>org.awaitility</groupId>
+            <artifactId>awaitility-groovy</artifactId>
+            <version>4.1.1</version>
+            <scope>test</scope>
         </dependency>
     </dependencies>
     <build>
@@ -317,18 +357,18 @@
             <plugin>
                 <groupId>org.codehaus.gmavenplus</groupId>
                 <artifactId>gmavenplus-plugin</artifactId>
-                <version>1.12.1</version>
+                <version>1.13.0</version>
                 <executions>
                     <execution>
-                        <id>default</id>
+                        <!--<id>default</id> -->
                         <goals>
                             <goal>addSources</goal>
-                            <goal>addTestSources</goal>
                             <goal>generateStubs</goal>
                             <goal>compile</goal>
+                            <goal>removeStubs</goal>
+                            <goal>addTestSources</goal>
                             <goal>generateTestStubs</goal>
                             <goal>compileTests</goal>
-                            <goal>removeStubs</goal>
                             <goal>removeTestStubs</goal>
                         </goals>
                     </execution>
@@ -399,14 +439,27 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
-                <version>3.8.1</version>
+                <version>3.9.0</version>
                 <configuration>
-                    <fork>true</fork>
                     <compilerArgs>
-                        <arg>-J-Dmicronaut.openapi.views.spec=swagger-ui.enabled=true,swagger-ui.theme=flattop
-                        </arg>
+                        <arg>-Amicronaut.openapi.views.spec=swagger-ui.enabled=true,swagger-ui.theme=flattop</arg>
+                        <arg>-parameters</arg>
                     </compilerArgs>
+                    <fork>true</fork>
                 </configuration>
+                <!--<executions>
+                    <execution>
+                        <id>test-compile</id>
+                        <goals>
+                            <goal>testCompile</goal>
+                        </goals>
+                        <configuration>
+                            <compilerArgs>
+                                <arg>-parameters</arg>
+                            </compilerArgs>
+                        </configuration>
+                    </execution>
+                </executions> -->
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
@@ -523,11 +576,11 @@
                     <targetJdk>${maven.compiler.target}</targetJdk>
                 </configuration>
             </plugin>
-        <plugin>
-            <groupId>life.qbic</groupId>
-            <artifactId>groovydoc-maven-plugin</artifactId>
-            <version>1.0.2</version>
-        </plugin>
+            <plugin>
+                <groupId>life.qbic</groupId>
+                <artifactId>groovydoc-maven-plugin</artifactId>
+                <version>1.0.2</version>
+            </plugin>
         </plugins>
     </build>
     <reporting>

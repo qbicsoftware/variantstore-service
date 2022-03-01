@@ -16,7 +16,7 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.variantstore.model.Sample
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.ListingArguments
-import javax.inject.Inject
+import jakarta.inject.Inject
 
 /**
  * Controller for samples requests
@@ -45,7 +45,7 @@ class SampleController {
      * @param identifier the sample identifier
      * @return the found sample or 404 Not Found
      */
-    @TransactionalAdvice
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a sample",
             description = "The sample with the specified identifier is returned.",
@@ -77,7 +77,7 @@ class SampleController {
      * @param args the filter arguments
      * @return the found samples or 404 Not Found
      */
-    @TransactionalAdvice
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a set of samples",
             description = "The samples matching the supplied properties are returned.",

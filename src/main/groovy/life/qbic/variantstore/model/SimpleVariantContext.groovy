@@ -17,7 +17,7 @@ interface SimpleVariantContext {
 
     String getObservedAllele()
 
-    List<Consequence> getConsequences()
+    Set<Consequence> getConsequences()
 
     List<Genotype> getGenotypes()
 
@@ -29,7 +29,7 @@ interface SimpleVariantContext {
 
     String getDatabaseIdentifier()
 
-    Boolean getIsSomatic()
+    boolean isSomatic()
 
     String getIdentifier()
 
@@ -37,7 +37,7 @@ interface SimpleVariantContext {
 
     void setIdentifier(String id)
 
-    void setIsSomatic(Boolean somatic)
+    void setSomatic(boolean somatic)
 
-    void setConsequences(ArrayList consequences)
+    void setConsequences(Set<Consequence> consequences)
 }

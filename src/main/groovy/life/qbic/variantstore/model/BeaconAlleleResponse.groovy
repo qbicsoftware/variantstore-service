@@ -38,7 +38,7 @@ class BeaconAlleleResponse {
     }
 
     @JsonProperty("alleleRequest")
-    BeaconAlleleRequest getBeaconAlleleRequest() {
+    BeaconAlleleRequest getAlleleRequest() {
         return alleleRequest
     }
 

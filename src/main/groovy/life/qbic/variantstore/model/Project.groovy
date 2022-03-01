@@ -1,33 +1,53 @@
 package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
-import io.micronaut.data.annotation.Join
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
-import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
-@MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
-@EqualsAndHashCode
+@MappedEntity("project")
+@EqualsAndHashCode(includeFields=true, excludes = ["id"])
 @Schema(name="Project", description="A project")
 class Project {
 
     /**
      * The identifier of a project
      */
+    @GeneratedValue
     @Id
-    private String id
+    Long id
 
-    //@Join(name = "project_id")
+    String identifier
+
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "project")
-    private List<Case> cases
+    Set<Case> cases
 
-    Project(String id) {
+    Project() {
+    }
+
+    Long getId() {
+        return id
+    }
+
+    void setId(Long id) {
         this.id = id
     }
 
-    String getId() {
-        return id
+    Set<Case> getCases() {
+        return cases
+    }
+
+    void setCases(Set<Case> cases) {
+        this.cases = cases
+    }
+
+    String getIdentifier() {
+        return identifier
+    }
+
+    void setIdentifier(String identifier) {
+        this.identifier = identifier
     }
 }

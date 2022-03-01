@@ -3,6 +3,7 @@ package life.qbic.variantstore.util
 import groovy.util.logging.Log4j2
 import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.model.Consequence
+import life.qbic.variantstore.model.Gene
 import life.qbic.variantstore.model.SimpleVariantContext
 
 /**
@@ -125,6 +126,7 @@ class AnnotationHandler {
         def version = annotationSoftware.getVersion()
         def softwareName = annotationSoftware.getName().toUpperCase() as AnnotationTools
         def cons = null
+        Set<Gene> genes = []
 
         switch (softwareName) {
             case AnnotationTools.VEP:
@@ -133,7 +135,7 @@ class AnnotationHandler {
                 def transcriptId = parsedAnnotation[vep[version].get("transcriptId") as Integer]
                 def (transcriptVersionParsed, aaChangeParsed) = parsedAnnotation[vep[version].get("proteinCoding") as Integer]
                         .tokenize(':')
-                def transcriptVersion = transcriptVersionParsed ? transcriptVersionParsed.tokenize(".").last() : -1
+                def transcriptVersion = transcriptVersionParsed ? transcriptVersionParsed.tokenize(".").last() as Integer : -1
                 def aaChange = aaChangeParsed ?: ''
                 def type = parsedAnnotation[vep[version].get("consequence") as Integer]
                 def bioType = parsedAnnotation[vep[version].get("bioType") as Integer]
@@ -148,6 +150,9 @@ class AnnotationHandler {
                 def impact = parsedAnnotation[vep[version].get("impact") as Integer]
                 def geneId = parsedAnnotation[vep[version].get("gene") as Integer]
                 def geneSymbol = parsedAnnotation[vep[version].get("symbol") as Integer]
+                def gene = new Gene()
+                gene.setGeneId(geneId)
+                gene.setSymbol(geneSymbol)
                 def (cdna, cdnaLengthParsed) = parsedAnnotation[vep[version].get("cdnaPos") as Integer].tokenize('/')
                 def (cds, cdsLengthParsed) = parsedAnnotation[vep[version].get("cdsPos") as Integer].tokenize('/')
                 def cdsPosition = cds ?: ''
@@ -160,11 +165,15 @@ class AnnotationHandler {
                 def strandParsed = parsedAnnotation[vep[version].get("strand") as Integer]
                 def strand = strandParsed ? strandParsed.toInteger() : 0
                 def warnings = ''
+                gene.setGeneId(geneId)
+                gene.setSymbol(geneSymbol)
+                genes.add(gene)
 
                 cons =  new Consequence(allele, codingChange, transcriptId, transcriptVersion, type,
                         bioType, canonical, aaChange, cdnaPosition, cdsPosition, proteinPosition, proteinLength,
                         cdnaLength, cdsLength, impact, exon, intron, strand, geneSymbol, geneId, featureType,
                         distance, warnings)
+                cons.setGenes(genes)
                 break
 
             case AnnotationTools.SNPEFF:
@@ -207,11 +216,17 @@ class AnnotationHandler {
                 def distanceParsed = parsedAnnotation[snpEff[version].get("distance") as Integer].intern()
                 def distance = distanceParsed && !distanceParsed.isEmpty() ? distanceParsed.toInteger() : -1
                 def warnings = parsedAnnotation[snpEff[version].get("warnings") as Integer].intern()
+                def gene = new Gene()
+                // @TODO handle intergenic cases here, i.e. create two genes objects probably
+                gene.setGeneId(geneId)
+                gene.setSymbol(geneSymbol)
+                genes.add(gene)
 
                 cons =  new Consequence(allele, codingChange, transcriptId, transcriptVersion, type,
                         bioType, canonical, aaChange, cdnaPosition, cdsPosition, proteinPosition, proteinLength,
                         cdnaLength, cdsLength, impact, exon, intron, strand, geneSymbol, geneId, featureType,
                         distance, warnings)
+                cons.setGenes(genes)
                 break
 
             default:
@@ -228,10 +243,11 @@ class AnnotationHandler {
      * @return a snpEff annotation
      */
     static String toSnpEff(Consequence cons, String annotationSoftwareVersion) {
-        return sprintf(snpEffOutput[annotationSoftwareVersion], cons.allele, cons.type, cons.impact, cons.geneSymbol, cons.geneId, cons
-                .featureType, cons.transcriptId, cons.bioType, cons.exon, cons.codingChange, cons.aaChange, "/".join
-                (cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(cons.cdsPosition.toString(),
-                cons.cdsPosition.toString()), "/".join(cons.proteinPosition.toString(), cons.proteinLength.toString()
+        return sprintf(snpEffOutput[annotationSoftwareVersion], cons.allele, cons.type, cons.impact, cons.geneSymbol,
+                cons.geneId, cons.featureType, cons.transcriptId, cons.bioType, cons.exon, cons.codingChange,
+                cons.aaChange, "/".join (cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(
+                cons.cdsPosition.toString(), cons.cdsPosition.toString()), "/".join(cons.proteinPosition.toString(),
+                cons.proteinLength.toString()
         ), cons.distance.toString(), cons.warnings)
     }
 
@@ -246,8 +262,8 @@ class AnnotationHandler {
         // |EXON|INTRON|HGVSc|HGVSp|cDNA_position|CDS_position|Protein_position|Amino_acids|Codons|Existing_variation
         // |DISTANCE|STRAND|FLAGS|SYMBOL_SOURCE|HGNC_ID
         return sprintf(vepOutput[annotationSoftwareVersion], cons.allele, cons.type, cons.impact, cons.geneSymbol, cons.geneId, cons
-                .featureType, cons.bioType, cons.exon, cons.intron, cons.codingChange, cons.aaChange, "/".join
-                (cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(cons.cdsPosition.toString(),
+                .featureType, cons.bioType, cons.exon, cons.intron, cons.codingChange, cons.aaChange,
+                "/".join(cons.cdnaPosition.toString(), cons.cdnaLength.toString()), "/".join(cons.cdsPosition.toString(),
                 cons.cdsPosition.toString()), "/".join(cons.proteinPosition.toString(), cons.proteinLength.toString()
         ), cons.distance.toString(), cons.strand, cons.warnings, "", "")
     }

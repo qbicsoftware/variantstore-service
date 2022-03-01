@@ -2,9 +2,12 @@ package life.qbic.variantstore.model
 
 import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
+import io.micronaut.core.annotation.Creator
+import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
 import io.micronaut.data.annotation.Relation
+import io.micronaut.data.jdbc.annotation.JoinColumn
 import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
@@ -13,60 +16,73 @@ import io.swagger.v3.oas.annotations.media.Schema
  *
  * @since: 1.1.0
  */
-@MappedEntity(value = "entity" , namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
-@EqualsAndHashCode
+@MappedEntity(value = "entity", namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
+@EqualsAndHashCode(includeFields=true, excludes = ["id", "samples"])
 @Schema(name = "Case", description = "A case")
 class Case {
 
     /**
      * The identifier of a case
      */
+    @GeneratedValue
     @Id
-    private final String id
+    Long id
+
+    String identifier
 
     /**
      * The project associated with a case
      */
-    @Relation(value = Relation.Kind.MANY_TO_ONE, mappedBy = "project_id")
-    private Project project
+    @Relation(value = Relation.Kind.MANY_TO_ONE)
+    @JoinColumn(name="project_id")
+    Project project
 
     /**
      * The samples associated with a case
      */
-    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "entity")
-    List<Sample> sample
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "entity", cascade = Relation.Cascade.ALL)
+    Set<Sample> samples
 
-    Case() {}
+    @Creator
+    Case() { }
 
-    Case(String id, Project project) {
-        this.id = id
-        this.project = project
+    Case(String identifier, String projectId) {
+        this.identifier = identifier
+        this.project = new Project().setIdentifier(projectId)
     }
 
     @Schema(description = "The case identifier")
     @JsonProperty("id")
-    String getId() {
+    Long getId() {
         return id
     }
 
-    /*
-    @Schema(description = "The associated project identifier")
-    @JsonProperty("projectId")
-    String getProjectId() {
-        return projectId
+    void setId(Long id) {
+        this.id = id
     }
-    */
 
-
-    Project getProject() {
-        return project
+    void setIdentifier(String identifier) {
+        this.identifier = identifier
     }
 
     void setProject(Project project) {
         this.project = project
     }
 
-    List<Sample> getSample() {
-        return sample
+    void setSamples(Set<Sample> samples) {
+        this.samples = samples
     }
+
+    String getIdentifier() {
+        return identifier
+    }
+
+    Project getProject() {
+        return project
+    }
+
+    Set<Sample> getSamples() {
+       return samples
+   }
+
 }

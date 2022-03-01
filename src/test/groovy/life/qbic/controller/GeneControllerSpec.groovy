@@ -3,18 +3,20 @@ package life.qbic.controller
 import io.micronaut.context.ApplicationContext
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.HttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.runtime.server.EmbeddedServer
+import io.micronaut.rxjava3.http.client.Rx3HttpClient
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
 import life.qbic.variantstore.controller.GeneController
+import spock.lang.Specification
 import spock.lang.Unroll
 
-import javax.inject.Inject
 
 @MicronautTest(transactional = false)
-class GeneControllerSpec extends TestContainerSpecification{
+class GeneControllerSpec extends Specification{
+
     @Inject
     ApplicationContext applicationContext
 
@@ -23,7 +25,8 @@ class GeneControllerSpec extends TestContainerSpecification{
 
     @Inject
     @Client('/')
-    HttpClient httpClient
+    Rx3HttpClient httpClient
+
 
     def "verify GeneController bean exists"() {
         given:
@@ -39,7 +42,7 @@ class GeneControllerSpec extends TestContainerSpecification{
 
         then:
         response.status == HttpStatus.OK
-        response.body().size() == 96
+        response.body().size() == 16
     }
 
     @Unroll
@@ -56,15 +59,15 @@ class GeneControllerSpec extends TestContainerSpecification{
         "ENSG00000150471"   ||  HttpStatus.OK
     }
 
+
     @Unroll
     void "should return Http 404 for given gene identifier if not available "() {
         when:
         def identifier = "ENSG00000150499"
-        httpClient.toBlocking().exchange("/genes/${identifier}", HttpResponse)
+        HttpResponse response = httpClient.toBlocking().exchange("/genes/${identifier}")
 
         then:
-        HttpClientResponseException t = thrown(HttpClientResponseException)
-        t.getStatus().code == 404
+        HttpClientResponseException e = thrown(HttpClientResponseException)
+        e.status == HttpStatus.NOT_FOUND
     }
-
 }

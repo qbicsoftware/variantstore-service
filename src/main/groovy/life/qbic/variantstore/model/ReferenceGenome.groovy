@@ -4,11 +4,9 @@ import groovy.transform.EqualsAndHashCode
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
-import io.micronaut.data.annotation.MappedProperty
 import io.micronaut.data.annotation.Relation
 import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
-
 
 /**
  * A sample with associated metadata
@@ -16,7 +14,14 @@ import io.swagger.v3.oas.annotations.media.Schema
  * @since: 1.0.0
  *
  */
-@MappedEntity(value = "referencegenome", namingStrategy = NamingStrategies.LowerCase)
+/*
+@Data
+@EqualsAndHashCode(callSuper=true)
+@AllArgsConstructor
+@NoArgsConstructor
+@MappedEntity
+ */
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
 @EqualsAndHashCode
 @Schema(name="ReferenceGenome", description="A reference genome")
 class ReferenceGenome {
@@ -25,17 +30,12 @@ class ReferenceGenome {
     @Id
     private Long id
 
-    final String source
-    final String build
-    final String version
+    String source
+    String build
+    String version
 
-    /*@ManyToMany(fetch = FetchType.LAZY, cascade = CascadeType.PERSIST)
-    @JoinTable(name = "referencegenomevariant", joinColumns = @JoinColumn(name = "referencegenomeid",
-            referencedColumnName = "id", nullable = false, updatable = false), inverseJoinColumns = @JoinColumn(name = "variantid",
-            referencedColumnName = "id", nullable = false, updatable = false))
-    */
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
-    Set<Variant> variants = new HashSet<>()
+    @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "referenceGenomes")
+    Set<Variant> variants
 
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "referencegenome")
     private Set<Ensembl> ensemblInstances
@@ -88,5 +88,10 @@ class ReferenceGenome {
 
     void setVariants(Set<Variant> variants) {
         this.variants = variants
+    }
+
+    void addVariant(Variant variant){
+        if(variants==null) variants = [].toSet() as Set<Variant>
+        variants.add(variant)
     }
 }
