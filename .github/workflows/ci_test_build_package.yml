@@ -27,6 +27,10 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-maven-
 
-      # build with maven and run tests
-      - name: Build with Maven and run tests
-        run: mvn --batch-mode verify
+      # build with maven and run tests with MariaDB
+      - name: Build with Maven and run tests with MariaDB
+        run: mvn --batch-mode -Dmicronaut.environments=test-mariadb -Dtest='!life.qbic.db.postgres.**' verify
+
+      # build with maven and run tests with Postgresql
+      - name: Build with Maven and run tests with PostgreSQL
+        run: mvn --batch-mode -Dmicronaut.environments=test-postgres -Dtest='!life.qbic.db.mariadb.**' verify
