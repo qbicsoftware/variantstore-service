@@ -38,16 +38,10 @@ datasources:
     variantstore_postgres:
         url: jdbc:tc:postgresql:13:///postgres
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
-        #url: jdbc:postgresql://localhost:5432/variantstore_db
-        #username: mohr
-        #password: ""
-        #driverClassName: org.postgresql.Driver
-
 flyway:
     datasources:
         variantstore_postgres:
             enabled: true
-            #schemas: variantstore_model
             baselineOnMigrate: true
             locations: classpath:db/postgresql
 userroles:

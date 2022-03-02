@@ -36,14 +36,12 @@ micronaut:
             enabled: false
 datasources:
     variantstore_mariadb:
-        # &useMysqlMetadata=true
         url: jdbc:tc:mariadb:///oncostore?user=root?password=?
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
 flyway:
     datasources:
         variantstore_mariadb:
             enabled: true
-            #schemas: variantstore_model
             baselineOnMigrate: true
             locations: classpath:db/mariadb
 userroles:

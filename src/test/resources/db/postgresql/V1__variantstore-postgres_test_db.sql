@@ -990,27 +990,17 @@ CREATE UNIQUE INDEX cons_unique ON consequence USING btree (allele, codingchange
 
 CREATE UNIQUE INDEX ensembl_unique ON ensembl USING btree (version, date, referencegenome_id);
 
-
---
--- Name: entity_unique; Type: INDEX; Schema: public;
---
-
--- CREATE UNIQUE INDEX entity_unique ON entity USING btree (id);
-
-
 --
 -- Name: gene_unique; Type: INDEX; Schema: public;
 --
 
 CREATE INDEX gene_unique ON gene USING btree (geneid);
 
-
 --
 -- Name: genotype_unique; Type: INDEX; Schema: public;
 --
 
 CREATE INDEX genotype_unique ON genotype USING btree (genotype, readdepth, filter, likelihoods, genotypelikelihoods, genotypelikelihoodshet, posteriorprobs, genotypequality, haplotypequalities, phaseset, phasingquality, alternateallelecounts, mappingquality);
-
 
 --
 -- Name: idx_chromosome; Type: INDEX; Schema: public;
@@ -1116,8 +1106,15 @@ CREATE UNIQUE INDEX rg_unique ON referencegenome USING btree (source, build, ver
 
 CREATE UNIQUE INDEX sample_unique ON sample USING btree (identifier, cancerentity, entity_id);
 
+--
+-- Name: project_unique; Type: INDEX; Schema: public;
+--
 
 CREATE UNIQUE INDEX project_unique ON project USING btree (identifier);
+
+--
+-- Name: entity_unique; Type: INDEX; Schema: public;
+--
 
 CREATE UNIQUE INDEX entity_unique ON entity USING btree (identifier, project_id);
 
