@@ -12,8 +12,8 @@ import life.qbic.variantstore.model.VariantCaller
 import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.util.ListingArguments
-import javax.inject.Singleton
-import javax.validation.constraints.NotNull
+import jakarta.inject.Singleton
+import io.micronaut.core.annotation.NonNull
 
 /**
  * The Variantstore storage interface.
@@ -32,7 +32,7 @@ interface VariantstoreStorage {
      * @param assemblyId the identifier (build) of the reference genome
      * @return list of found variants
      */
-    List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
+    Set<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
                                           String reference, String observed, String assemblyId)
 
     /**
@@ -54,7 +54,7 @@ interface VariantstoreStorage {
      * @param identifier the variant identifier
      * @return list of found variants
      */
-    List<Variant> findVariantById(String identifier)
+    Set<Variant> findVariantById(String identifier)
 
     /**
      * Find gene in store by identifier.
@@ -62,21 +62,21 @@ interface VariantstoreStorage {
      * @param args further optional arguments to specify Ensembl version e.g.
      * @return list of found genes
      */
-    List<Gene> findGeneById(String identifier, @NotNull ListingArguments args)
+    Set<Gene> findGeneById(String identifier, @NonNull ListingArguments args)
 
     /**
      * Find cases for specified filtering options.
      * @param args the provided filtering options
      * @return list of found cases
      */
-    List<Case> findCases(@NotNull ListingArguments args)
+    List<Case> findCases(@NonNull ListingArguments args)
 
     /**
      * Find samples for specified filtering options.
      * @param args the provided filtering options
      * @return list of found samples
      */
-    List<Sample> findSamples(@NotNull ListingArguments args)
+    List<Sample> findSamples(@NonNull ListingArguments args)
 
     /**
      * Find variants for specified (filtering) options.
@@ -88,8 +88,8 @@ interface VariantstoreStorage {
      * @param withGenotypes true if connected genotype information should be returned
      * @return list of found variants
      */
-    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
-            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
+    Set<Variant> findVariants(@NonNull ListingArguments args, String referenceGenome, Boolean withConsequences,
+                               String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
 
     /**
      * Find annotation software used to annotate the given consequence.
@@ -110,7 +110,7 @@ interface VariantstoreStorage {
      * @param args the provided filtering options
      * @return list of found genes
      */
-    List<Gene> findGenes(@NotNull ListingArguments args)
+    Set<Gene> findGenes(@NonNull ListingArguments args)
 
     /**
      * Store case in the store.
@@ -148,7 +148,7 @@ interface VariantstoreStorage {
      * @param sampleIdentifiers the provided sample identifiers (mapped to genotypes)
      * @param variantContext the provided variants
      */
-    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map sampleIdentifiers, ArrayList<SimpleVariantContext> variantContext) throws VariantstoreStorageException
+    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map<String, Sample> sampleIdentifiers, ArrayList<SimpleVariantContext> variantContext) throws VariantstoreStorageException
 
     /**
      * Store genes with provided metadata in the store.

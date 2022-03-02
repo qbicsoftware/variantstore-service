@@ -3,9 +3,10 @@ micronaut:
     name: variantstore
   server:
     port: ${variantstore-port:8080}
-    maxRequestSize: 100MB
+    maxRequestSize: 100
     multipart:
-      maxFileSize: 100MB
+      maxFileSize: 100
+    thread-selection: AUTO
   logger:
     levels:
       ROOT: INFO
@@ -63,16 +64,33 @@ micronaut:
             url: ${variantstore-oauth2-token-url}
             auth-method: client-secret-jwt
 datasources:
-  default:
-    url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-    username: ${db-user}
-    password: ${db-pwd}
-    driverClassName: org.mariadb.jdbc.Driver
-  transactions:
-    url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-    username: ${db-user}
-    password: ${db-pwd}
-    driverClassName: org.mariadb.jdbc.Driver
+  #variantstore_mariadb:
+  #  url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-user}
+  #  password: ${db-pwd}
+  #  driverClassName: org.mariadb.jdbc.Driver
+  #transactions:
+  #  url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-user}
+  #  password: ${db-pwd}
+  #  driverClassName: org.mariadb.jdbc.Driver
+  #variantstore_postgres:
+  #  url: jdbc:postgresql://${db-host}/${db-name}
+  #  username: ${db-user}
+  #  password: ${db-pwd}
+  #  driverClassName: org.postgresql.Driver
+  #  dialect: POSTGRES
+  #  schema-generate: none
+flyway:
+  datasources:
+    default:
+      enabled: false
+    transactions:
+      enabled: false
+    variantstore_postgres:
+      enabled: false
+      locations: classpath:db/postgresql
+      schemas: public
 endpoints:
   health:
     enabled: true
@@ -85,6 +103,9 @@ endpoints:
     enabled: true
     sensitive: false
   info:
+    enabled: true
+    sensitive: false
+  flyway:
     enabled: true
     sensitive: false
 userroles:

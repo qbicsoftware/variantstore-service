@@ -18,8 +18,8 @@ class SimpleVariant implements SimpleVariantContext{
     String observedAllele
     VcfInfo vcfInfo
     List<Genotype> genotypes
-    String id
-    Boolean isSomatic
+    String identifier
+    boolean isSomatic
     ArrayList consequences
     String databaseId
 
@@ -80,7 +80,7 @@ class SimpleVariant implements SimpleVariantContext{
 
     @JsonProperty("databaseId")
     @Override
-    String getDatabaseId() {
+    String getDatabaseIdentifier() {
         return databaseId
         //context.getID()
     }
@@ -96,7 +96,7 @@ class SimpleVariant implements SimpleVariantContext{
 
     @JsonProperty("consequences")
     @Override
-    List<Consequence> getConsequences() {
+    Set<Consequence> getConsequences() {
         return consequences
     }
 
@@ -107,13 +107,13 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    Boolean getIsSomatic() {
+    boolean isSomatic() {
         return isSomatic
     }
 
     @Override
-    String getId() {
-        return id
+    String getIdentifier() {
+        return identifier
     }
 
     VariantContext getContext() {
@@ -125,17 +125,32 @@ class SimpleVariant implements SimpleVariantContext{
     }
 
     @Override
-    void setId(String id) {
-        this.id = id
+    Set<VariantCaller> getVariantCaller() {
+        return null
     }
 
     @Override
-    void setIsSomatic(Boolean isSomatic) {
+    Set<SampleVariant> getSampleVariants() {
+        return null
+    }
+
+    @Override
+    Set<ReferenceGenome> getReferenceGenomes() {
+        return null
+    }
+
+    @Override
+    void setIdentifier(String id) {
+        this.identifier = id
+    }
+
+    @Override
+    void setSomatic(boolean isSomatic) {
         this.isSomatic = isSomatic
     }
 
     @Override
-    void setConsequences(ArrayList consequences) {
+    void setConsequences(Set consequences) {
         this.consequences = consequences
     }
 }

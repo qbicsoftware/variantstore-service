@@ -10,8 +10,10 @@ import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.scheduling.TaskExecutors
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
-import io.reactivex.Flowable
-import io.reactivex.schedulers.Schedulers
+import io.micronaut.core.annotation.Nullable
+import io.micronaut.transaction.annotation.TransactionalAdvice
+import io.reactivex.rxjava3.core.Flowable
+import io.reactivex.rxjava3.schedulers.Schedulers
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -23,10 +25,11 @@ import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
 
-import javax.annotation.Nullable
-import javax.inject.Inject
-import javax.inject.Named
+import jakarta.inject.Inject
+import jakarta.inject.Named
+
 import java.util.concurrent.ExecutorService
+
 /**
  * Controller for variant requests.
  *
@@ -42,7 +45,7 @@ class VariantController {
     /**
      * The Variantstore service instance
      */
-    private final VariantstoreService service
+    final VariantstoreService service
     /**
      * The executor service instance
      */
@@ -71,22 +74,21 @@ class VariantController {
      * @param identifier the variant identifier
      * @return the found variant or 404 Not Found
      */
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a variant",
             description = "The variant with the specified identifier is returned.",
             tags = "Variant")
-    @ApiResponse(responseCode = "200", description = "Returns a variant", content = @Content(mediaType =
-            "application/json",
-
+    @ApiResponse(responseCode = "200", description = "Returns a variant", content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = Variant.class)))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
     HttpResponse getVariant(@PathVariable(name = "id") String identifier) {
         log.info("Resource request for variant: $identifier")
         try {
-            List<Variant> variants = service.getVariantForVariantId(identifier)
-            return variants ? HttpResponse.ok(variants.get(0)) : HttpResponse.notFound("No Variant found for given "
-                    + "identifier.")
+            Set<Variant> variants = service.getVariantForVariantId(identifier) as Set<Variant>
+            return variants ? HttpResponse.ok(variants[0]) : HttpResponse.notFound("No Variant found for given "
+                    + "identifier.").body("")
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid variant identifier supplied.")
@@ -107,16 +109,16 @@ class VariantController {
      * @param vcfVersion the Variant Call Format version
      * @return the found variants or 404 Not Found
      */
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "{?args*}{?format,referenceGenome,withConsequences,annotationSoftware,withGenotypes,vcfVersion}", produces = [MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN])
     @Operation(summary = "Request a set of variats",
             description = "The variants matching the supplied properties are returned.",
             tags = "Variant")
-    @ApiResponse(responseCode = "200", description = "Returns a set of variants", content = @Content(mediaType =
-            "application/json",
+    @ApiResponse(responseCode = "200", description = "Returns a set of variants", content = @Content(mediaType = "application/json",
             schema = @Schema(implementation = Variant.class, type = "object")))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<List<Variant>> getVariants(@Nullable ListingArguments args, @QueryValue @Nullable String format, @QueryValue
+    HttpResponse<Set<Variant>> getVariants(@Nullable ListingArguments args, @QueryValue @Nullable String format, @QueryValue
             (defaultValue = "GRCh37") @Nullable String referenceGenome, @QueryValue(defaultValue = "false") @Nullable
             Boolean withConsequences, @QueryValue(defaultValue = "snpeff") @Nullable String annotationSoftware,
                                             @QueryValue(defaultValue = "4.3t") @Nullable String annotationSoftwareVersion,
@@ -126,10 +128,11 @@ class VariantController {
             def variants
             if (format) {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
-                    return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<List<Variant>>
+                    return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<Set<Variant>>
                 }
-                variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
-                        withConsequences, annotationSoftware, true, withGenotypes)
+                //@TODO make vcfInfo changeable
+                variants = service.getVariantsForSpecifiedProperties(args, referenceGenome, withConsequences,
+                        annotationSoftware, true, withGenotypes)
                 def time = new Date().format("yyyy-MM-dd_HH-mm")
 
                 if (format.toUpperCase() == IdValidator.VariantFormats.VCF.toString()) {
@@ -188,7 +191,8 @@ class VariantController {
                             status = life.qbic.variantstore.model.Status.processing
                         }
 
-                        TransactionStatus transactionStatus = repository.save(newStatus)
+                        //TransactionStatus transactionStatus = repository.save(newStatus)
+                        TransactionStatus transactionStatus = null
                         service.storeVariantsInStore(metadata, file.inputStream, repository, transactionStatus)
                     }
             return HttpResponse.accepted(uri)
@@ -211,8 +215,7 @@ class VariantController {
     @Operation(summary = "Request the variant upload status",
             description = "The status for the requested variant upload is shown.",
             tags = "Variant")
-    @ApiResponse(responseCode = "200", description = "Returns a status", content = @Content(mediaType =
-            "application/json"))
+    @ApiResponse(responseCode = "200", description = "Returns a status", content = @Content(mediaType = "application/json"))
     @ApiResponse(responseCode = "400", description = "Invalid upload identifier supplied")
     @ApiResponse(responseCode = "404", description = "Upload not found")
     HttpResponse getUploadStatus(@PathVariable(name = "id") String identifier) {
@@ -221,6 +224,20 @@ class VariantController {
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid upload identifier supplied.")
+        } catch (Exception e) {
+            log.error(e)
+            return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
+        }
+    }
+
+    @Get(uri = "/test", produces = MediaType.APPLICATION_JSON)
+    HttpResponse getTest() {
+        try {
+            repository.save(new TransactionStatus())
+            return HttpResponse.ok("Just a test")
+        } catch (IllegalArgumentException e) {
+            log.error(e)
+            return HttpResponse.badRequest("Invalid variant identifier supplied.")
         } catch (Exception e) {
             log.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")

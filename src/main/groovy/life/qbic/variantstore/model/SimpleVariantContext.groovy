@@ -17,21 +17,27 @@ interface SimpleVariantContext {
 
     String getObservedAllele()
 
-    List<Consequence> getConsequences()
+    Set<Consequence> getConsequences()
 
     List<Genotype> getGenotypes()
 
-    String getDatabaseId()
+    Set<VariantCaller> getVariantCaller()
 
-    Boolean getIsSomatic()
+    Set<SampleVariant> getSampleVariants()
 
-    String getId()
+    Set<ReferenceGenome> getReferenceGenomes()
+
+    String getDatabaseIdentifier()
+
+    boolean isSomatic()
+
+    String getIdentifier()
 
     VcfInfo getVcfInfo()
 
-    void setId(String id)
+    void setIdentifier(String id)
 
-    void setIsSomatic(Boolean somatic)
+    void setSomatic(boolean somatic)
 
-    void setConsequences(ArrayList consequences)
+    void setConsequences(Set<Consequence> consequences)
 }

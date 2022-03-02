@@ -1,6 +1,13 @@
 package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.builder.Builder
+import io.micronaut.core.annotation.Creator
+import io.micronaut.core.annotation.Nullable
+import io.micronaut.data.annotation.*
+import io.micronaut.data.model.DataType
+import io.micronaut.data.model.naming.NamingStrategies
+import life.qbic.variantstore.util.IntegerListStringConverter
 import life.qbic.variantstore.util.VcfConstants
 
 /**
@@ -8,65 +15,95 @@ import life.qbic.variantstore.util.VcfConstants
  *
  * @since: 1.0.0
  */
-@EqualsAndHashCode(includes = 'genotype, readDepth, filter, likelihoods, genotypeLikelihoods, genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities, phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality')
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
+@EqualsAndHashCode(excludes =  ["sampleName", "sampleVariants"])
+@Builder
 class Genotype {
 
     /**
+     * The identifier of a gene
+     */
+    @GeneratedValue
+    @Id
+    private Long id
+    /**
      * The sample name associated with a genotype
      */
-    final String sampleName
+    @Transient
+    String sampleName
     /**
      * The genotype, encoded as allele values separated by / or |
      */
-    final String genotype // GT
+    @Nullable
+    String genotype // GT
     /**
      * The measured read depth of a genotype
      */
-    final Integer readDepth // DP
+    @Nullable
+    Integer readDepth // DP
     /**
      * The filter indicating if this genotype was “called”
      */
-    final String filter // FT
+    @Nullable
+    String filter // FT
     /**
      * The phred-scaled genotype likelihoods (PL)
      */
-    final String likelihoods
+    @Nullable
+    String likelihoods
     /**
      * The genotype likelihoods (GL)
      */
-    final String genotypeLikelihoods
+    @Nullable
+    String genotypeLikelihoods
     /**
      * The genotype likelihoods of heterogeneous ploidy (GLE)
      */
-    final String genotypeLikelihoodsHet
+    @Nullable
+    String genotypeLikelihoodsHet
     /**
      * The phred-scaled genotype posterior probabilities (GP)
      */
-    final String posteriorProbs
+    @Nullable
+    String posteriorProbs
     /**
      * The quality (error probability) of a genotype (GQ)
      */
-    final Integer genotypeQuality
+    @Nullable
+    Integer genotypeQuality
     /**
      * The haplotype qualities (HQ)
      */
-    final String haplotypeQualities
+    @Nullable
+    String haplotypeQualities
     /**
      * A phase set is defined as a set of phased genotypes to which this genotype belongs (PS)
      */
-    final String phaseSet
+    @Nullable
+    String phaseSet
     /**
      * The phred-scaled probability (PQ)
      */
-    final Integer phasingQuality
+    @Nullable
+    Integer phasingQuality
     /**
      * The alternate allele counts of a genotype
      */
-    final String alternateAlleleCounts
+    @Nullable
+    @TypeDef(type = DataType.INTEGER_ARRAY)
+    @MappedProperty(type = DataType.STRING, converter = IntegerListStringConverter.class)
+    List<Integer> alternateAlleleCounts
     /**
      * The RMS mapping quality (MQ)
      */
-    final Integer mappingQuality // MQ RMS mapping quality
+    @Nullable
+    Integer mappingQuality // MQ RMS mapping quality
+
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "genotype")
+    Set<SampleVariant> sampleVariants
+
+    @Creator
+    Genotype() {}
 
     Genotype(htsjdk.variant.variantcontext.Genotype genotypeContext) {
         sampleName = genotypeContext.sampleName
@@ -75,33 +112,31 @@ class Genotype {
         filter = genotypeContext.filters ? genotypeContext.filters : ""
         likelihoods = genotypeContext.likelihoodsString
         genotypeLikelihoods = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations
-                .GENOTYPELIKELIHOODS.tag, "".intern()) as String
+                .GENOTYPELIKELIHOODS.tag, "") as String
         genotypeLikelihoodsHet = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations
-                .GENOTYPELIKELIHOODSHET.tag, "".intern()) as String
+                .GENOTYPELIKELIHOODSHET.tag, "") as String
         posteriorProbs = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.POSTERIORPROBS
-                .tag, ""
-                .intern()) as String
+                .tag, "") as String
         genotypeQuality = genotypeContext.GQ as Integer
         haplotypeQualities = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations
                 .HAPLOTYPEQUALITIES
-                .tag, "".intern()) as String
-        phaseSet = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.PHASESET.tag, "".intern
-                ()) as String
+                .tag, "") as String
+        phaseSet = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.PHASESET.tag, "") as String
         phasingQuality = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.PHASINGQUALITY
                 .tag, -1) as Integer
         alternateAlleleCounts = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations
-                .ALTERNATEALLELECOUNTS.tag, "".intern()) as String
+                .ALTERNATEALLELECOUNTS.tag, [])
         mappingQuality = genotypeContext.getExtendedAttribute(VcfConstants.VcfGenotypeAbbreviations.MAPPINGQUALITY
                 .tag, -1) as Integer
     }
 
-    Genotype(sample, genotype, depth, filters, likelihoods, genotypeLikelihoods,
+    //@TODO check what to do with sampleName
+    Genotype(genotype, readDepth, filter, likelihoods, genotypeLikelihoods,
              genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities,
              phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality) {
-        this.sampleName = sample
         this.genotype = genotype
-        this.readDepth = depth
-        this.filter = filters
+        this.readDepth = readDepth
+        this.filter = filter
         this.likelihoods = likelihoods
         this.genotypeLikelihoods = genotypeLikelihoods
         this.genotypeLikelihoodsHet = genotypeLikelihoodsHet
@@ -112,6 +147,33 @@ class Genotype {
         this.phasingQuality = phasingQuality
         this.alternateAlleleCounts = alternateAlleleCounts
         this.mappingQuality = mappingQuality
+    }
+
+    Genotype(sampleName, String genotype,readDepth, filter, likelihoods, genotypeLikelihoods,
+             genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities,
+             phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality) {
+        this.sampleName = sampleName
+        this.genotype = genotype
+        this.readDepth = readDepth
+        this.filter = filter
+        this.likelihoods = likelihoods
+        this.genotypeLikelihoods = genotypeLikelihoods
+        this.genotypeLikelihoodsHet = genotypeLikelihoodsHet
+        this.posteriorProbs = posteriorProbs
+        this.genotypeQuality = genotypeQuality
+        this.haplotypeQualities = haplotypeQualities
+        this.phaseSet = phaseSet
+        this.phasingQuality = phasingQuality
+        this.alternateAlleleCounts = alternateAlleleCounts
+        this.mappingQuality = mappingQuality
+    }
+
+    Long getId() {
+        return id
+    }
+
+    void setId(Long id) {
+        this.id = id
     }
 
     String getSampleName() {
@@ -162,7 +224,7 @@ class Genotype {
         return phasingQuality
     }
 
-    String getAlternateAlleleCounts() {
+    List<Integer> getAlternateAlleleCounts() {
         return alternateAlleleCounts
     }
 
@@ -170,7 +232,70 @@ class Genotype {
         return mappingQuality
     }
 
-    /**
+    void setSampleName(String sampleName) {
+        this.sampleName = sampleName
+    }
+
+    void setGenotype(String genotype) {
+        this.genotype = genotype
+    }
+
+    void setReadDepth(Integer readDepth) {
+        this.readDepth = readDepth
+    }
+
+    void setFilter(String filter) {
+        this.filter = filter
+    }
+
+    void setLikelihoods(String likelihoods) {
+        this.likelihoods = likelihoods
+    }
+
+    void setGenotypeLikelihoods(String genotypeLikelihoods) {
+        this.genotypeLikelihoods = genotypeLikelihoods
+    }
+
+    void setGenotypeLikelihoodsHet(String genotypeLikelihoodsHet) {
+        this.genotypeLikelihoodsHet = genotypeLikelihoodsHet
+    }
+
+    void setPosteriorProbs(String posteriorProbs) {
+        this.posteriorProbs = posteriorProbs
+    }
+
+    void setGenotypeQuality(Integer genotypeQuality) {
+        this.genotypeQuality = genotypeQuality
+    }
+
+    void setHaplotypeQualities(String haplotypeQualities) {
+        this.haplotypeQualities = haplotypeQualities
+    }
+
+    void setPhaseSet(String phaseSet) {
+        this.phaseSet = phaseSet
+    }
+
+    void setPhasingQuality(Integer phasingQuality) {
+        this.phasingQuality = phasingQuality
+    }
+
+    void setAlternateAlleleCounts(List<Integer> alternateAlleleCounts) {
+        this.alternateAlleleCounts = alternateAlleleCounts
+    }
+
+    void setMappingQuality(Integer mappingQuality) {
+        this.mappingQuality = mappingQuality
+    }
+
+    Set<SampleVariant> getSampleVariants() {
+        return sampleVariants
+    }
+
+    void setSampleVariants(Set<SampleVariant> sampleVariants) {
+        this.sampleVariants = sampleVariants
+    }
+/**
      * Generates content in Variant Call Format (VCF) for a genotype.
      * @return the format string (defining the contained information) and genotype content in Variant Call Format
      */

@@ -3,6 +3,7 @@ micronaut:
         name: variantstore
     server:
         port: -1
+        thread-selection: AUTO
     security:
         enabled: false
         intercept-url-map:
@@ -33,6 +34,19 @@ micronaut:
                 enabled: true
         oauth2:
             enabled: false
-
+datasources:
+    variantstore_mariadb:
+        # &useMysqlMetadata=true
+        url: jdbc:tc:mariadb:///oncostore?user=root?password=?
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+flyway:
+    datasources:
+        variantstore_mariadb:
+            enabled: true
+            #schemas: variantstore_model
+            baselineOnMigrate: true
+            locations: classpath:db/mariadb
 userroles:
     config: "src/main/resources/test.yml"
+database:
+    specifier: variantstore-mariadb
