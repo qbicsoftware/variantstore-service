@@ -2,6 +2,7 @@ package life.qbic.processing
 
 import io.micronaut.context.ApplicationContext
 import io.micronaut.context.annotation.Property
+import io.micronaut.http.HttpHeaders
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
@@ -12,9 +13,14 @@ import io.micronaut.runtime.server.EmbeddedServer
 import io.micronaut.rxjava3.http.client.Rx3HttpClient
 import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
+import life.qbic.variantstore.model.TransactionStatus
+import life.qbic.variantstore.model.Status
+import life.qbic.variantstore.repositories.ProjectRepository
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
+import spock.util.concurrent.PollingConditions
+
 import java.util.concurrent.TimeUnit
 
 
@@ -58,10 +64,16 @@ class VariantImportSpec extends Specification {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         HttpResponse response = httpClient.toBlocking().exchange(request)
+        PollingConditions uploaded = new PollingConditions(delay: 0.5, initialDelay: 0.5, timeout: 10)
 
         then:
-        TimeUnit.SECONDS.sleep(60)
         response.status() == status
+        uploaded.eventually {
+            HttpRequest transactionRequest = HttpRequest.GET(response.header(HttpHeaders.LOCATION))
+            HttpResponse transactionResponse = httpClient.toBlocking().exchange(transactionRequest, TransactionStatus.class)
+            String transactionStatus = transactionResponse.body().status
+            transactionStatus == Status.finished.toString()
+        }
 
         where:
         metadata || file || status

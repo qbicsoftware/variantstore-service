@@ -3,14 +3,15 @@ package life.qbic.variantstore.model
 import com.fasterxml.jackson.annotation.JsonProperty
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.model.naming.NamingStrategies
 
 /**
  * A DTO representing the status of a transaction
  *
  * @since: 1.1.0
  */
-//@MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
-//@Todo handle transaction status
+@MappedEntity(namingStrategy = NamingStrategies.UnderScoreSeparatedLowerCase.class)
 class TransactionStatus{
 
     /**
@@ -22,7 +23,7 @@ class TransactionStatus{
     /**
      * The name of a tool
      */
-    String uuid
+    String identifier
     /**
      * The name of a tool
      */
@@ -43,8 +44,8 @@ class TransactionStatus{
         this.id = id
     }
 
-    void setUuid(String uuid) {
-        this.uuid = uuid
+    void setIdentifier(String uuid) {
+        this.identifier = uuid
     }
 
     void setFileName(String fileName) {
@@ -64,8 +65,8 @@ class TransactionStatus{
     }
 
     @JsonProperty("uuid")
-    String getUuid() {
-        return uuid
+    String getIdentifier() {
+        return identifier
     }
 
     @JsonProperty("fileName")
@@ -87,7 +88,7 @@ class TransactionStatus{
 /**
  * Possible status of a transaction
  *
- * @since: 1.11.0
+ * @since: 1.1.0
  */
 enum Status{
     started,

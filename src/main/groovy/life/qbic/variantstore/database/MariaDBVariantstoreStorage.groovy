@@ -7,6 +7,7 @@ import groovy.sql.Sql
 import groovy.util.logging.Log4j2
 import io.micronaut.context.annotation.Requires
 import io.micronaut.core.annotation.NonNull
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.service.VariantstoreStorage
@@ -582,6 +583,7 @@ consequence.warnings=?""",
      * {@inheritDoc}
      */
     @Override
+    @TransactionalAdvice('variantstore-mariadb')
     @Transactional
     void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map sampleIdentifiers, ArrayList variants) throws
             VariantstoreStorageException {
