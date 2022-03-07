@@ -83,14 +83,22 @@ datasources:
   #  schema-generate: none
 flyway:
   datasources:
-    default:
-      enabled: false
-    transactions:
-      enabled: false
     variantstore_postgres:
-      enabled: false
+      enabled: true
+      baselineOnMigrate: true
       locations: classpath:db/postgresql
-      schemas: public
+    transactions:
+        enabled: true
+        baselineOnMigrate: true
+        locations: classpath:db/transactions
+    variantstore_mariadb:
+      enabled: false
+      baselineOnMigrate: true
+      locations: classpath:db/mariadb
+    transactions_mariadb:
+      enabled: false
+      baselineOnMigrate: true
+      locations: classpath:db/transactions_mariadb
 endpoints:
   health:
     enabled: true

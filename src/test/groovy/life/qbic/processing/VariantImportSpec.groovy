@@ -15,13 +15,10 @@ import io.micronaut.test.extensions.spock.annotation.MicronautTest
 import jakarta.inject.Inject
 import life.qbic.variantstore.model.TransactionStatus
 import life.qbic.variantstore.model.Status
-import life.qbic.variantstore.repositories.ProjectRepository
 import spock.lang.Shared
 import spock.lang.Specification
 import spock.lang.Unroll
 import spock.util.concurrent.PollingConditions
-
-import java.util.concurrent.TimeUnit
 
 
 @MicronautTest(transactional = false)
