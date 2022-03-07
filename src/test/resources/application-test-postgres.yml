@@ -46,11 +46,11 @@ flyway:
         variantstore_postgres:
             enabled: true
             baselineOnMigrate: true
-            locations: classpath:db/postgresql
+            locations: classpath:db-test/postgresql
         transactions:
             enabled: true
             baselineOnMigrate: true
-            locations: classpath:db/transactions
+            locations: classpath:db-test/transactions
 userroles:
     config: "src/main/resources/test.yml"
 database:

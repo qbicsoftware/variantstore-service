@@ -46,11 +46,11 @@ flyway:
         variantstore_mariadb:
             enabled: true
             baselineOnMigrate: true
-            locations: classpath:db/mariadb
+            locations: classpath:db-test/mariadb
         transactions_mariadb:
             enabled: true
             baselineOnMigrate: true
-            locations: classpath:db/transactions_mariadb
+            locations: classpath:db-test/transactions_mariadb
 userroles:
     config: "src/main/resources/test.yml"
 database:
