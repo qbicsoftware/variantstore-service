@@ -36,14 +36,21 @@ micronaut:
             enabled: false
 datasources:
     variantstore_postgres:
-        url: jdbc:tc:postgresql:13:///postgres
+        url: jdbc:tc:postgresql:13:///postgres?currentSchema=public
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    transactions:
+        url: jdbc:tc:postgresql:13:///postgres?currentSchema=transactions
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
 flyway:
     datasources:
         variantstore_postgres:
             enabled: true
             baselineOnMigrate: true
-            locations: classpath:db/postgresql
+            locations: classpath:db-test/postgresql
+        transactions:
+            enabled: true
+            baselineOnMigrate: true
+            locations: classpath:db-test/transactions
 userroles:
     config: "src/main/resources/test.yml"
 database:

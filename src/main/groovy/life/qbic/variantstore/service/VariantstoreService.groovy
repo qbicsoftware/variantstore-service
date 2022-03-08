@@ -2,6 +2,7 @@ package life.qbic.variantstore.service
 
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.EnsemblParser
+import life.qbic.variantstore.repositories.TransactionStatusRepository
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.Singleton
 

@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.variantstore.model.TransactionStatus
-import life.qbic.variantstore.model.TransactionStatusRepository
+import life.qbic.variantstore.repositories.TransactionStatusRepository
 import life.qbic.variantstore.model.Variant
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.IdValidator
@@ -168,6 +168,7 @@ class VariantController {
      * @param files the provided VCF (or VCF.gz) files containing variants
      * @return 202 Accepted
      */
+    @TransactionalAdvice('${database.specifier}')
     @Operation(summary = "Add variants to the store",
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
@@ -185,14 +186,13 @@ class VariantController {
                         log.info("Processing file ${file.filename}")
 
                         def newStatus = new TransactionStatus().tap {
-                            uuid = statusId
+                            identifier = statusId
                             fileName = file.filename
                             fileSize = file.size
                             status = life.qbic.variantstore.model.Status.processing
                         }
 
-                        //TransactionStatus transactionStatus = repository.save(newStatus)
-                        TransactionStatus transactionStatus = null
+                        TransactionStatus transactionStatus = repository.save(newStatus)
                         service.storeVariantsInStore(metadata, file.inputStream, repository, transactionStatus)
                     }
             return HttpResponse.accepted(uri)
@@ -211,6 +211,7 @@ class VariantController {
      * @param identifier the transaction identifier
      * @return the transaction status
      */
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "/upload/status/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request the variant upload status",
             description = "The status for the requested variant upload is shown.",
@@ -220,7 +221,10 @@ class VariantController {
     @ApiResponse(responseCode = "404", description = "Upload not found")
     HttpResponse getUploadStatus(@PathVariable(name = "id") String identifier) {
         try {
-            return HttpResponse.ok(repository.findAllByUuid(identifier))
+            def searchResult= repository.findByIdentifier(identifier)
+
+            return searchResult.present ? HttpResponse.ok(searchResult.get()) : HttpResponse.notFound("No transaction found for given "
+                    + "uuid.").body("")
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid upload identifier supplied.")

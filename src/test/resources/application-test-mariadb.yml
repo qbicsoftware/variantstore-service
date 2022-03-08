@@ -38,12 +38,19 @@ datasources:
     variantstore_mariadb:
         url: jdbc:tc:mariadb:///oncostore?user=root?password=?
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    transactions_mariadb:
+        url: jdbc:tc:mariadb:///oncostore/transactions?user=root?password=?
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
 flyway:
     datasources:
         variantstore_mariadb:
             enabled: true
             baselineOnMigrate: true
-            locations: classpath:db/mariadb
+            locations: classpath:db-test/mariadb
+        transactions_mariadb:
+            enabled: true
+            baselineOnMigrate: true
+            locations: classpath:db-test/transactions_mariadb
 userroles:
     config: "src/main/resources/test.yml"
 database:

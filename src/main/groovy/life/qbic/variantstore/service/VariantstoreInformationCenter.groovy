@@ -6,6 +6,7 @@ import life.qbic.variantstore.parser.EnsemblParser
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.parser.MetadataReader
 import life.qbic.variantstore.parser.SimpleVCFReader
+import life.qbic.variantstore.repositories.TransactionStatusRepository
 import life.qbic.variantstore.util.AnnotationHandler
 import life.qbic.variantstore.util.ListingArguments
 import life.qbic.variantstore.util.VariantExporter
@@ -199,7 +200,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
             }
             storage.storeVariantsInStoreWithMetadata(metadataContext, sampleGenotypeMapping, variantsToInsert)
             variantsToInsert.clear()
-            //repository.updateStatus(transactionStatus.getId(), Status.finished.toString())
+            repository.updateStatus(transactionStatus.getId(), Status.finished.toString())
             log.info("...done.")
         }
         catch (Exception e) {
