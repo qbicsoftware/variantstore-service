@@ -61,7 +61,7 @@ class VariantImportSpec extends Specification {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         HttpResponse response = httpClient.toBlocking().exchange(request)
-        PollingConditions uploaded = new PollingConditions(delay: 0.5, initialDelay: 0.5, timeout: 30)
+        PollingConditions uploaded = new PollingConditions(delay: 1, initialDelay: 0.5, timeout: 30)
 
         then:
         response.status() == status
