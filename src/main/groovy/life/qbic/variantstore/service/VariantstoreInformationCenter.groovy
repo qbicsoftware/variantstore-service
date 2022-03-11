@@ -2,7 +2,6 @@ package life.qbic.variantstore.service
 
 import groovy.util.logging.Log4j2
 import life.qbic.variantstore.model.*
-import life.qbic.variantstore.parser.EnsemblParser
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.parser.MetadataReader
 import life.qbic.variantstore.parser.SimpleVCFReader
@@ -217,9 +216,9 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
-    void storeGeneInformationInStore(EnsemblParser ensembl) {
+    void storeGeneInformationInStore(Ensembl ensembl) {
         log.info("Storing provided gene information in store")
-        storage.storeGenesWithMetadata(ensembl.version, ensembl.date, ensembl.referenceGenome, ensembl.genes)
+        storage.storeGenesWithMetadata(ensembl)
         log.info("...done.")
     }
 

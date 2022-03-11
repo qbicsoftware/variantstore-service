@@ -3,6 +3,7 @@ package life.qbic.variantstore.service
 import life.qbic.variantstore.database.VariantstoreStorageException
 import life.qbic.variantstore.model.Case
 import life.qbic.variantstore.model.Consequence
+import life.qbic.variantstore.model.Ensembl
 import life.qbic.variantstore.model.Gene
 import life.qbic.variantstore.model.ReferenceGenome
 import life.qbic.variantstore.model.Sample
@@ -10,6 +11,7 @@ import life.qbic.variantstore.model.SimpleVariantContext
 import life.qbic.variantstore.model.Variant
 import life.qbic.variantstore.model.VariantCaller
 import life.qbic.variantstore.model.Annotation
+
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.Singleton
@@ -152,10 +154,7 @@ interface VariantstoreStorage {
 
     /**
      * Store genes with provided metadata in the store.
-     * @param version the version of the provided information
-     * @param date the date of the provided information
-     * @param referenceGenome the reference genome
-     * @param genes the provided genes
+     * @param ensemblContext the ensemblContext
      */
-    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws VariantstoreStorageException
+    void storeGenesWithMetadata(Ensembl ensemblContext) throws VariantstoreStorageException
 }

@@ -28,7 +28,7 @@ class ReferenceGenome {
 
     @GeneratedValue
     @Id
-    private Long id
+    Long id
 
     String source
     String build
@@ -38,7 +38,7 @@ class ReferenceGenome {
     Set<Variant> variants
 
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "referencegenome")
-    private Set<Ensembl> ensemblInstances
+    Set<Ensembl> ensemblInstances
 
     ReferenceGenome(String source, String build, String version) {
         this.source = source

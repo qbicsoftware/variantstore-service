@@ -1,7 +1,6 @@
 package life.qbic.variantstore.service
 
 import life.qbic.variantstore.model.*
-import life.qbic.variantstore.parser.EnsemblParser
 import life.qbic.variantstore.repositories.TransactionStatusRepository
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.Singleton
@@ -112,7 +111,7 @@ interface VariantstoreService {
     void storeVariantsInStore(String metadata, InputStream inputStream, TransactionStatusRepository repository, TransactionStatus transactionStatus)
     /**
      * Stores gene information provided in a GFF3 file (Ensembl) in the store.
-     * @param ensemblParser parser to extract information from GFF3 file
+     * @param ensemblContext the ensembl context holding information parsed from Ensembl
      */
-    void storeGeneInformationInStore(EnsemblParser ensemblParser)
+    void storeGeneInformationInStore(Ensembl ensemblContext)
 }

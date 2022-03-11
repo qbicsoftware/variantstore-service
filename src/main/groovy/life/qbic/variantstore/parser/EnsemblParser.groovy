@@ -5,6 +5,7 @@ import htsjdk.tribble.AbstractFeatureReader
 import htsjdk.tribble.gff.Gff3Codec
 import htsjdk.tribble.gff.Gff3Feature
 import htsjdk.tribble.readers.LineIterator
+import life.qbic.variantstore.model.Ensembl
 import life.qbic.variantstore.model.Gene
 import life.qbic.variantstore.model.ReferenceGenome
 
@@ -19,24 +20,11 @@ class EnsemblParser {
     private final GENOME_REFERENCE_SOURCE_GRC = "Genome Reference Consortium"
 
     /**
-     * The genes
+     * The metadata stored as {@EnsemblContext}
      */
-    final List<Gene> genes
-    /**
-     * The reference genome
-     */
-    final ReferenceGenome referenceGenome
-    /**
-     * The Ensembl version
-     */
-    final Integer version
-    /**
-     * The date associated with this Ensembl file
-     */
-    final String date
+    final Ensembl ensemblContext
 
     EnsemblParser(File file) {
-
         Gff3Codec codec = new Gff3Codec()
         AbstractFeatureReader<Gff3Feature, LineIterator> reader = AbstractFeatureReader.getFeatureReader(file
                 .absolutePath.toString(), null, codec, false);
@@ -67,7 +55,6 @@ class EnsemblParser {
         for (final Gff3Feature feature : reader.iterator()) {
             if(feature.type.contains("gene")) {
                 numberOfGenes++
-
                 String geneId = feature.ID.split(":")[-1]
                 def bioType = feature.getAttribute("biotype")
                 def chromosome = feature.contig
@@ -113,12 +100,20 @@ class EnsemblParser {
 
         log.info("Read $numberOfGenes genes from provided Ensembl file.")
 
-        this.genes = genes
         // if the reference genome is specified in the file under #!genome-build we will use this information
         def refernceGenomeToDB = referenceGenomeFromFile ? referenceGenomeFromFile : referenceGenome
-        this.referenceGenome = new ReferenceGenome(GENOME_REFERENCE_SOURCE_GRC, refernceGenomeToDB,
-        referenceGenomeVersion as String)
-        this.version = ensemblVersion ? ensemblVersion.toInteger() : -1
-        this.date = updateDate
+
+        Ensembl ensemblContext = new Ensembl()
+        ensemblContext.genes = genes
+        ensemblContext.referenceGenome = new ReferenceGenome(GENOME_REFERENCE_SOURCE_GRC, refernceGenomeToDB,
+                referenceGenomeVersion as String)
+        ensemblContext.version = ensemblVersion ? ensemblVersion.toInteger() : -1
+        ensemblContext.date = updateDate
+
+        this.ensemblContext = ensemblContext
+    }
+
+    Ensembl getEnsemblContext() {
+        return this.ensemblContext
     }
 }

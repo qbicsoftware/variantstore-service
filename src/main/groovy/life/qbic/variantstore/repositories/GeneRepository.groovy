@@ -54,8 +54,8 @@ abstract class GeneRepository implements CrudRepository<Gene, Long>{
         }
     }
 
-    @Join(value = "ensembles", type = Join.Type.INNER, alias = "ensembl")
-    @Where("ensembl.version = :ensemblVersion")
+    //@Join(value = "ensembles", type = Join.Type.INNER, alias = "ensembl")
+    //@Where("ensembl.version = :ensemblVersion")
     abstract Set<Gene> searchByGeneId(String geneId, int ensemblVersion)
 
 

@@ -3,9 +3,8 @@ package life.qbic.variantstore.database
 import groovy.util.logging.Log4j2
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
-import io.micronaut.data.annotation.MappedProperty
-import io.micronaut.data.annotation.Transient
 import life.qbic.variantstore.model.*
+
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.repositories.CaseRepository
 import life.qbic.variantstore.repositories.ConsequenceRepository
@@ -420,7 +419,24 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     }
 
     @Override
-    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws VariantstoreStorageException {
+    void storeGenesWithMetadata(Ensembl ensemblContext) throws VariantstoreStorageException {
+        try {
+            def searchResultRG = referenceGenomeRepository.find(ensemblContext.referenceGenome.source, ensemblContext.referenceGenome.build, ensemblContext.referenceGenome.version)
+            def newReferenceGenome = searchResultRG.present ? searchResultRG.get() : referenceGenomeRepository.save(ensemblContext.referenceGenome)
+            ensemblContext.referenceGenome.id  = newReferenceGenome.id
+            def searchResultEnsembl = ensemblRepository.find(ensemblContext.version, ensemblContext.date, ensemblContext.referenceGenome)
+
+            if (searchResultEnsembl.present) {
+                ensemblContext.genes.each {
+                    if(!searchResultEnsembl.get().genes.contains(it)) {
+                        searchResultEnsembl.get().genes.add(it)
+                    }
+                }
+            }
+            searchResultEnsembl.present ? ensemblRepository.update(searchResultEnsembl.get()) : ensemblRepository.save(ensemblContext)
+        } catch (Exception e) {
+            throw new VariantstoreStorageException("Could not store genes in store: ", e.printStackTrace())
+        }
     }
 
     Set<Variant> fetchVariants(String referenceGenome, boolean withConsequences, String annotationSoftware, boolean withVcfInfo, boolean withGenotypes) {
