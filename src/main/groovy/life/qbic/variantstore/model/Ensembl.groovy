@@ -1,5 +1,6 @@
 package life.qbic.variantstore.model
 
+import groovy.transform.EqualsAndHashCode
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.MappedEntity
@@ -14,6 +15,7 @@ import io.micronaut.data.jdbc.annotation.JoinTable
  * @since: 1.1.0
  */
 @MappedEntity
+@EqualsAndHashCode
 class Ensembl {
 
     /**
@@ -21,11 +23,11 @@ class Ensembl {
      */
     @GeneratedValue
     @Id
-    private Long id
+    Long id
 
-    private final Integer version
+    Integer version
 
-    private final String date
+    String date
 
     /**
      * The reference genome associated with a Ensembl DB instance
@@ -38,8 +40,10 @@ class Ensembl {
             joinColumns = @JoinColumn(name = "ensembl_id"),
             inverseJoinColumns = @JoinColumn(name = "gene_id")
     )
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.PERSIST)
-    private Set<Gene> genes = new HashSet<>()
+    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = [Relation.Cascade.PERSIST, Relation.Cascade.UPDATE])
+    Set<Gene> genes
+
+    Ensembl() { }
 
     Ensembl(Integer version, String date) {
         this.version = version

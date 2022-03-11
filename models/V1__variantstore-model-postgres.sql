@@ -108,7 +108,7 @@ CREATE TABLE gene (
     chr character varying,
     start bigint,
     "end" bigint,
-    synonyms character varying,
+    synonyms character varying[],
     geneid character varying,
     description character varying,
     strand character varying,

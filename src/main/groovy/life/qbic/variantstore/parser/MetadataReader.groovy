@@ -30,12 +30,6 @@ class MetadataReader {
         Case entity = parseCase(jsonContent)
         List<Sample> samples = parseSample(jsonContent)
         Project project = parseProject(jsonContent)
-
-        //project.setCases(bla)
-        //entity.setProject(project)
-        //project.getC
-        //samples.each {sample -> sample.setEntity(entity) }
-
         this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), entity, samples, project)
     }
 

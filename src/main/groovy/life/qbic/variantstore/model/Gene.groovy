@@ -21,7 +21,7 @@ import io.swagger.v3.oas.annotations.media.Schema
  * @since: 1.1.0
  */
 @MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
-@EqualsAndHashCode
+@EqualsAndHashCode(includeFields=true, excludes = "id, consequences, ensembles")
 @Schema(name = "Gene", description = "A Gene")
 @Builder
 class Gene {

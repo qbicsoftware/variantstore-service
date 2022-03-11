@@ -670,21 +670,21 @@ consequence.warnings=?""",
      * {@inheritDoc}
      */
     @Override
-    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes)
+    void storeGenesWithMetadata(Ensembl ensemblContext)
             throws VariantstoreStorageException {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         try {
-            tryToStoreReferenceGenome(referenceGenome)
-            def rgId = tryToFindReferenceGenome(referenceGenome)
+            tryToStoreReferenceGenome(ensemblContext.referenceGenome)
+            def rgId = tryToFindReferenceGenome(ensemblContext.referenceGenome)
 
-            tryToStoreEnsemblDB(version, date, rgId)
-            def enId = tryToFindEnsemblDB(version, date, rgId)
+            tryToStoreEnsemblDB(ensemblContext.version, ensemblContext.date, rgId)
+            def enId = tryToFindEnsemblDB(ensemblContext.version, ensemblContext.date, rgId)
 
-            tryToStoreGeneObjects(genes)
+            tryToStoreGeneObjects(ensemblContext.genes)
 
             /* GET ids of genes */
-            def geneIdMap = tryToFindGenes(genes)
+            def geneIdMap = tryToFindGenes(ensemblContext.genes)
 
             /* INSERT genes and ensembl version in junction table */
             tryToStoreJunctionBatch(enId, geneIdMap.values().asList(), insertEnsemblGeneJunction)
@@ -1009,7 +1009,7 @@ genotype.mappingquality=?""",
      * @param genes a list of genes
      * @return map with database ids (gene: id)
      */
-    HashMap tryToFindGenes(List<Gene> genes) {
+    HashMap tryToFindGenes(Set<Gene> genes) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         def ids = [:]
@@ -1162,7 +1162,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      */
     private List<Gene> fetchGeneForIdWithEnsemblVersion(String id, Integer ensemblVersion, Sql sql) {
         def result = sql.rows("""SELECT distinct * FROM gene INNER JOIN ensembl_has_gene ON gene.id = 
-Ensembl_has_gene.gene_id INNER JOIN ensembl ON ensembl_has_gene.ensembl_id = ensembl.id WHERE gene.geneid=$id and 
+ensembl_has_gene.gene_id INNER JOIN ensembl ON ensembl_has_gene.ensembl_id = ensembl.id WHERE gene.geneid=$id and 
 ensembl.version=$ensemblVersion;""")
         List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
@@ -2020,7 +2020,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param genes a list of gene objects
      * @return the list of genes
      */
-    private List<Gene> tryToStoreGeneObjects(List<Gene> genes) {
+    private Set<Gene> tryToStoreGeneObjects(Set<Gene> genes) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         sql.withBatch("insert INTO gene (symbol, name, biotype, chr, start, end, synonyms, geneid, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE symbol=?, name=?, biotype=?, chr=?, start=?, end=?, synonyms=?, geneid=?, description=?, strand=?, version=?") {

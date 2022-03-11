@@ -112,6 +112,7 @@ class GeneController {
      * @param args the filter arguments
      * @return 200 OK or 400 Bad Request
      */
+    @TransactionalAdvice('${database.specifier}')
     @Operation(summary = "Upload gene information",
             description = "Upload Ensembl GFF3 file to add gene information to the store.",
             tags = "Gene")
@@ -122,10 +123,8 @@ class GeneController {
             File tempFile = File.createTempFile(files.getFilename(), "temp");
             Path path = Paths.get(tempFile.getAbsolutePath());
             Files.write(path, files.getBytes());
-            //TODO ensembl POJO
             EnsemblParser ensembl = new EnsemblParser(tempFile)
-            service.storeGeneInformationInStore(ensembl)
-
+            service.storeGeneInformationInStore(ensembl.ensemblContext)
             return HttpResponse.ok("Upload of gene information successful.")
         } catch (IOException exception) {
             log.error(exception)
