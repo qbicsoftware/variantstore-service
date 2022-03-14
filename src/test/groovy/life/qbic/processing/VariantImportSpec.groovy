@@ -61,17 +61,17 @@ class VariantImportSpec extends Specification {
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
         HttpResponse response = httpClient.toBlocking().exchange(request)
-        PollingConditions uploaded = new PollingConditions(delay: 2, initialDelay: 1, timeout: 60)
+        PollingConditions uploaded = new PollingConditions(delay: 3, initialDelay: 2, timeout: 60)
 
 
         then:
+        response.status() == status
         uploaded.eventually {
             HttpRequest transactionRequest = HttpRequest.GET(response.header(HttpHeaders.LOCATION))
             HttpResponse transactionResponse = httpClient.toBlocking().exchange(transactionRequest, TransactionStatus.class)
             String transactionStatus = transactionResponse.body().status
             transactionStatus == Status.finished.toString()
         }
-        response.status() == status
 
         where:
         metadata || file || status
