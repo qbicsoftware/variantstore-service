@@ -33,4 +33,4 @@ jobs:
 
       # build with maven and run tests with Postgresql
       - name: Build with Maven and run tests with PostgreSQL
-        run: mvn --batch-mode -Dmicronaut.environments=test-postgres -Dtest='!life.qbic.db.mariadb.**' verify
+        run: mvn --batch-mode -Dmicronaut.environments=test-postgres -Dtest='!life.qbic.db.mariadb.**' -e verify
