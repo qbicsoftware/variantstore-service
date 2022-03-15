@@ -1,11 +1,13 @@
 package life.qbic.variantstore.controller
 
 import groovy.util.logging.Log4j2
+import io.micronaut.core.annotation.NonNull
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
+import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.micronaut.transaction.annotation.TransactionalAdvice
@@ -50,21 +52,14 @@ class BeaconController {
             tags = "Beacon")
     @ApiResponse(responseCode = "200", description = "Returns the answer to the specified question",
             content = @Content(schema = @Schema(implementation = BeaconAlleleResponse.class)))
-    HttpResponse<BeaconAlleleResponse> checkVariant(@Pattern(regexp = '(?:chr)?[1-9]|1[0-9]|2[0-3]|X|Y')
+    HttpResponse<BeaconAlleleResponse> checkVariant(@NonNull @Pattern(regexp = '(?:chr)?[1-9]|1[0-9]|2[0-3]|X|Y')
                                                     @QueryValue String chromosome,
-                                                    @PositiveOrZero @QueryValue BigInteger startPosition,
-                                                    @Pattern(regexp = '[ACTG]+') @QueryValue String reference,
-                                                    @Pattern(regexp = '[ACTG]+') @QueryValue String observed,
-                                                    @QueryValue String assemblyId) {
+                                                    @NonNull @PositiveOrZero @QueryValue BigInteger startPosition,
+                                                    @NonNull @Pattern(regexp = '[ACTG]+') @QueryValue String reference,
+                                                    @NonNull @Pattern(regexp = '[ACTG]+') @QueryValue String observed,
+                                                    @NonNull @QueryValue String assemblyId) {
         log.info("Beacon request for specified variant.")
-        try {
-            BeaconAlleleResponse response = service.getBeaconAlleleResponse(chromosome, startPosition, reference, observed, assemblyId)
-            return HttpResponse.ok(response)
-        }
-        catch (Exception e) {
-            //@TODO check for 400 ? (bad request), missing mandatory parameters
-            log.error(e)
-            return HttpResponse.serverError()
-        }
+        BeaconAlleleResponse response = service.getBeaconAlleleResponse(chromosome, startPosition, reference, observed, assemblyId)
+        return HttpResponse.ok(response)
     }
 }
