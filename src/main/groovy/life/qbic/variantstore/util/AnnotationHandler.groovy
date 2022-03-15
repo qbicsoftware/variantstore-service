@@ -179,10 +179,8 @@ class AnnotationHandler {
             case AnnotationTools.SNPEFF:
                 def geneId = (parsedAnnotation[snpEff[version].get("gene") as Integer].intern() != '') ?
                         parsedAnnotation[snpEff[version].get("gene") as Integer].intern() : ''
+                // skipping annotation due to missing gene identifier
                 if ((geneId == null) || (geneId == "")) {
-                    //@TODO check if OK in every case
-                    //log.info("Skipping annotaton with transcript id ${cons.transcriptId} due to missing gene
-                    // identifier.")
                     return null
                 }
                 def allele = parsedAnnotation[snpEff[version].get("allele") as Integer].intern()

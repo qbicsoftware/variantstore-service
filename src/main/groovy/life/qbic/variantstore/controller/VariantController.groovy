@@ -24,10 +24,8 @@ import life.qbic.variantstore.model.Variant
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
-
 import jakarta.inject.Inject
 import jakarta.inject.Named
-
 import java.util.concurrent.ExecutorService
 
 /**
@@ -118,11 +116,14 @@ class VariantController {
             schema = @Schema(implementation = Variant.class, type = "object")))
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
-    HttpResponse<Set<Variant>> getVariants(@Nullable ListingArguments args, @QueryValue @Nullable String format, @QueryValue
-            (defaultValue = "GRCh37") @Nullable String referenceGenome, @QueryValue(defaultValue = "false") @Nullable
-            Boolean withConsequences, @QueryValue(defaultValue = "snpeff") @Nullable String annotationSoftware,
-                                            @QueryValue(defaultValue = "4.3t") @Nullable String annotationSoftwareVersion,
-                                            @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes, @QueryValue(defaultValue = "4.1") @Nullable String vcfVersion) {
+    HttpResponse<Set<Variant>> getVariants(@Nullable ListingArguments args, @QueryValue @Nullable String format,
+                                           @QueryValue(defaultValue = "GRCh37") @Nullable String referenceGenome,
+                                           @QueryValue(defaultValue = "false") @Nullable Boolean withConsequences,
+                                           @QueryValue(defaultValue = "snpeff") @Nullable String annotationSoftware,
+                                           @QueryValue(defaultValue = "4.3t") @Nullable String annotationSoftwareVersion,
+                                           @QueryValue(defaultValue = "false") @Nullable Boolean withVcfInfo,
+                                           @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes,
+                                           @QueryValue(defaultValue = "4.1") @Nullable String vcfVersion) {
         log.info("Resource request for variants with filtering options.")
         try {
             def variants
@@ -130,9 +131,8 @@ class VariantController {
                 if (!IdValidator.isSupportedVariantFormat(format)) {
                     return HttpResponse.badRequest("Invalid export format specified.") as HttpResponse<Set<Variant>>
                 }
-                //@TODO make vcfInfo changeable
                 variants = service.getVariantsForSpecifiedProperties(args, referenceGenome, withConsequences,
-                        annotationSoftware, true, withGenotypes)
+                        annotationSoftware, withVcfInfo, withGenotypes)
                 def time = new Date().format("yyyy-MM-dd_HH-mm")
 
                 if (format.toUpperCase() == IdValidator.VariantFormats.VCF.toString()) {
@@ -222,7 +222,6 @@ class VariantController {
     HttpResponse getUploadStatus(@PathVariable(name = "id") String identifier) {
         try {
             def searchResult= repository.findByIdentifier(identifier)
-
             return searchResult.present ? HttpResponse.ok(searchResult.get()) : HttpResponse.notFound("No transaction found for given "
                     + "uuid.").body("")
         } catch (IllegalArgumentException e) {

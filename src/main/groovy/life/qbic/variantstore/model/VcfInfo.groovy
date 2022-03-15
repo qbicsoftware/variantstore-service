@@ -112,7 +112,9 @@ class VcfInfo {
      * Validated by follow-up experiment
      **/
     boolean validated
-
+    /**
+     * The association between sample, variant, vcfinfo, and genotypes
+     */
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "vcfinfo")
     Set<SampleVariant> sampleVariants
 
@@ -120,7 +122,6 @@ class VcfInfo {
     VcfInfo() {}
 
     VcfInfo(CommonInfo commonInfo) {
-        //TODO check if that isn`t AA (amino acid) annotation?
         this.ancestralAllele = commonInfo.getAttributeAsString(VcfConstants.VcfInfoAbbreviations.ANCESTRALALLELE.tag,
                 "")
         this.alleleCount = commonInfo.getAttributeAsList(VcfConstants.VcfInfoAbbreviations.ALLELECOUNT.tag) as List<Integer> ?: []
@@ -262,7 +263,7 @@ class VcfInfo {
     void setAlleleFrequency(List<Float> alleleFrequency) {
         this.alleleFrequency = alleleFrequency
     }
-/**
+    /**
      * Generate representation in INFO column format.
      *
      * @return the content of an INFO column as specified in a Variant Call Format file
