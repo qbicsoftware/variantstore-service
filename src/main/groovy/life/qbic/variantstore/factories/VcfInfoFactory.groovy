@@ -4,7 +4,7 @@ import com.github.javafaker.Faker
 import life.qbic.variantstore.model.VcfInfo
 
 /**
- *
+ * VcfInfo factory for generating random VcfInfo objects.
  *
  * @since: 1.1.0
  */
@@ -42,5 +42,4 @@ class VcfInfoFactory {
         .validated(faker.bool().bool())
         .build()
     }
-
 }

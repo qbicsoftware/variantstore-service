@@ -19,7 +19,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 class VariantCaller implements Software {
 
     /**
-     * The identifier of a Variant Caller
+     * The database id
      */
     @GeneratedValue
     @Id
@@ -81,5 +81,4 @@ class VariantCaller implements Software {
         if(variants==null) variants = [].toSet() as Set<Variant>
         variants.add(variant)
     }
-
 }

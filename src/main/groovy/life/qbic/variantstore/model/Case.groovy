@@ -22,12 +22,15 @@ import io.swagger.v3.oas.annotations.media.Schema
 class Case {
 
     /**
-     * The identifier of a case
+     * The database id
      */
     @GeneratedValue
     @Id
     Long id
 
+    /**
+     * The identifier of a case
+     */
     String identifier
 
     /**
@@ -51,10 +54,26 @@ class Case {
         this.project = new Project().setIdentifier(projectId)
     }
 
-    @Schema(description = "The case identifier")
-    @JsonProperty("id")
     Long getId() {
         return id
+    }
+
+    @Schema(description = "The case identifier")
+    @JsonProperty("identifier")
+    String getIdentifier() {
+        return identifier
+    }
+
+    @Schema(description = "The associated project")
+    @JsonProperty("project")
+    Project getProject() {
+        return project
+    }
+
+    @Schema(description = "The associated samples")
+    @JsonProperty("samples")
+    Set<Sample> getSamples() {
+        return samples
     }
 
     void setId(Long id) {
@@ -72,17 +91,4 @@ class Case {
     void setSamples(Set<Sample> samples) {
         this.samples = samples
     }
-
-    String getIdentifier() {
-        return identifier
-    }
-
-    Project getProject() {
-        return project
-    }
-
-    Set<Sample> getSamples() {
-       return samples
-   }
-
 }

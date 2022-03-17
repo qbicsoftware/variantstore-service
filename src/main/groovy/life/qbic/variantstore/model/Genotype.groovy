@@ -107,7 +107,9 @@ class Genotype {
     @Creator
     Genotype() {}
 
-    // create from htsjdk genotype
+    /**
+    * Consturctor for creating Genotype from htsjdk genotype object
+     */
     Genotype(htsjdk.variant.variantcontext.Genotype genotypeContext) {
         sampleName = genotypeContext.sampleName
         genotype = genotypeContext.type.toString()
@@ -133,7 +135,9 @@ class Genotype {
                 .tag, -1) as Integer
     }
 
-    // constructor with sampleName
+    /**
+     * Consturctor for creating Genotype that includes sample name
+     */
     Genotype(sampleName, String genotype,readDepth, filter, likelihoods, genotypeLikelihoods,
              genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities,
              phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality) {
@@ -280,6 +284,7 @@ class Genotype {
     void setSampleVariants(Set<SampleVariant> sampleVariants) {
         this.sampleVariants = sampleVariants
     }
+
     /**
      * Generates content in Variant Call Format (VCF) for a genotype.
      * @return the format string (defining the contained information) and genotype content in Variant Call Format

@@ -2,6 +2,11 @@ package life.qbic.variantstore.model.dtos
 
 import io.micronaut.core.annotation.Introspected;
 
+/**
+ * A Variant Data Transfer Object.
+ *
+ * @since: 1.1.0
+ */
 @Introspected
 class VariantDTO {
 

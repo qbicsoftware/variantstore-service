@@ -24,6 +24,7 @@ import life.qbic.variantstore.util.ListingArguments
 import java.nio.file.Files
 import java.nio.file.Path
 import java.nio.file.Paths
+
 /**
  * Controller for gene requests
  *
@@ -78,7 +79,6 @@ class GeneController {
         }
     }
 
-
     /**
      * Retrieve gene based on filtering options
      * @param args the filter arguments
@@ -105,7 +105,6 @@ class GeneController {
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
-
 
     /**
      * Upload gene information provided as GFF3 file to the store

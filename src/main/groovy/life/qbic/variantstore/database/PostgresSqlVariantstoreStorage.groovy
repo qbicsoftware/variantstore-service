@@ -24,9 +24,8 @@ import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.*
 
 /**
- *
- *
- *
+ * A VariantstoreStorage implementation.
+ * This provides an interface to a PostgreSQL database storing variant information.
  *
  * @since: 1.1.0
  */
@@ -37,6 +36,9 @@ import jakarta.inject.*
 class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
 
 
+    /**
+     * The repositories
+     */
     @Inject ProjectRepository projectRepository
     @Inject CaseRepository caseRepository
     @Inject SampleRepository sampleRepository
@@ -51,6 +53,9 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     @Inject ConsequenceRepository consequenceRepository
     @Inject EnsemblRepository ensemblRepository
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     Set<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start, String reference,
                                                        String observed, String assemblyId) {
@@ -62,21 +67,33 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     List<Case> findCaseById(String identifier) {
         return caseRepository.findByIdentifier(identifier)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     List<Sample> findSampleById(String identifier) {
         return sampleRepository.findByIdentifier(identifier)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     Set<Variant> findVariantById(String identifier) {
         return variantRepository.findByIdentifier(identifier)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     Set<Gene> findGeneById(String identifier, ListingArguments args) {
         try {
@@ -88,12 +105,15 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                 return geneRepository.searchByGeneId(identifier, ensemblversion)
             }
             // fall back solution, if there is not ensembl version in the variantstore instance
-            return geneRepository.findByGeneId(identifier)
+            return geneRepository.searchByGeneId(identifier)
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch gene with identifier $identifier.", e.printStackTrace())
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     List<Case> findCases(ListingArguments args) {
         try {
@@ -108,23 +128,23 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             if (args.getConsequenceType().isPresent()) {
                 return caseRepository.searchByConsequenceType(args.getConsequenceType().get())
             }
-
             if (args.getChromosome().isPresent() && args.getStartPosition().isPresent() && args.getEndPosition()
                     .isPresent()) {
                 return caseRepository.searchByChromosomeAndStartPositionRange(args.getChromosome().get(), args.getStartPosition().get(),
                         args.getEndPosition().get())
             }
-
             if (args.getChromosome().isPresent()) {
                 return caseRepository.searchByChromosome(args.getChromosome().get())
             }
-
             return caseRepository.findAll()
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch cases.", e.printStackTrace())
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     List<Sample> findSamples(ListingArguments args) {
         try {
@@ -137,6 +157,9 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     Set<Variant> findVariants(ListingArguments args, String referenceGenome, Boolean withConsequences,
                                       String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
@@ -146,7 +169,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                         .get(), referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes)
             }
             if (args.getStartPosition().isPresent()) {
-                return findVariantByStartPositon(args.getStartPosition().get(), referenceGenome, withConsequences,
+                return findVariantsByStartPosition(args.getStartPosition().get(), referenceGenome, withConsequences,
                         annotationSoftware, withVcfInfo,
                         withGenotypes)
             }
@@ -174,6 +197,9 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     Set<Annotation> findAnnotationSoftwareByConsequence(Consequence consequence) {
         try {
@@ -191,12 +217,19 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
-    ReferenceGenome findReferenceGenomeByVariant(Variant variant) {
-        return variantRepository.search(variant.databaseIdentifier, variant.chromosome, variant.startPosition,
+    Set<ReferenceGenome> findReferenceGenomeByVariant(Variant variant) {
+        def searchResult = variantRepository.search(variant.databaseIdentifier, variant.chromosome, variant.startPosition,
                 variant.endPosition, variant.referenceAllele, variant.observedAllele, variant.somatic)
+        return searchResult.present ? searchResult.get().referenceGenomes : new HashSet<ReferenceGenome>()
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     Set<Gene> findGenes(ListingArguments args) {
         try {
@@ -209,31 +242,49 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void storeCaseInStore(Case patient) throws VariantstoreStorageException {
         caseRepository.save(patient)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void storeSampleInStore(Sample sample) throws VariantstoreStorageException {
         sampleRepository.save(sample)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void storeReferenceGenomeInStore(ReferenceGenome referenceGenome) throws VariantstoreStorageException {
         referenceGenomeRepository.save(referenceGenome)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void storeVariantCallerInStore(VariantCaller variantCaller) throws VariantstoreStorageException {
         variantCallerRepository.save(variantCaller)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void storeAnnotationSoftwareInStore(Annotation annotationSoftware) throws VariantstoreStorageException {
         variantAnnotationRepository.save(annotationSoftware)
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map<String, Sample> sampleIdentifiers, ArrayList<SimpleVariantContext> variants) throws
             VariantstoreStorageException  {
@@ -283,7 +334,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                 }
             }
 
-            ArrayList<Variant> newVariants = new ArrayList<Variant>()
+            List<Variant> newVariants = new ArrayList<Variant>()
             Set<Consequence> consequencesToRegister = new HashSet<Consequence>()
             def consequencesRegistered
             def genotypesToRegister
@@ -398,6 +449,9 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     void storeGenesWithMetadata(Ensembl ensemblContext) throws VariantstoreStorageException {
         try {
@@ -419,6 +473,15 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * Get variants from the store
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if connected consequences should be returned
+     * @param annotationSoftware the annotation software
+     * @param withVcInfo true if connected VCF info should be returned
+     * @param withGenotypes true if connected genotypes should be returned
+     * @return the found variants
+     */
     Set<Variant> fetchVariants(String referenceGenome, boolean withConsequences, String annotationSoftware, boolean withVcfInfo, boolean withGenotypes) {
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
@@ -449,7 +512,6 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
      * @param annotationSoftware the annotation software
      * @param withVcInfo true if connected VCF info should be returned
      * @param withGenotypes true if connected genotypes should be returned
-     * @param sql the sql connections
      * @return the found variants
      */
     // search, query, get, read or retrieve
@@ -476,9 +538,19 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
-    private List<Variant> findVariantByStartPositon(BigInteger startPosition, String referenceGenome,
-                                                    Boolean withConsequences, String annotationSoftware,
-                                                    Boolean withVcfInfo, Boolean withGenotypes) {
+    /**
+     * Get variants by genomic start position from the store
+     * @param startPosition the genomic start position
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if connected consequences should be returned
+     * @param annotationSoftware the annotation software
+     * @param withVcInfo true if connected VCF info should be returned
+     * @param withGenotypes true if connected genotypes should be returned
+     * @return the found variants
+     */
+    private List<Variant> findVariantsByStartPosition(BigInteger startPosition, String referenceGenome,
+                                                      Boolean withConsequences, String annotationSoftware,
+                                                      Boolean withVcfInfo, Boolean withGenotypes) {
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
             return variantRepository.searchByStartPosition(startPosition, annotationSoftware, referenceGenome)
@@ -499,6 +571,16 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * Get variants by chromosome from the store
+     * @param chromosome the chromosome
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if connected consequences should be returned
+     * @param annotationSoftware the annotation software
+     * @param withVcInfo true if connected VCF info should be returned
+     * @param withGenotypes true if connected genotypes should be returned
+     * @return the found variants
+     */
     private List<Variant> fetchVariantsByChromosome(String chromosome, String referenceGenome,
                                                     Boolean withConsequences, String annotationSoftware,
                                                     Boolean withVcfInfo, Boolean withGenotypes) {
@@ -519,7 +601,17 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             return variantRepository.findByChromosome(chromosome, referenceGenome)
         }
     }
-
+    /**
+     * Get variants by sample and gene identifier from the store
+     * @param sampleIdentifier the sample identifier
+     * @param geneId the gene identifier
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if connected consequences should be returned
+     * @param annotationSoftware the annotation software
+     * @param withVcInfo true if connected VCF info should be returned
+     * @param withGenotypes true if connected genotypes should be returned
+     * @return the found variants
+     */
     private Set<Variant> fetchVariantsBySampleAndGeneId(String sampleIdentifier, String geneId, String referenceGenome,
                                           Boolean withConsequences, String annotationSoftware,
                                           Boolean withVcfInfo, Boolean withGenotypes) {
@@ -543,7 +635,16 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
-
+    /**
+     * Get variants by sample identifier from the store
+     * @param sampleIdentifier the sample identifier
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if connected consequences should be returned
+     * @param annotationSoftware the annotation software
+     * @param withVcInfo true if connected VCF info should be returned
+     * @param withGenotypes true if connected genotypes should be returned
+     * @return the found variants
+     */
     private Set<Variant> fetchVariantsBySample(String sampleIdentifier, String referenceGenome,
                                  Boolean withConsequences, String annotationSoftware,
                                  Boolean withVcfInfo, Boolean withGenotypes) {
@@ -567,6 +668,16 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         }
     }
 
+    /**
+     * Get variants by gene identifier from the store
+     * @param geneId the gene identifier
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if connected consequences should be returned
+     * @param annotationSoftware the annotation software
+     * @param withVcInfo true if connected VCF info should be returned
+     * @param withGenotypes true if connected genotypes should be returned
+     * @return the found variants
+     */
     private Set<Variant> fetchVariantsByGeneId(String geneId, String referenceGenome,
                                  Boolean withConsequences, String annotationSoftware,
                                  Boolean withVcfInfo, Boolean withGenotypes) {
@@ -588,6 +699,16 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         return result
     }
 
+    /**
+     * Get variants by gene name from the store
+     * @param geneName the gene name
+     * @param referenceGenome the reference genome
+     * @param withConsequences true if connected consequences should be returned
+     * @param annotationSoftware the annotation software
+     * @param withVcInfo true if connected VCF info should be returned
+     * @param withGenotypes true if connected genotypes should be returned
+     * @return the found variants
+     */
     private Set<Variant> fetchVariantsByGeneName(String geneName, String referenceGenome,
                                    Boolean withConsequences, String annotationSoftware,
                                    Boolean withVcfInfo, Boolean withGenotypes) {

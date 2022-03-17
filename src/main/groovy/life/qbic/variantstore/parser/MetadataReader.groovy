@@ -58,9 +58,9 @@ class MetadataReader {
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on annotation software.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the annotation software
      */
     static Annotation parseAnnotationSoftware(jsonContent) {
         def name = jsonContent.variant_annotation.name as String
@@ -81,18 +81,18 @@ class MetadataReader {
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on reference genome.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the reference genome
      */
     static ReferenceGenome parseReferenceGenome(jsonContent) {
         return new ReferenceGenome(jsonContent.reference_genome.source, jsonContent.reference_genome.build, jsonContent.reference_genome.version)
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on associated case.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the associated case
      */
     static Case parseCase(jsonContent) {
         Case newCase = new Case()
@@ -101,9 +101,9 @@ class MetadataReader {
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on associated samples.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the associated samples
      */
     static List<Sample> parseSample(jsonContent) {
         def samples = []

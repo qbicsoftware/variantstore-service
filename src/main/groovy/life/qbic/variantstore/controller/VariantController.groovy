@@ -154,7 +154,6 @@ class VariantController {
                     withConsequences, annotationSoftware, false, withGenotypes)
             return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "" + "attributes.") as HttpResponse<List<Variant>>
         }
-
         catch (Exception e) {
             log.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.") as
@@ -227,20 +226,6 @@ class VariantController {
         } catch (IllegalArgumentException e) {
             log.error(e)
             return HttpResponse.badRequest("Invalid upload identifier supplied.")
-        } catch (Exception e) {
-            log.error(e)
-            return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
-        }
-    }
-
-    @Get(uri = "/test", produces = MediaType.APPLICATION_JSON)
-    HttpResponse getTest() {
-        try {
-            repository.save(new TransactionStatus())
-            return HttpResponse.ok("Just a test")
-        } catch (IllegalArgumentException e) {
-            log.error(e)
-            return HttpResponse.badRequest("Invalid variant identifier supplied.")
         } catch (Exception e) {
             log.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")

@@ -15,21 +15,21 @@ import io.micronaut.data.model.naming.NamingStrategies
 class TransactionStatus{
 
     /**
-     * The name of a tool
+     * The database id
      */
     @Id
     @GeneratedValue
     Integer id
     /**
-     * The name of a tool
+     * The identifier
      */
     String identifier
     /**
-     * The name of a tool
+     * The file name
      */
     String fileName
     /**
-     * The name of a tool
+     * The file size
      */
     Float fileSize
     /**

@@ -7,7 +7,6 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.QueryValue
-import io.micronaut.http.client.exceptions.HttpClientResponseException
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.micronaut.transaction.annotation.TransactionalAdvice
@@ -45,6 +44,15 @@ class BeaconController {
         this.service = service
     }
 
+    /**
+     * Request information whether a specific variant is available in the store
+     * @param chromosome the chromosome
+     * @param startPosition the genomic (start) position
+     * @param reference the reference base(s)
+     * @param observed the observed base(s)
+     * @param assemblyId the assembly identifier (reference genome)
+     * @return the beacon allele response
+     */
     @TransactionalAdvice('${database.specifier}')
     @Get(uri = "/query", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Query the Beacon",

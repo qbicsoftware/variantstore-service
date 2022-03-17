@@ -1,12 +1,14 @@
 package life.qbic.variantstore.model.dtos
 
 import io.micronaut.core.annotation.Introspected
-import io.micronaut.data.annotation.GeneratedValue
-import io.micronaut.data.annotation.Id
 
+/**
+ * A Sample Data Transfer Object.
+ *
+ * @since: 1.1.0
+ */
 @Introspected
 class SampleDTO {
-
 
     private final String identifier
 
@@ -17,5 +19,4 @@ class SampleDTO {
     String getIdentifier() {
         return identifier
     }
-
 }

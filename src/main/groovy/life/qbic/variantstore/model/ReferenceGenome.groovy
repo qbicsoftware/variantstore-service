@@ -14,29 +14,42 @@ import io.swagger.v3.oas.annotations.media.Schema
  * @since: 1.0.0
  *
  */
-/*
-@Data
-@EqualsAndHashCode(callSuper=true)
-@AllArgsConstructor
-@NoArgsConstructor
-@MappedEntity
- */
 @MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
 @EqualsAndHashCode
 @Schema(name="ReferenceGenome", description="A reference genome")
 class ReferenceGenome {
 
+    /**
+     * The database id
+     */
     @GeneratedValue
     @Id
     Long id
 
+    /**
+     * The source of a reference genome
+     */
     String source
+
+    /**
+     * The build of a reference genome
+     */
     String build
+
+    /**
+     * The version of a reference genome
+     */
     String version
 
+    /**
+     * The variants associated with a reference genome
+     */
     @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "referenceGenomes")
     Set<Variant> variants
 
+    /**
+     * The Ensembl database instances associated with a reference genome
+     */
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "referencegenome")
     Set<Ensembl> ensemblInstances
 

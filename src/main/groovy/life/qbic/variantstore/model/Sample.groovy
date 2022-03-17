@@ -22,6 +22,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Builder
 class Sample {
 
+    /**
+     * The database id
+     */
     @GeneratedValue
     @Id
     private Long id

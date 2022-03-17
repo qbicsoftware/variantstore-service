@@ -30,6 +30,8 @@ abstract class GeneRepository implements CrudRepository<Gene, Long>{
 
     abstract Optional<Gene> findByGeneId(String geneId)
 
+    abstract Set<Gene> searchByGeneId(String geneId)
+
     abstract Optional<Gene> find(String bioType, String chromosome, String symbol, String name, BigInteger geneStart, BigInteger geneEnd,
                                  String geneId, String description, String strand, Integer version, List<String> synonyms)
 

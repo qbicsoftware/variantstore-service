@@ -9,10 +9,9 @@ import io.micronaut.data.model.naming.NamingStrategies
 import io.swagger.v3.oas.annotations.media.Schema
 
 /**
- * A variant annotation software
+ * A variant annotation software.
  *
  * @since: 1.0.0
- *
  */
 @MappedEntity(value = "annotationsoftware", namingStrategy = NamingStrategies.LowerCase)
 @EqualsAndHashCode

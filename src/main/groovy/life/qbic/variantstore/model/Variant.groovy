@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 class Variant implements SimpleVariantContext, Comparable {
 
     /**
-     * The id of a variant
+     * The database id
      */
     @GeneratedValue
     @Id
@@ -96,7 +96,7 @@ class Variant implements SimpleVariantContext, Comparable {
     @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
     private Set<VariantCaller> variantCaller
     /**
-     * The information given in a VCF file for a given variant
+     * The information given in a VCF file (INFO) for a given variant
      */
     @Transient
     VcfInfo vcfInfo
@@ -316,5 +316,4 @@ class Variant implements SimpleVariantContext, Comparable {
         if(referenceGenomes==null) referenceGenomes = [] as Set<ReferenceGenome>
         referenceGenomes.add(refGenome)
     }
-
 }

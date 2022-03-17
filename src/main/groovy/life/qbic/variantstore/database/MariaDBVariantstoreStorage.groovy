@@ -24,7 +24,6 @@ import java.sql.SQLException
 
 /**
  * A VariantstoreStorage implementation.
- *genesymbol
  * This provides an interface to a MariaDB database storing variant information.
  *
  * @since: 1.0.0
@@ -408,7 +407,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    ReferenceGenome findReferenceGenomeByVariant(Variant variant) {
+    Set<ReferenceGenome> findReferenceGenomeByVariant(Variant variant) {
         Sql sql = requestNewConnection()
         try {
             def result =
@@ -416,12 +415,16 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
                             [variant.chromosome, variant.startPosition, variant.endPosition, variant.referenceAllele, variant
                                     .observedAllele, variant.somatic])
 
-            def resultReference = sql.firstRow("SELECT * FROM referencegenome INNER JOIN variant_has_referencegenome WHERE variant_has_referencegenome.variant_id = ${result.id}")
-            def referenceGenomeSource = resultReference.get("source") as String
-            def referenceGenomeBuild = resultReference.get("build") as String
-            def referenceGenomeVersion = resultReference.get("version") as String
-            def referenceGenome = new ReferenceGenome(referenceGenomeSource, referenceGenomeBuild, referenceGenomeVersion)
-            return referenceGenome
+            def referenceGenomeSet = new HashSet<ReferenceGenome>()
+            def resultReference = sql.rows("SELECT * FROM referencegenome INNER JOIN variant_has_referencegenome WHERE variant_has_referencegenome.variant_id = ${result.id}")
+            resultReference.each {
+                def referenceGenomeSource = resultReference.get("source") as String
+                def referenceGenomeBuild = resultReference.get("build") as String
+                def referenceGenomeVersion = resultReference.get("version") as String
+                def referenceGenome = new ReferenceGenome(referenceGenomeSource, referenceGenomeBuild, referenceGenomeVersion)
+                referenceGenomeSet.add(referenceGenome)
+            }
+            return referenceGenomeSet
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch reference genome.", e.fillInStackTrace())
         } finally {

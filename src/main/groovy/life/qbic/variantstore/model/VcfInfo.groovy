@@ -31,7 +31,7 @@ class VcfInfo {
     // http://samtools.github.io/hts-specs/ (VCF 4.1 and 4.2)
     //TODO deal with future releases?
     /**
-     * The identifier of a gene
+     * The database id
      */
     @GeneratedValue
     @Id

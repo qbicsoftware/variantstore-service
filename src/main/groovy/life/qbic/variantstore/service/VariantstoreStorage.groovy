@@ -101,11 +101,11 @@ interface VariantstoreStorage {
     Set<Annotation> findAnnotationSoftwareByConsequence(Consequence consequence)
 
     /**
-     * Find reference genome of given variant.
+     * Find reference genomes of given variant.
      * @param variant the provided variant
-     * @return the found reference genome
+     * @return the found reference genomes
      */
-    ReferenceGenome findReferenceGenomeByVariant(Variant variant)
+    Set<ReferenceGenome> findReferenceGenomeByVariant(Variant variant)
 
     /**
      * Find genes for specified filtering options.
