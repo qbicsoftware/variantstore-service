@@ -175,18 +175,20 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
     }
 
     @Override
-    Annotation findAnnotationSoftwareByConsequence(Consequence consequence) {
-        Optional<Consequence> searchResult = consequenceRepository.retrieve(consequence.allele, consequence
-                .codingChange, consequence.transcriptId, consequence.transcriptVersion, consequence.type, consequence
-                .bioType, consequence.canonical, consequence.aaChange, consequence.cdnaPosition, consequence
-                .cdsPosition, consequence.proteinPosition, consequence.proteinLength, consequence.cdnaLength,
-                consequence.cdsLength, consequence.impact, consequence.exon, consequence.intron, consequence.strand,
-                consequence.geneSymbol, consequence.featureType, consequence.distance, consequence.warnings)
-        if (searchResult.present) {
-            //@TODO handle multi cases
-            searchResult.get().annotations[0]
+    Set<Annotation> findAnnotationSoftwareByConsequence(Consequence consequence) {
+        try {
+            Optional<Consequence> searchResult = consequenceRepository.retrieve(consequence.allele, consequence
+                    .codingChange, consequence.transcriptId, consequence.transcriptVersion, consequence.type,
+                    consequence.bioType, consequence.canonical, consequence.aaChange, consequence.cdnaPosition,
+                    consequence.cdsPosition, consequence.proteinPosition, consequence.proteinLength, consequence.cdnaLength,
+                    consequence.cdsLength, consequence.impact, consequence.exon, consequence.intron, consequence.strand,
+                    consequence.geneSymbol, consequence.featureType, consequence.distance, consequence.warnings)
+
+            return searchResult.present ? searchResult.get().annotations : new HashSet()
+        } catch (Exception e) {
+            throw new VariantstoreStorageException("Could not fetch annotation software for provided consequence.",
+                    e.fillInStackTrace())
         }
-        return searchResult
     }
 
     @Override
@@ -394,28 +396,6 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             throw new VariantstoreStorageException("Could not store variants with metadata in store: $metadata.samples",
                     e.printStackTrace())
         }
-    }
-
-    /**
-     * Store variants in batch in the store
-     * @param variants a list of variants
-     * @param list of consequences of the provded variants
-     */
-    private List tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants, ArrayList<Sample> samples) {
-
-        ArrayList<SimpleVariantContext> insertedVars = []
-        try {
-            //@TODO maybe add batching here, sampleVariant handling
-            insertedVars = variantRepository.saveAll(variants)
-            //vcfinfoRepository.saveAll(variants.collect{variant -> variant.getVcfInfo()})
-            //genotypeRepository.saveAll(variants.collect{ variant -> variant.getGenotypes()}.flatten())
-        }
-        catch (Exception e) {
-            e.printStackTrace()
-        }
-        finally {
-        }
-        return insertedVars
     }
 
     @Override
