@@ -104,7 +104,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             if (ensemblversion) {
                 return geneRepository.searchByGeneId(identifier, ensemblversion)
             }
-            // fall back solution, if there is not ensembl version in the variantstore instance
+            // fall back solution, if there is no ensembl version in the variantstore instance
             return geneRepository.searchByGeneId(identifier)
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch gene with identifier $identifier.", e.printStackTrace())

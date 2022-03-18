@@ -10,7 +10,7 @@ import io.micronaut.data.repository.CrudRepository
 import life.qbic.variantstore.model.Case
 
 /**
- * The case repository
+ * The case repository ('entity' database table)
  *
  * @since: 1.1.0
  */
