@@ -1,5 +1,5 @@
 # # This workflow runs all available tests and builds the .jar files
-name: Varianstore CI (compile, test, package)
+name: Varianstore CI
 
 # Trigger the workflow on push and pull request activity
 on: [push, pull_request]
