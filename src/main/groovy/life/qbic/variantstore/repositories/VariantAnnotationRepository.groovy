@@ -12,7 +12,7 @@ import life.qbic.variantstore.model.Annotation
 import jakarta.inject.Inject
 
 /**
- *
+ * The VariantAnnotation repository
  *
  * @since: 1.1.0
  */
@@ -29,9 +29,17 @@ interface VariantAnnotationRepository extends CrudRepository<Annotation, Long> {
 
     Optional<Annotation> find(String name, String version, String doi)
 
+    /**
+     * Retrieve all Annotation objects wth Consequence associations
+     * @return A list of Annotation  objects
+     */
     @Join(value = "consequences", type = Join.Type.FETCH)
     List<Annotation> list()
 
+    /**
+     * Insert annotation software object to database while ignoring conflicts
+     * @param annotation the annotation software object to insert
+     */
     @Query("INSERT INTO annotationsoftware(name, version, doi) VALUES (:name, :version, :doi) ON CONFLICT DO NOTHING")
     void insertIgnore(Annotation annotation)
 

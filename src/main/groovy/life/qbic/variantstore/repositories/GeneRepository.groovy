@@ -12,7 +12,7 @@ import life.qbic.variantstore.model.Gene
 import jakarta.inject.*
 
 /**
- *
+ * The Gene repository
  *
  * @since: 1.1.0
  */
@@ -32,6 +32,20 @@ abstract class GeneRepository implements CrudRepository<Gene, Long>{
 
     abstract Optional<Gene> find(String bioType, String chromosome, String symbol, String name, BigInteger geneStart, BigInteger geneEnd,
                                  String geneId, String description, String strand, Integer version, List<String> synonyms)
+
+    abstract Set<Gene> searchByGeneId(String geneId)
+
+    @Join(value = "ensembles", type = Join.Type.INNER, alias = "ensembl")
+    @Where("ensembl.version = :ensemblVersion")
+    abstract Set<Gene> searchByGeneId(String geneId, int ensemblVersion)
+
+    /**
+     * Find all genes that have a variant associated with a specific sample identifier
+     * @param sampleIdentifier the sample identifier
+     * @return a set of Gene objects
+     */
+    @Query("SELECT gene.* FROM gene INNER JOIN gene_consequence ON gene.id = gene_consequence.gene_id INNER JOIN consequence on gene_consequence.consequence_id = consequence.id INNER JOIN variant_consequence on variant_consequence.consequence_id = consequence.id INNER JOIN variant ON variant_consequence.variant_id = variant.id INNER JOIN sample_variant ON sample_variant.variant_id = variant.id INNER JOIN sample ON sample_variant.sample_id = sample.id WHERE sample.identifier= :sampleIdentifier")
+    abstract Set<Gene> getForSampleIdentifier(String sampleIdentifier)
 
     void insertMany(List<Gene> genes) {
         def sqlStatement = """WITH maybe_new AS (INSERT INTO gene (bioType, chromosome, symbol, name, genestart, geneend, geneid, description, strand, version, synonyms) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON CONFLICT DO NOTHING"""
@@ -53,12 +67,4 @@ abstract class GeneRepository implements CrudRepository<Gene, Long>{
             statement.executeBatch()
         }
     }
-
-    //@Join(value = "ensembles", type = Join.Type.INNER, alias = "ensembl")
-    //@Where("ensembl.version = :ensemblVersion")
-    abstract Set<Gene> searchByGeneId(String geneId, int ensemblVersion)
-
-
-    @Query("SELECT gene.* FROM gene INNER JOIN gene_consequence ON gene.id = gene_consequence.gene_id INNER JOIN consequence on gene_consequence.consequence_id = consequence.id INNER JOIN variant_consequence on variant_consequence.consequence_id = consequence.id INNER JOIN variant ON variant_consequence.variant_id = variant.id INNER JOIN sample_variant ON sample_variant.variant_id = variant.id INNER JOIN sample ON sample_variant.sample_id = sample.id WHERE sample.identifier= :sampleIdentifier")
-    abstract Set<Gene> getForSampleIdentifier(String sampleIdentifier)
 }

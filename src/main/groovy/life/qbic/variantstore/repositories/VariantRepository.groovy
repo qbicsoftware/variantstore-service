@@ -1,4 +1,3 @@
-//file:noinspection SqlResolve
 package life.qbic.variantstore.repositories
 
 import io.micronaut.data.annotation.Join
@@ -13,7 +12,7 @@ import io.micronaut.data.repository.CrudRepository
 import life.qbic.variantstore.model.Variant
 
 /**
- *
+ * The Variant repository
  *
  * @since: 1.1.0
  */
@@ -25,18 +24,49 @@ interface VariantRepository extends CrudRepository<Variant, Long> {
     @Override
     List<Variant> findAll()
 
+    Set<Variant> findByIdentifier(String identifier)
+
+    List<Variant> list()
+
+    /**
+     * Find variant based on properties and return with consequence associations
+     * @param chromosome the chromosome
+     * @param startPosition the genomic start position
+     * @param databaseIdentifier the database identifier
+     * @param endPosition the genomic end position
+     * @param referenceAllele the reference allele
+     * @param observedAllele the observed allele
+     * @param somatic information whether the variant is somatic
+     * @return the found variant or empty Optional
+     */
     @Join(value = "consequences", type = Join.Type.LEFT_FETCH, alias = "consequence")
     Optional<Variant> find(String chromosome, BigInteger startPosition, String databaseIdentifier,
                            BigInteger endPosition, String referenceAllele, String observedAllele, boolean somatic)
 
-    Set<Variant> findByIdentifier(String identifier)
-
+    /**
+     * Find variant based on properties for Beacon request
+     * @param chromosome the chromosome
+     * @param startPosition the genomic start position
+     * @param referenceAllele the reference allele
+     * @param observedAllele the observed allele
+     * @param build the reference genome
+     * @return a set of found variants
+     */
     @Query("SELECT * FROM variant WHERE chr = :chromosome and start = :startPosition and ref LIKE :referenceAllele and obs LIKE :observedAllele")
     Set<Variant> findForBeacon(String chromosome, BigInteger startPosition, String referenceAllele,
                                 String observedAllele, String build)
 
-    List<Variant> list()
-
+    /**
+     * Search variant based on properties and return with reference genome associations
+     * @param databaseIdentifier the database identifier
+     * @param chromosome the chromosome
+     * @param startPosition the genomic start position
+     * @param endPosition the genomic end position
+     * @param referenceAllele the reference allele
+     * @param observedAllele the observerd allele
+     * @param somatic information whether variant is somatic
+     * @return the found Variant or empty Optional
+     */
     @Join(value = "referenceGenomes", type = Join.Type.LEFT_FETCH, alias = "referencegenome")
     Optional<Variant> search(String databaseIdentifier, String chromosome, BigInteger startPosition,
                              BigInteger endPosition, String referenceAllele, String observedAllele, boolean somatic)

@@ -13,7 +13,7 @@ import life.qbic.variantstore.model.ReferenceGenome
 
 
 /**
- * A DTO representing the status of a transaction
+ * The Ensembl repository
  *
  * @since: 1.1.0
  */
@@ -28,6 +28,10 @@ interface EnsemblRepository extends CrudRepository<Ensembl, Long> {
     @Join(value = "genes", type = Join.Type.LEFT_FETCH, alias = "genes")
     Optional<Ensembl> find(Integer version, String date, ReferenceGenome referenceGenome)
 
+    /**
+     * Get the highest Ensembl version available in the Store
+     * @return the highest version
+     */
     @Query("SELECT MAX(version) FROM ensembl")
     Integer fetchMaxVersion()
 

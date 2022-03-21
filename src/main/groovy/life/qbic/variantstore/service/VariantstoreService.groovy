@@ -19,37 +19,43 @@ interface VariantstoreService {
      * @return list of found cases
      */
     List<Case> getCaseForCaseId(String identifier)
+
     /**
      * Retrieves variants for specified variant identifier.
      * @param identifier the variant identifier
-     * @return list of found variants
+     * @return set of found variants
      */
     Set<SimpleVariantContext> getVariantForVariantId(String identifier)
+
     /**
      * Retrieves genes for specified gene identifier and optionally arguments to e.g. specify the Ensembl version.
      * @param identifier the gene identifier
      * @param args optional arguments to specify Ensembl version
-     * @return list of found genes
+     * @return set of found genes
      */
     Set<Gene> getGeneForGeneId(String identifier, ListingArguments args)
+
     /**
      * Retrieves samples for specified variant identifier.
      * @param identifier the variant identifier
      * @return list of found variants
      */
     List<Sample> getSampleForSampleId(String identifier)
+
     /**
      * Retrieves cases for specified filtering options.
      * @param args the provided filtering options
      * @return list of cases genes
      */
     List<Case> getCasesForSpecifiedProperties(ListingArguments args)
+
     /**
      * Retrieves samples for specified filtering options.
      * @param args the provided filtering options
      * @return list of found samples
      */
     List<Sample> getSamplesForSpecifiedProperties(ListingArguments args)
+
     /**
      * Retrieves variants for specified (filtering) options.
      * @param args the filtering options
@@ -58,17 +64,19 @@ interface VariantstoreService {
      * @param annotationSoftware the associated annotation software
      * @param withVcfInfo true if connected VCF INFO should be returned
      * @param withGenotypes true if connected genotype information should be returned
-     * @return list of found variants
+     * @return set of found variants
      */
     Set<SimpleVariantContext> getVariantsForSpecifiedProperties(ListingArguments args, String referenceGenome,
                                                                  Boolean withConsequences, String annotationSoftware,
                                                                  Boolean withVcfInfo, Boolean withGenotypes)
+
     /**
      * Retrieves genes for specified filtering options.
      * @param args the provided filtering options
-     * @return list of found genes
+     * @return set of found genes
      */
     Set<Gene> getGenesForSpecifiedProperties(ListingArguments args)
+
     /**
      * Generates the Beacon allele response for given information.
      * @param chromosome the chromosome
@@ -80,6 +88,7 @@ interface VariantstoreService {
      */
     BeaconAlleleResponse getBeaconAlleleResponse(String chromosome, BigInteger start,
                                                  String reference, String observed, String assemblyId)
+
     /**
      * Generates content in Variant Call Format (VCF) for given set of variants.
      * @param variants the provided variants
@@ -92,7 +101,9 @@ interface VariantstoreService {
      * @return the variant content in Variant Call Format
      */
     String getVcfContentForVariants(Set<SimpleVariantContext> variants, Boolean withConsequences, Boolean withGenotypes,
-                                    String referenceGenome, String annotationSoftware, String annotationSoftwareVersion, String version)
+                                    String referenceGenome, String annotationSoftware, String annotationSoftwareVersion,
+                                    String version)
+
     /**
      * Generates content in FHIR format for given set of variants.
      * @param variants the provided variants
@@ -103,12 +114,14 @@ interface VariantstoreService {
      * @return the variant content in FHIR format
      */
     String getFhirContentForVariants(Set<SimpleVariantContext> variants, Boolean withConsequences, String referenceGenome)
+
     /**
      * Stores variants given in VCF file and accompanied metadata in the store.
      * @param metadata JSON string holding metadata
      * @param inputStream input stream of variant content
      */
     void storeVariantsInStore(String metadata, InputStream inputStream, TransactionStatusRepository repository, TransactionStatus transactionStatus)
+
     /**
      * Stores gene information provided in a GFF3 file (Ensembl) in the store.
      * @param ensemblContext the ensembl context holding information parsed from Ensembl

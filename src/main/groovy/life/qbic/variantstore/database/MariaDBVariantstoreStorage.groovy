@@ -24,7 +24,6 @@ import java.sql.SQLException
 
 /**
  * A VariantstoreStorage implementation.
- *genesymbol
  * This provides an interface to a MariaDB database storing variant information.
  *
  * @since: 1.0.0
@@ -408,7 +407,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    ReferenceGenome findReferenceGenomeByVariant(Variant variant) {
+    Set<ReferenceGenome> findReferenceGenomeByVariant(Variant variant) {
         Sql sql = requestNewConnection()
         try {
             def result =
@@ -416,12 +415,16 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
                             [variant.chromosome, variant.startPosition, variant.endPosition, variant.referenceAllele, variant
                                     .observedAllele, variant.somatic])
 
-            def resultReference = sql.firstRow("SELECT * FROM referencegenome INNER JOIN variant_has_referencegenome WHERE variant_has_referencegenome.variant_id = ${result.id}")
-            def referenceGenomeSource = resultReference.get("source") as String
-            def referenceGenomeBuild = resultReference.get("build") as String
-            def referenceGenomeVersion = resultReference.get("version") as String
-            def referenceGenome = new ReferenceGenome(referenceGenomeSource, referenceGenomeBuild, referenceGenomeVersion)
-            return referenceGenome
+            def referenceGenomeSet = new HashSet<ReferenceGenome>()
+            def resultReference = sql.rows("SELECT * FROM referencegenome INNER JOIN variant_has_referencegenome WHERE variant_has_referencegenome.variant_id = ${result.id}")
+            resultReference.each {
+                def referenceGenomeSource = resultReference.get("source") as String
+                def referenceGenomeBuild = resultReference.get("build") as String
+                def referenceGenomeVersion = resultReference.get("version") as String
+                def referenceGenome = new ReferenceGenome(referenceGenomeSource, referenceGenomeBuild, referenceGenomeVersion)
+                referenceGenomeSet.add(referenceGenome)
+            }
+            return referenceGenomeSet
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch reference genome.", e.fillInStackTrace())
         } finally {
@@ -433,7 +436,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    Annotation findAnnotationSoftwareByConsequence(Consequence consequence) {
+    Set<Annotation> findAnnotationSoftwareByConsequence(Consequence consequence) {
         Sql sql = requestNewConnection()
         try {
             def result = sql.firstRow("""SELECT id FROM consequence WHERE consequence.allele=? and consequence
@@ -442,9 +445,7 @@ consequence.biotype=? and consequence.canonical=? and consequence.aachange=? and
 consequence.cdsposition=? and consequence.proteinposition=? and consequence.proteinlength=? and consequence
 .cdnalength=? and consequence.cdslength=? and consequence.impact=? and consequence.exon=? and consequence.intron=? 
 and consequence.strand=? and consequence.genesymbol=? and consequence.featuretype=? and consequence.distance=? and 
-consequence.warnings=?""",
-
-                    [consequence.allele, consequence.codingChange, consequence.transcriptId, consequence
+consequence.warnings=?""", [consequence.allele, consequence.codingChange, consequence.transcriptId, consequence
                             .transcriptVersion, consequence.type,
                      consequence.bioType, consequence.canonical, consequence.aaChange, consequence.cdnaPosition,
                      consequence.cdsPosition, consequence
@@ -454,12 +455,16 @@ consequence.warnings=?""",
                              .geneSymbol, consequence.featureType,
                      consequence.distance, consequence.warnings])
 
-            def resultAnnotation = sql.firstRow("SELECT * FROM annotationsoftware INNER JOIN annotationsoftware_has_consequence WHERE annotationsoftware_has_consequence.consequence_id = ${result.id}")
-            def annotationSoftwareName = resultAnnotation.get("name") as String
-            def annotationSoftwareVersion = resultAnnotation.get("version") as String
-            def annotationSoftwareDoi = resultAnnotation.get("doi") as String
-            def annotationSoftware = new Annotation(annotationSoftwareName, annotationSoftwareVersion, annotationSoftwareDoi)
-            return annotationSoftware
+            def annotationSoftwareSet = new HashSet()
+            def resultAnnotation = sql.rows("SELECT * FROM annotationsoftware INNER JOIN annotationsoftware_has_consequence WHERE annotationsoftware_has_consequence.consequence_id = ${result.id}")
+            resultAnnotation.each {
+                def annotationSoftwareName = it.get("name") as String
+                def annotationSoftwareVersion = it.get("version") as String
+                def annotationSoftwareDoi = it.get("doi") as String
+                def annotationSoftware = new Annotation(annotationSoftwareName, annotationSoftwareVersion, annotationSoftwareDoi)
+                annotationSoftwareSet.add(annotationSoftware)
+            }
+            return annotationSoftwareSet
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch annotation software.", e.fillInStackTrace())
         } finally {
@@ -1681,7 +1686,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param variants a list of variants
      * @param list of consequences of the provded variants
      */
-    private List tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants) {
+    private List<Consequence> tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         def consequences = []

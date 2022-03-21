@@ -24,10 +24,8 @@ import io.swagger.v3.oas.annotations.media.Schema
 class Variant implements SimpleVariantContext, Comparable {
 
     /**
-     * The id of a variant
+     * The database id
      */
-    // @TODO However, using @GeneratedValue(strategy = GenerationType.SEQUENCE) on a PostgreSQL has obtained a better
-    //  result than the other two & runs 3x times slower than providing an explicit ID & without @GenerateValue.
     @GeneratedValue
     @Id
     private Long id
@@ -80,9 +78,8 @@ class Variant implements SimpleVariantContext, Comparable {
     @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
     private Set<Consequence> consequences
     /**
-     * TODO
+     * The associated reference genomes of a given variant
      */
-    // TODO changed the assignment of join and inverseJoinColumn here, check if insert still works properly!
     @JoinTable(name = "referencegenome_variant",
             joinColumns = @JoinColumn(name = "variant_id"),
             inverseJoinColumns = @JoinColumn(name = "referencegenome_id")
@@ -90,7 +87,7 @@ class Variant implements SimpleVariantContext, Comparable {
     @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
     private Set<ReferenceGenome> referenceGenomes
     /**
-     * TODO
+     * The variant detection software that called a given variant
      */
     @JoinTable(name = "variantcaller_variant",
             joinColumns = @JoinColumn(name = "variant_id"),
@@ -99,7 +96,7 @@ class Variant implements SimpleVariantContext, Comparable {
     @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
     private Set<VariantCaller> variantCaller
     /**
-     * The information given in a VCF file for a given variant
+     * The information given in a VCF file (INFO) for a given variant
      */
     @Transient
     VcfInfo vcfInfo
@@ -109,7 +106,7 @@ class Variant implements SimpleVariantContext, Comparable {
     @Transient
     List<Genotype> genotypes
     /**
-     * TODO
+     * The association between sample, variant, vcfinfo, and genotypes
      */
     @JsonIgnore
     @Relation(value = Relation.Kind.ONE_TO_MANY, cascade = Relation.Cascade.ALL, mappedBy = "variant")
@@ -319,5 +316,4 @@ class Variant implements SimpleVariantContext, Comparable {
         if(referenceGenomes==null) referenceGenomes = [] as Set<ReferenceGenome>
         referenceGenomes.add(refGenome)
     }
-
 }

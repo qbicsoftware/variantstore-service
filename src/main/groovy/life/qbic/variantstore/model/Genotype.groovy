@@ -98,13 +98,18 @@ class Genotype {
      */
     @Nullable
     Integer mappingQuality // MQ RMS mapping quality
-
+    /**
+     * The association between sample, variant, vcfinfo, and genotypes
+     */
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "genotype")
     Set<SampleVariant> sampleVariants
 
     @Creator
     Genotype() {}
 
+    /**
+    * Consturctor for creating Genotype from htsjdk genotype object
+     */
     Genotype(htsjdk.variant.variantcontext.Genotype genotypeContext) {
         sampleName = genotypeContext.sampleName
         genotype = genotypeContext.type.toString()
@@ -130,25 +135,9 @@ class Genotype {
                 .tag, -1) as Integer
     }
 
-    //@TODO check what to do with sampleName
-    Genotype(genotype, readDepth, filter, likelihoods, genotypeLikelihoods,
-             genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities,
-             phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality) {
-        this.genotype = genotype
-        this.readDepth = readDepth
-        this.filter = filter
-        this.likelihoods = likelihoods
-        this.genotypeLikelihoods = genotypeLikelihoods
-        this.genotypeLikelihoodsHet = genotypeLikelihoodsHet
-        this.posteriorProbs = posteriorProbs
-        this.genotypeQuality = genotypeQuality
-        this.haplotypeQualities = haplotypeQualities
-        this.phaseSet = phaseSet
-        this.phasingQuality = phasingQuality
-        this.alternateAlleleCounts = alternateAlleleCounts
-        this.mappingQuality = mappingQuality
-    }
-
+    /**
+     * Consturctor for creating Genotype that includes sample name
+     */
     Genotype(sampleName, String genotype,readDepth, filter, likelihoods, genotypeLikelihoods,
              genotypeLikelihoodsHet, posteriorProbs, genotypeQuality, haplotypeQualities,
              phaseSet, phasingQuality, alternateAlleleCounts, mappingQuality) {
@@ -295,7 +284,8 @@ class Genotype {
     void setSampleVariants(Set<SampleVariant> sampleVariants) {
         this.sampleVariants = sampleVariants
     }
-/**
+
+    /**
      * Generates content in Variant Call Format (VCF) for a genotype.
      * @return the format string (defining the contained information) and genotype content in Variant Call Format
      */

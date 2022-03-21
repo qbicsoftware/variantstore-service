@@ -10,7 +10,7 @@ import io.micronaut.data.repository.CrudRepository
 import jakarta.inject.*
 
 /**
- *
+ * The Consequence repository
  *
  * @since: 1.1.0
  */
@@ -27,15 +27,25 @@ abstract class ConsequenceRepository implements CrudRepository<Consequence, Long
 
     abstract List<Consequence> saveAll(Set<Consequence> consequences)
 
+    /**
+     * List all consequences with associated genes
+     * @return list of consequences
+     */
     @Join(value = "genes", type = Join.Type.LEFT_FETCH)
     abstract List<Consequence> list()
 
+    /**
+     * Find consequence with specified properties
+     */
     abstract Optional<Consequence> find(String allele, String codingChange, String transcriptId, Integer transcriptVersion,
                                         String type, String bioType, boolean canonical, String aaChange, String cdnaPosition,
                                         String cdsPosition, String proteinPosition, Integer proteinLength, Integer cdnaLength,
                                         Integer cdsLength, String impact, String exon, String intron, Integer strand,
                                         String geneSymbol, String featureType, Integer distance, String warnings)
 
+    /**
+     * Find consequence with specified properties and return with associated annotations
+     */
     @Join(value = "annotations", type = Join.Type.LEFT_FETCH)
     abstract Optional<Consequence> retrieve(String allele, String codingChange, String transcriptId, Integer transcriptVersion,
                                             String type, String bioType, boolean canonical, String aaChange, String cdnaPosition,

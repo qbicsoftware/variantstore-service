@@ -22,6 +22,9 @@ import io.swagger.v3.oas.annotations.media.Schema
 @Builder
 class Sample {
 
+    /**
+     * The database id
+     */
     @GeneratedValue
     @Id
     private Long id
@@ -37,21 +40,13 @@ class Sample {
     /**
      * The associated case (patient) identifier of a given sample
      */
-    //private final String caseId
-
     @Relation(value = Relation.Kind.MANY_TO_ONE)
     Case entity
-
+    /**
+     * The association between sample, variant, vcfinfo, and genotypes
+     */
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "sample")
     Set<SampleVariant> sampleVariants
-
-    /*
-    Sample(String identifier, String cancerEntity, String caseId) {
-        this.identifier = identifier
-        this.cancerEntity = cancerEntity
-        this.caseId = caseId
-    }
-     */
 
     @Creator
     Sample() { }

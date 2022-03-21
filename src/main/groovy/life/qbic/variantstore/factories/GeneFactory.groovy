@@ -4,7 +4,7 @@ import com.github.javafaker.Faker
 import life.qbic.variantstore.model.Gene
 
 /**
- *
+ * Gene factory for generating random Gene objects.
  *
  * @since: 1.1.0
  */

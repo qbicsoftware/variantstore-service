@@ -13,7 +13,7 @@ import life.qbic.variantstore.model.Variant
 import life.qbic.variantstore.model.VcfInfo
 
 /**
- *
+ * The SampleVariant repository to store associations (many-to-many) between Sample, Variant, Genotype, and VcfInfo
  *
  * @since: 1.1.0
  */
@@ -28,6 +28,10 @@ interface SampleVariantRepository extends CrudRepository<SampleVariant, Long> {
     @Override
     List<SampleVariant> findAll()
 
+    /**
+     * Retrieve all SampleVariant entities with Genotype information
+     * @return List of SampleVariant objects
+     */
     @Join(value = "genotype", type = Join.Type.FETCH)
     List<SampleVariant> list()
 

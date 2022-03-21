@@ -7,7 +7,7 @@ import io.micronaut.data.jdbc.annotation.JdbcRepository
 import io.micronaut.data.model.query.builder.sql.Dialect
 
 /**
- * A repository holding transcation status information
+ * A MariaDB-based repository holding transaction status information
  *
  * @since: 1.1.0
  */

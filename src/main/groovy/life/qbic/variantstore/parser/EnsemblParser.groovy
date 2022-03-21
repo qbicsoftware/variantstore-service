@@ -25,6 +25,15 @@ class EnsemblParser {
     final Ensembl ensemblContext
 
     EnsemblParser(File file) {
+        this.ensemblContext = parseGff3(file)
+    }
+
+    /**
+     * Parse file in Gff3 format
+     * @param file the Gff3 file
+     * @return the Ensembl object
+     */
+    Ensembl parseGff3(File file) {
         Gff3Codec codec = new Gff3Codec()
         AbstractFeatureReader<Gff3Feature, LineIterator> reader = AbstractFeatureReader.getFeatureReader(file
                 .absolutePath.toString(), null, codec, false);
@@ -110,7 +119,7 @@ class EnsemblParser {
         ensemblContext.version = ensemblVersion ? ensemblVersion.toInteger() : -1
         ensemblContext.date = updateDate
 
-        this.ensemblContext = ensemblContext
+        return ensemblContext
     }
 
     Ensembl getEnsemblContext() {

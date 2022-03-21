@@ -25,7 +25,7 @@ import life.qbic.variantstore.util.VcfConstants
 class VariantstoreInformationCenter implements VariantstoreService{
 
     /**
-     * The maximum allele length that is consideres for further processing.
+     * The maximum allele length that is considered for further processing.
      * Variants with a larger allele length are filtered.
      */
     static final Integer MAX_ALLELE_LENGTH = 255

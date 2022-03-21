@@ -7,7 +7,7 @@ import io.micronaut.data.repository.CrudRepository
 import life.qbic.variantstore.model.Genotype
 
 /**
- *
+ * The Genotype repository
  *
  * @since: 1.1.0
  */

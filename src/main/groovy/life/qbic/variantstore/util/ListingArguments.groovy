@@ -33,7 +33,6 @@ class ListingArguments {
     private String sampleId
 
     @Nullable
-    //TODO pattern?
     private String geneId
 
     @Nullable
@@ -50,7 +49,7 @@ class ListingArguments {
     @Pattern(regexp = "vcf|VCF")
     private String format
 
-    public ListingArguments() {
+    ListingArguments() {
 
     }
 

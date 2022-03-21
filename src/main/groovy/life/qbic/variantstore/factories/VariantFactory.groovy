@@ -4,7 +4,7 @@ import com.github.javafaker.Faker
 import life.qbic.variantstore.model.Variant
 
 /**
- *
+ * Variant factory for generating random Variant objects.
  *
  * @since: 1.1.0
  */

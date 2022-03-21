@@ -7,9 +7,8 @@ import io.micronaut.data.model.query.builder.sql.Dialect
 import io.micronaut.data.repository.CrudRepository
 import life.qbic.variantstore.model.TransactionStatus
 
-
 /**
- * A repository holding transcation status information
+ * A PostgreSQL-based repository holding transaction status information
  *
  * @since: 1.0.0
  */
@@ -22,5 +21,10 @@ interface TransactionStatusRepository extends CrudRepository<TransactionStatus, 
 
     Optional<TransactionStatus> findByIdentifier(String identifier)
 
+    /**
+     * Update transaction status based on database id
+     * @param id the transaction database id
+     * @param status the transaction status to set
+     */
     void updateStatus(@Id Integer id, String status);
 }

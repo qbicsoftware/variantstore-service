@@ -24,7 +24,7 @@ import io.swagger.v3.oas.annotations.media.Schema
 class Consequence implements Comparable {
 
     /**
-     * The id of a consequence
+     * The database id
      */
     @GeneratedValue
     @Id
@@ -204,13 +204,6 @@ class Consequence implements Comparable {
         this.warnings = warnings
     }
 
-    @Override
-    int compareTo(Object other) {
-        Consequence c = (Consequence) other
-        int byCoding = this.codingChange <=> c.codingChange
-        return byCoding ?: this.transcriptId <=> c.transcriptId
-    }
-
     Long getId() {
         return id
     }
@@ -364,4 +357,10 @@ class Consequence implements Comparable {
         annotations.add(annotation)
     }
 
+    @Override
+    int compareTo(Object other) {
+        Consequence c = (Consequence) other
+        int byCoding = this.codingChange <=> c.codingChange
+        return byCoding ?: this.transcriptId <=> c.transcriptId
+    }
 }

@@ -80,10 +80,14 @@ class Gene {
      */
     @MappedProperty(type = DataType.STRING_ARRAY)
     List<String> synonyms
-
+    /**
+     * The associated consequences of a gene
+     */
     @Relation(value = Relation.Kind.MANY_TO_MANY, mappedBy = "genes")
     Set<Consequence> consequences
-
+    /**
+     * The associated Ensembl database instances of a gene
+     */
     @JoinTable(name = "ensembl_gene",
             joinColumns = @JoinColumn(name = "gene_id"),
             inverseJoinColumns = @JoinColumn(name = "ensembl_id")

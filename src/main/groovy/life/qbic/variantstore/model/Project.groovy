@@ -1,5 +1,6 @@
 package life.qbic.variantstore.model
 
+import com.fasterxml.jackson.annotation.JsonProperty
 import groovy.transform.EqualsAndHashCode
 import io.micronaut.data.annotation.GeneratedValue
 import io.micronaut.data.annotation.Id
@@ -13,14 +14,20 @@ import io.swagger.v3.oas.annotations.media.Schema
 class Project {
 
     /**
-     * The identifier of a project
+     * The database id
      */
     @GeneratedValue
     @Id
     Long id
 
+    /**
+     * The identifier of a project
+     */
     String identifier
 
+    /**
+     * The associated cases of a project
+     */
     @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "project")
     Set<Case> cases
 
@@ -35,6 +42,8 @@ class Project {
         this.id = id
     }
 
+    @Schema(description = "The associated cases")
+    @JsonProperty("cases")
     Set<Case> getCases() {
         return cases
     }
@@ -43,6 +52,8 @@ class Project {
         this.cases = cases
     }
 
+    @Schema(description = "The identifier")
+    @JsonProperty("identifier")
     String getIdentifier() {
         return identifier
     }

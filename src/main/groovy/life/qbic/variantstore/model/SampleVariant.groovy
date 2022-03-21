@@ -9,30 +9,45 @@ import io.micronaut.data.annotation.Relation
 import io.micronaut.data.model.naming.NamingStrategies
 
 /**
- *
+ * Association between samples, variants, genotypes and vcfInfo
  *
  * @since: 1.1.0
  */
 @MappedEntity(value = "sample_variant", namingStrategy = NamingStrategies.LowerCase.class)
 class SampleVariant {
 
+    /**
+     * The database id
+     */
     @GeneratedValue
     @Id
     private Long id
 
+    /**
+     * The samples
+     */
     @MappedProperty(value = "sample_id")
     @Relation(value = Relation.Kind.MANY_TO_ONE)
     Sample sample
 
+    /**
+     * The variants
+     */
     @MappedProperty(value = "variant_id")
     @Relation(value = Relation.Kind.MANY_TO_ONE)
     Variant variant
 
+    /**
+     * The vcf INFO
+     */
     @Nullable
     @MappedProperty(value = "vcfinfo_id")
     @Relation(value = Relation.Kind.MANY_TO_ONE)
     VcfInfo vcfinfo
 
+    /**
+     * The genotypes
+     */
     @Nullable
     @MappedProperty(value = "genotype_id")
     @Relation(value = Relation.Kind.MANY_TO_ONE)

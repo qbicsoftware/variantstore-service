@@ -120,5 +120,4 @@ enum ConsequenceTypes {
                 return ""
         }
     }
-
 }
