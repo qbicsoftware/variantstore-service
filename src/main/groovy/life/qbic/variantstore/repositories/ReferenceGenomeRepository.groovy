@@ -8,9 +8,8 @@ import io.micronaut.data.repository.CrudRepository
 import io.micronaut.core.annotation.NonNull
 import life.qbic.variantstore.model.ReferenceGenome
 
-
 /**
- *
+ * The ReferenceGenome repository
  *
  * @since: 1.1.0
  */
@@ -26,12 +25,14 @@ interface ReferenceGenomeRepository extends CrudRepository<ReferenceGenome, Long
     @Override
     List<ReferenceGenome> findAll()
 
-    List<ReferenceGenome> findByBuild(String build)
-
     List<ReferenceGenome> list()
 
     Optional<ReferenceGenome> find(String source, String build, String version)
 
+    /**
+     * Insert reference genome to the database and ignore conflicts
+     * @param referenceGenome the reference genome to insert
+     */
     @Query("INSERT INTO referencegenome(source, build, version) VALUES (:source, :build, :version) ON CONFLICT DO NOTHING")
     void insertIgnore(ReferenceGenome referenceGenome)
 

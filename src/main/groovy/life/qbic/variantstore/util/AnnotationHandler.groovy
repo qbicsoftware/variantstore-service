@@ -18,10 +18,11 @@ import life.qbic.variantstore.model.SimpleVariantContext
 class AnnotationHandler {
 
     /**
-     * Maps holding mapping of properties to position in string.
+     * Maps holding mapping of properties to position in string for VEP and SnpEff.
      */
     public static Map<String, Map<String, Object>> vep = [:]
     public static Map<String, Map<String, Object>> snpEff = [:]
+
     /**
      * Map to store output format for different SnpEff and VEP versions
      */
@@ -44,6 +45,7 @@ class AnnotationHandler {
         }
     }
 
+    // Properties and positions for different VEP and SnpEff versions
     static {
         // VEP version 95
         //@TODO additional fields needed?
@@ -90,6 +92,7 @@ class AnnotationHandler {
         snpeff1.put("warnings", 15)
         snpEff.put("4.3t", snpeff1)
         snpEff.put("bioconda::4.3.1t", snpeff1)
+
         def outputStringSNPeff = "%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s|%s"
         snpEffOutput.put("4.3t", outputStringSNPeff)
         snpEffOutput.put("bioconda::4.3.1t", outputStringSNPeff)
@@ -129,6 +132,8 @@ class AnnotationHandler {
         Set<Gene> genes = []
 
         switch (softwareName) {
+
+            // VEP
             case AnnotationTools.VEP:
                 def allele = parsedAnnotation[vep[version].get("allele") as Integer]
                 def codingChange = parsedAnnotation[vep[version].get("cdsCoding") as Integer]
@@ -176,6 +181,7 @@ class AnnotationHandler {
                 cons.setGenes(genes)
                 break
 
+            // SnpEff
             case AnnotationTools.SNPEFF:
                 def geneId = (parsedAnnotation[snpEff[version].get("gene") as Integer].intern() != '') ?
                         parsedAnnotation[snpEff[version].get("gene") as Integer].intern() : ''
@@ -226,7 +232,6 @@ class AnnotationHandler {
                         distance, warnings)
                 cons.setGenes(genes)
                 break
-
             default:
                 throw new IllegalArgumentException("Unknown annotation software: $annotationSoftware.name");
         }

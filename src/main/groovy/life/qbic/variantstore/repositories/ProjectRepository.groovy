@@ -11,7 +11,7 @@ import io.micronaut.data.repository.CrudRepository
 import life.qbic.variantstore.model.Project
 
 /**
- *
+ * The Project repository
  *
  * @since: 1.1.0
  */
@@ -31,6 +31,10 @@ interface ProjectRepository extends CrudRepository<Project, Long> {
 
     List<Project> list()
 
+    /**
+     * Insert project to database with ignoring conflicts
+     * @param project the project to insert
+     */
     @Query("INSERT INTO PROJECT(identifier) VALUES (identifier) ON CONFLICT DO NOTHING")
     void insertIgnore(Project project)
 

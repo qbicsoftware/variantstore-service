@@ -8,7 +8,7 @@ import io.micronaut.data.repository.CrudRepository
 import life.qbic.variantstore.model.VcfInfo
 
 /**
- *
+ * The VcfInfo repository
  *
  * @since: 1.1.0
  */
@@ -24,9 +24,5 @@ interface VcfinfoRepository extends CrudRepository<VcfInfo, Long>{
                            boolean hapmapTwo, boolean hapmapThree, boolean thousandGenomes, Integer combinedDepth,
                            Integer endPos, Float rms, Integer mqZero, Integer strandBias, Integer numberSamples,
                            boolean somatic, boolean validated)
-
-    Optional<VcfInfo> search(Float rms)
-
-    Optional<VcfInfo> findByRms(float rms)
 
 }

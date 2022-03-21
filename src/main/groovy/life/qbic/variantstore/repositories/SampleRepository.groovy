@@ -10,7 +10,7 @@ import life.qbic.variantstore.model.Sample
 import jakarta.inject.*
 
 /**
- *
+ * The Sample repository
  *
  * @since: 1.1.0
  */
@@ -33,8 +33,12 @@ abstract class SampleRepository implements CrudRepository<Sample, Long> {
 
     abstract List<Sample> findByCancerEntity(String cancerEntity)
 
+    /**
+     * Insert multiple samples
+     * @param samples insert multiple samples in a batch and ignore conflicts while returing database id
+     */
     void insertMany(List<Sample> samples) {
-        def sqlStatement = """INSERT INTO sample (identifier, cancerEntity, entity_id) VALUES (?, ?, ?) ON CONFLICT (identifier, cancerEntity) DO NOTHING RETURNING id"""
+        def sqlStatement = """INSERT INTO sample (identifier, cancerEntity, entity_id) VALUES (?, ?, ?) ON DUPLICATE (identifier, cancerEntity) DO NOTHING RETURNING id"""
         jdbcOperations.prepareStatement(sqlStatement) { statement ->
             samples.each {
                 statement.setString(1, it.identifier)

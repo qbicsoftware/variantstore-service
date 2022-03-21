@@ -7,7 +7,8 @@ import org.hl7.fhir.r4.model.codesystems.ObservationCategory
 import java.time.Instant
 
 /**
- * An exporter class to generate variant content in various formats, such as Variant Call Format and FHIR (experimental)
+ * An exporter class to generate variant content in various formats, such as Variant Call Format and FHIR.
+ * FHIR exporter experimental.
  *
  * @since: 1.0.0
  */
@@ -151,8 +152,8 @@ class VariantExporter {
                     // @TODO how to get gene HGNC? For now lets us the available identifier
                     // @TODO should we collect all gene Ids ?
                     // the HGNC gene symbol as the display text and HGNC gene ID
-                    value = new CodeableConcept(new Coding("http://www.genenames.org/geneId", variant.consequences
-                            .get(0).geneId, variant.consequences.get(0).geneSymbol))
+                    value = new CodeableConcept(new Coding("http://www.genenames.org/geneId",
+                            variant.consequences.get(0).geneId, variant.consequences.get(0).geneSymbol))
                 })
             }
 

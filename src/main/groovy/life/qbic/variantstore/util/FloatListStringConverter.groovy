@@ -6,7 +6,7 @@ import java.util.stream.Collectors
 import jakarta.inject.Singleton
 
 /**
- *
+ * Float to List<String> converter
  *
  * @since: 1.1.0
  */
