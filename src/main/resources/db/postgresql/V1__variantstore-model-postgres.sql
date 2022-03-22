@@ -5,6 +5,8 @@
 -- Dumped from database version 13.2
 -- Dumped by pg_dump version 13.2
 
+CREATE SCHEMA IF NOT EXISTS public;
+
 SET SCHEMA 'public';
 
 --

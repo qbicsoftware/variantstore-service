@@ -20,13 +20,13 @@ The **Variantstore** is a Java/Groovy-based service application implemented usin
 
 ## Documentation
 
-Please visit the [Documentation](/docs/DOCUMENTATION.md) for detailed installation, run and configuration instructions.
+Please visit the [Documentation](/docs/README.md) for detailed installation, run and configuration instructions.
 
 Detailed documentation of the RESTful API is additionally available on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.6).
 
 ## Database
 
-In the current version, the **Variantstore** service can be used with a MariaDB and PostgreSQL database. If you want to use a different DBMS, you would have to provide an implementation for the `VariantstoreStorage`, make sure to use the same database model andset up the datasource in the `application.yml`.
+In the current version, the **Variantstore** service can be used with a MariaDB and PostgreSQL database. If you want to use a different DBMS, you have to provide an implementation for the `VariantstoreStorage` interface, make sure to use the same database model and set up the datasource accordingly in the `application.yml`.
 
 ## Contributions and Support
 

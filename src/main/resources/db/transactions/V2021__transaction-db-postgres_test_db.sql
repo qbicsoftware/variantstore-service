@@ -2,6 +2,8 @@
 -- Variantstore PostgreSQL transaction database
 --
 
+CREATE SCHEMA IF NOT EXISTS public;
+
 SET SCHEMA 'transactions';
 
 --

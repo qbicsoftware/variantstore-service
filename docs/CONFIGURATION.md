@@ -1,51 +1,23 @@
 # Configuration
 
-The configuration of the Variantstore instance is done by setting the environment variables which are used in the [application.yml](../src/main/resources/application.yml).
+The configuration of the Variantstore instance is essentially done by setting the environment variables which are used in the [application.yml](../src/main/resources/application.yml). If you want/need to set other properties, please refer to the [Micronaut Documentation](https://docs.micronaut.io/latest/guide/#introduction).
+
+## Server
+
+You can set the port on which the Variantstore instance is supposed to run by setting the optional environment variable `VARIANTSTORE_PORT`(default: `8080`).
 
 ```yml
 server:
     port: ${variantstore-port:8080}
-
-...
-
-datasources:
-    default:
-        url: jdbc:mariadb://${db-host}/${db-name}?...
-        username: ${db-user}
-        password: ${db-pwd}
-        driverClassName: org.mariadb.jdbc.Driver
-    transactions:
-        url: jdbc:mariadb://${db-host}/transactions?...
-        username: ${db-user}
-        password: ${db-pwd}
-        driverClassName: org.mariadb.jdbc.Driver
 ```
 
-If you want to use a port other than 8080, set the optional environment variable `VARIANTSTORE_PORT`. The default data source can be configured by the following environment variables: `DB_HOST` (database host address), `DB_NAME` (database name), `DB_USER` (database user) and `DB_PWD` (database password).
-It is expected that the `default` and `transactions` data sources run on the same host and use the same credentials. Please change the `application.yml` accordingly if this is not the case.
-
-## Database
-
------------
-
-In the current version, the **Variantstore** service can be used with a MariaDB database. If you want to use a different DBMS,
-make sure to specify the database model, set up the datasource in the `application.yml`, and provide an implementation for the `VariantstoreStorage` interface.
-
-The main database [model](https://github.com/qbicsoftware/variantstore-service/blob/development/models/varianstore-model.sql) expected by the **Variantstore** is the following:
-
-![Variantstore model diagram](images/variantstore-model-diagram.png)
-
-Additonally, a database with the following [table](https://github.com/qbicsoftware/variantstore-service/blob/development/models/transaction-db.sql) is needed to track the transactions in the Variantstore:
-
-![Variantstore transaction model diagram](images/transaction-model-diagram.png)
-
-## Authentication and Authorization
+## Security (Authentication and Authorization)
 
 -----------
 
 Security (authentication and authorization) is enabled by default but you can deactivate it by setting the environment variable `VARIANTSTORE_SECURITY_ENABLED` to `false`. If security is enabled all protected endpoints (i.e. all endpoints except the `/beacon` endpoint) can only be accessed by authenticated users.
 
-In addition to that, the Variantstore supports authentication with OAuth 2.0 servers. This includes support for the OpenID standard. At the moment we only support the option to use Keycloak as provider.
+In addition to that, the Variantstore supports authentication with OAuth 2.0 servers. This includes support for the OpenID standard. At the moment we only tested/support the option to use Keycloak as provider.
 
 In order to enable authentication with OAuth 2.0 servers, set `VARIANTSTORE_OAUTH2_ENABLED` to `true` and provide all necessary details using the following environment variables:
 
@@ -56,6 +28,58 @@ In order to enable authentication with OAuth 2.0 servers, set `VARIANTSTORE_OAUT
 * `VARIANTSTORE_OAUTH2_TOKEN_URL`
 
 > You can check out the official Micronaut security [docs](https://micronaut-projects.github.io/micronaut-security/latest/guide/#oauth) for an configuration examples.
+
+## Database
+
+-----------
+
+In the current version, the **Variantstore** service can be used with a PostgreSQL or MariaDB database instance. If you want to use a different DBMS, you have to provide an implementation for the `VariantstoreStorage` interface, make sure to use the same database model and set up the datasource accordingly in the `application.yml`.
+
+The main database [model](https://github.com/qbicsoftware/variantstore-service/blob/development/models/) expected by the **Variantstore** looks like the following for the currently supported two database systems:
+
+<details>
+  <summary>PostgreSQL schema</summary>
+
+  ![Variantstore model diagram](images/variantstore-model-diagram-postgresql.png)
+</details>
+
+<details>
+  <summary>MariaDB schema</summary>
+  
+  ![Variantstore model diagram](images/variantstore-model-diagram.png)
+</details>
+
+\
+Additionally, a database with the following [table](https://github.com/qbicsoftware/variantstore-service/blob/development/models/transaction-db.sql) is needed to track the transactions in the Variantstore:
+
+![Variantstore transaction model diagram](images/transaction-model-diagram.png)
+
+```yml
+datasources:
+    variantstore_postgres:
+        url: jdbc:postgresql://${db-host}/${db-name}
+        username: ${db-user}
+        password: ${db-pwd}
+        driverClassName: org.postgresql.Driver
+    transactions:
+        url: jdbc:postgresql://${db-host}/transactions?...
+        username: ${db-user}
+        password: ${db-pwd}
+        driverClassName: org.postgresql.jdbc.Driver
+    #variantstore_mariadb:
+    #  url: jdbc:mariadb://${db-host}/${db-name}?...
+    #  username: ${db-user}
+    #  password: ${db-pwd}
+    #  driverClassName: org.mariadb.jdbc.Driver
+    #transactions_mariadb:
+    #  url: jdbc:mariadb://${db-host}/transactions?...
+    #  username: ${db-user}
+    #  password: ${db-pwd}
+    #  driverClassName: org.mariadb.jdbc.Driver
+```
+
+ The default data source can be configured by the following environment variables: `DB_HOST` (database host address), `DB_NAME` (database name), `DB_USER` (database user) and `DB_PWD` (database password).
+It is expected that the `default` and `transactions` data sources run on the same host and use the same credentials. Please change the `application.yml` accordingly if this is not the case.
 
 ## Logging
 
