@@ -72,19 +72,19 @@ datasources:
     #  dialect: POSTGRES
     #  schema-generate: none
   transactions:
-    url: jdbc:postgresql://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-    username: ${db-user}
-    password: ${db-pwd}
-    driverClassName: org.postgresql.jdbc.Driver
+    url: jdbc:postgresql://${db-transaction-host}/${db-transaction-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+    username: ${db-transaction-user}
+    password: ${db-transaction-pwd}
+    driverClassName: org.postgresql.Driver
   #variantstore_mariadb:
   #  url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
   #  username: ${db-user}
   #  password: ${db-pwd}
   #  driverClassName: org.mariadb.jdbc.Driver
   #transactions_mariadb:
-  #  url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-  #  username: ${db-user}
-  #  password: ${db-pwd}
+  #  url: jdbc:mariadb://${db-transaction-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-transaction-user}
+  #  password: ${db-transaction-pwd}
   #  driverClassName: org.mariadb.jdbc.Driver
 flyway:
   datasources:
