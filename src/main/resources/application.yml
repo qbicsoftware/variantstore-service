@@ -86,6 +86,8 @@ datasources:
   #  username: ${db-transaction-user}
   #  password: ${db-transaction-pwd}
   #  driverClassName: org.mariadb.jdbc.Driver
+database:
+  specifier: variantstore-postgres
 flyway:
   datasources:
     variantstore_postgres:
@@ -121,5 +123,5 @@ endpoints:
   flyway:
     enabled: true
     sensitive: false
-userroles:
-  config: ${userrole-config:src/main/resources/test.yml}
+#userroles:
+#  config: ${userrole-config:src/main/resources/test.yml}

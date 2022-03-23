@@ -41,6 +41,8 @@ datasources:
     transactions:
         url: jdbc:tc:postgresql:13:///postgres?currentSchema=transactions
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+database:
+    specifier: variantstore-postgres
 flyway:
     datasources:
         variantstore_postgres:
@@ -53,5 +55,3 @@ flyway:
             locations: classpath:db-test/transactions
 userroles:
     config: "src/main/resources/test.yml"
-database:
-    specifier: variantstore-postgres
