@@ -18,9 +18,9 @@ The **Variantstore** is a Java/Groovy-based service application implemented usin
 - Ask Beacon endpoint if a specific variant exists in the store
 - Export variants in Variant Call Format (VCF) and [FHIR](https://www.hl7.org/fhir/)
 
-## Documentation
+## Full Documentation
 
-Please visit the [Documentation](/docs/README.md) for detailed installation, run and configuration instructions.
+See [Documentation](/docs/README.md) for the full detailed installation, run and configuration instructions.
 
 Detailed documentation of the RESTful API is additionally available on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.6).
 
