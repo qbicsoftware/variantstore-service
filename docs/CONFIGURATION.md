@@ -13,8 +13,6 @@ server:
 
 ## Security (Authentication and Authorization)
 
------------
-
 Security (authentication and authorization) is enabled by default but you can deactivate it by setting the environment variable `VARIANTSTORE_SECURITY_ENABLED` to `false`. If security is enabled all protected endpoints (i.e. all endpoints except the `/beacon` endpoint) can only be accessed by authenticated users.
 
 In addition to that, the Variantstore supports authentication with OAuth 2.0 servers. This includes support for the OpenID standard. At the moment we only tested/support the option to use Keycloak as provider.
@@ -30,8 +28,6 @@ In order to enable authentication with OAuth 2.0 servers, set `VARIANTSTORE_OAUT
 > You can check out the official Micronaut security [docs](https://micronaut-projects.github.io/micronaut-security/latest/guide/#oauth) for an configuration examples.
 
 ## Database
-
------------
 
 In the current version, the **Variantstore** service can be used with a PostgreSQL or MariaDB database instance. If you would like to use a different DBMS, you have to provide an implementation for the `VariantstoreStorage` interface, make sure to use the same database model as provided and set up the data source accordingly in the `application.yml`.
 
@@ -99,5 +95,4 @@ flyway:
 
 ## Logging
 
------------
 All requests to the Variantstore are logged. The default location is ``/tmp`` but you can specify a different location by setting the environment variable ``SERVICES_LOG_PATH``. The generated log file is called ``variantstore.log`` whereas older log files follow the following naming scheme: ``variantstore.%d{dd-MMM}.log.gz"``
