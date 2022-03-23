@@ -82,7 +82,12 @@ datasources:
     #  driverClassName: org.mariadb.jdbc.Driver
 ```
 
-The data source configuration is set to PostgreSQL by default. If you want to use a MariaDB database comment out `variantstore_postgres` and `transactions` and uncomment `variantstore_mariadb` and `transactions_mariadb`.
+The data source configuration is set to PostgreSQL by default. If you want to use a MariaDB database comment out `variantstore_postgres` and `transactions` and uncomment `variantstore_mariadb` and `transactions_mariadb`. Further, `database.specifier` has to be set to `variantstore-mariadb`. Default:
+
+```yml
+database:
+    specifier: variantstore-postgres
+```
 
 Additionally, you have to enable (`enabled: true`) Flyway migration for the MariaDB data sources and disable it for the PostgreSQL data sources (`enabled: false`) below in the Flyway block:
 

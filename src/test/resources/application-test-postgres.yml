@@ -53,5 +53,3 @@ flyway:
             enabled: true
             baselineOnMigrate: true
             locations: classpath:db-test/transactions
-userroles:
-    config: "src/main/resources/test.yml"
