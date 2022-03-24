@@ -53,3 +53,11 @@ flyway:
             enabled: true
             baselineOnMigrate: true
             locations: classpath:db-test/transactions
+        variantstore_mariadb:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db-test/mariadb
+        transactions_mariadb:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db-test/transactions_mariadb

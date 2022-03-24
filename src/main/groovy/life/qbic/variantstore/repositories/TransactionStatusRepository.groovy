@@ -1,5 +1,6 @@
 package life.qbic.variantstore.repositories
 
+import io.micronaut.context.annotation.Requires
 import io.micronaut.data.annotation.Id
 import io.micronaut.data.annotation.Repository
 import io.micronaut.data.jdbc.annotation.JdbcRepository
@@ -13,6 +14,7 @@ import life.qbic.variantstore.model.TransactionStatus
  * @since: 1.0.0
  */
 @Repository('transactions')
+@Requires(notEquals = "database.specifier", value = "variantstore-mariadb")
 @JdbcRepository(dialect = Dialect.POSTGRES)
 interface TransactionStatusRepository extends CrudRepository<TransactionStatus, Long> {
 

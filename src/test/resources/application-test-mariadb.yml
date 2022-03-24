@@ -45,6 +45,14 @@ database:
     specifier: variantstore-mariadb
 flyway:
     datasources:
+        variantstore_postgres:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db/postgresql
+        transactions:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db/transactions
         variantstore_mariadb:
             enabled: true
             baselineOnMigrate: true
