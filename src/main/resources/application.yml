@@ -66,8 +66,8 @@ micronaut:
 datasources:
   variantstore_postgres:
     url: jdbc:postgresql://${db-host}/${db-name}
-    username: ${db-user}
-    password: ${db-pwd}
+    username: ${db-user:""}
+    password: ${db-pwd:""}
     driverClassName: org.postgresql.Driver
     #  dialect: POSTGRES
     #  schema-generate: none
