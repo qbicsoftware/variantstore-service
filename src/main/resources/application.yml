@@ -123,5 +123,3 @@ endpoints:
   flyway:
     enabled: true
     sensitive: false
-#userroles:
-#  config: ${userrole-config:src/main/resources/test.yml}

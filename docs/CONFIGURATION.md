@@ -25,7 +25,7 @@ In order to enable authentication with OAuth 2.0 servers, set `VARIANTSTORE_OAUT
 * `VARIANTSTORE_OAUTH2_AUTH_URL`
 * `VARIANTSTORE_OAUTH2_TOKEN_URL`
 
-> You can check out the official Micronaut security [docs](https://micronaut-projects.github.io/micronaut-security/latest/guide/#oauth) for an configuration examples.
+> You can check out the official Micronaut security [docs](https://micronaut-projects.github.io/micronaut-security/latest/guide/#oauth) for configuration examples.
 
 ## Database
 
