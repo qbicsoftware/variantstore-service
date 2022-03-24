@@ -22,7 +22,7 @@ The **Variantstore** is a Java/Groovy-based service application implemented usin
 
 See [Documentation](/docs/README.md) for the full detailed installation, run and configuration instructions.
 
-Detailed documentation of the RESTful API is additionally available on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/0.6).
+Detailed documentation of the RESTful API is additionally available on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/).
 
 ## Database
 
@@ -39,4 +39,4 @@ For further information or help, don't hesitate to get in touch with us via [mai
 The Variantstore was created within the [DIFUTURE](https://difuture.de) (Data Integration for Future Medicine) Consortium.
 
 This service was designed and implemented by [Christopher Mohr](https://github.com/christopher-mohr).
-For a full list of authors, please refer to the file [AUTHORS](https://github.com/qbicsoftware/variantstore-service/blob/master/AUTHORS).
+For a full list of authors, please refer to the file [AUTHORS](AUTHORS).

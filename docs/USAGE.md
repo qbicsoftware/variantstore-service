@@ -56,7 +56,7 @@ The full list of available endpoints can be seen below.
 
 ## REST API
 
-The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/1.0.1). Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via `/swagger-ui` and `/rapidoc`.
+The detailed documentation of the REST endpoints provided by the **Variantstore** can be found on [SwaggerHub](https://app.swaggerhub.com/apis/christopher-mohr/variantstore/). Additionally, views for the generated OpenAPI specification are generated as swagger-ui and rapidoc views. After startup, these views are accessible via `/swagger-ui` and `/rapidoc`.
 
 <dl>
   <dt><b>GET /genes/{id}</b></dt>

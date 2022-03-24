@@ -31,7 +31,7 @@ In order to enable authentication with OAuth 2.0 servers, set `VARIANTSTORE_OAUT
 
 In the current version, the **Variantstore** service can be used with a PostgreSQL or MariaDB database instance. If you would like to use a different DBMS, you have to provide an implementation for the `VariantstoreStorage` interface, make sure to use the same database model as provided and set up the data source accordingly in the `application.yml`.
 
-The main database [model](https://github.com/qbicsoftware/variantstore-service/blob/development/models/) expected by the **Variantstore** looks like the following for the currently supported two database systems:
+The main database [model](/models/) expected by the **Variantstore** looks like the following for the currently supported two database systems:
 
 <details>
   <summary>PostgreSQL schema</summary>
@@ -46,7 +46,7 @@ The main database [model](https://github.com/qbicsoftware/variantstore-service/b
 </details>
 
 \
-Additionally, a database with the following [table](https://github.com/qbicsoftware/variantstore-service/blob/development/models/transaction-db.sql) is needed to track the import transactions in the Variantstore:
+Additionally, a database with the following [table](/models/transaction-db.sql) is needed to track the import transactions in the Variantstore:
 
 ![Variantstore transaction model diagram](images/transaction-model-diagram.png)
 
@@ -57,25 +57,25 @@ If you need to change or add additional properties to the JDBC database connecti
 ```yml
 datasources:
     variantstore_postgres:
-        url: jdbc:postgresql://${db-host}/${db-name}
-        username: ${db-user}
-        password: ${db-pwd}
+        url: jdbc:postgresql://${db-host:""}/${db-name:""}
+        username: ${db-user:""}
+        password: ${db-pwd:""}
         driverClassName: org.postgresql.Driver
     transactions:
-        url: jdbc:postgresql://${db-transaction-host}/${db-transaction-name}?...
-        username: ${db-transaction-user}
-        password: ${db-transaction-pwd}
-        driverClassName: org.postgresql.jdbc.Driver
+        url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}?...
+        username: ${db-transaction-user:""}
+        password: ${db-transaction-pwd:""}
+        driverClassName: org.postgresql.Driver
     #variantstore_mariadb:
-    #  url: jdbc:mariadb://${db-host}/${db-name}?...
-    #  username: ${db-user}
-    #  password: ${db-pwd}
-    #  driverClassName: org.mariadb.jdbc.Driver
+    #   url: jdbc:mariadb://${db-host:""}/${db-name:""}?...
+    #   username: ${db-user:""}
+    #   password: ${db-pwd:""}
+    #   driverClassName: org.mariadb.jdbc.Driver
     #transactions_mariadb:
-    #  url: jdbc:mariadb://${db-transaction-host}/${db-transaction-name}?...
-    #  username: ${db-transaction-user}
-    #  password: ${db-transaction-pwd}
-    #  driverClassName: org.mariadb.jdbc.Driver
+    #   url: jdbc:mariadb://${db-transaction-host:""}/${db-transaction-name:""}?...
+    #   username: ${db-transaction-user:""}
+    #   password: ${db-transaction-pwd:""}
+    #   driverClassName: org.mariadb.jdbc.Driver
 ```
 
 The data source configuration is set to PostgreSQL by default. If you want to use a MariaDB database comment out `variantstore_postgres` and `transactions` and uncomment `variantstore_mariadb` and `transactions_mariadb`. Further, `database.specifier` has to be set to `variantstore-mariadb`. Default:
