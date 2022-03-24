@@ -64,23 +64,30 @@ micronaut:
             url: ${variantstore-oauth2-token-url}
             auth-method: client-secret-jwt
 datasources:
+  variantstore_postgres:
+    url: jdbc:postgresql://${db-host:""}/${db-name:""}
+    username: ${db-user:""}
+    password: ${db-pwd:""}
+    driverClassName: org.postgresql.Driver
+    #  dialect: POSTGRES
+    #  schema-generate: none
+  transactions:
+    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+    username: ${db-transaction-user:""}
+    password: ${db-transaction-pwd:""}
+    driverClassName: org.postgresql.Driver
   #variantstore_mariadb:
-  #  url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-  #  username: ${db-user}
-  #  password: ${db-pwd}
+  #  url: jdbc:mariadb://${db-host:""}/${db-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-user:""}
+  #  password: ${db-pwd:""}
   #  driverClassName: org.mariadb.jdbc.Driver
-  #transactions:
-  #  url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-  #  username: ${db-user}
-  #  password: ${db-pwd}
+  #transactions_mariadb:
+  #  url: jdbc:mariadb://${db-transaction-host:""}/${db-transaction-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-transaction-user:""}
+  #  password: ${db-transaction-pwd:""}
   #  driverClassName: org.mariadb.jdbc.Driver
-  #variantstore_postgres:
-  #  url: jdbc:postgresql://${db-host}/${db-name}
-  #  username: ${db-user}
-  #  password: ${db-pwd}
-  #  driverClassName: org.postgresql.Driver
-  #  dialect: POSTGRES
-  #  schema-generate: none
+database:
+  specifier: variantstore-postgres
 flyway:
   datasources:
     variantstore_postgres:
@@ -88,9 +95,9 @@ flyway:
       baselineOnMigrate: true
       locations: classpath:db/postgresql
     transactions:
-        enabled: true
-        baselineOnMigrate: true
-        locations: classpath:db/transactions
+      enabled: true
+      baselineOnMigrate: true
+      locations: classpath:db/transactions
     variantstore_mariadb:
       enabled: false
       baselineOnMigrate: true
@@ -116,5 +123,3 @@ endpoints:
   flyway:
     enabled: true
     sensitive: false
-userroles:
-  config: ${userrole-config:src/main/resources/test.yml}

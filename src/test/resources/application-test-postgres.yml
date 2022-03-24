@@ -41,6 +41,8 @@ datasources:
     transactions:
         url: jdbc:tc:postgresql:13:///postgres?currentSchema=transactions
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+database:
+    specifier: variantstore-postgres
 flyway:
     datasources:
         variantstore_postgres:
@@ -51,7 +53,11 @@ flyway:
             enabled: true
             baselineOnMigrate: true
             locations: classpath:db-test/transactions
-userroles:
-    config: "src/main/resources/test.yml"
-database:
-    specifier: variantstore-postgres
+        variantstore_mariadb:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db-test/mariadb
+        transactions_mariadb:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db-test/transactions_mariadb
