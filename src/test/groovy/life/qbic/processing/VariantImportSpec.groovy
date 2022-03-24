@@ -51,19 +51,20 @@ class VariantImportSpec extends Specification {
     @Unroll
     void "should import variants and metadata to the variantstore"() {
 
-        when:
+        given:
         def requestBody = MultipartBody.builder()
                 .addPart("metadata", "${metadata}")
                 .addPart("files", new File("${file}"))
                 .build()
-
         HttpRequest request = HttpRequest.POST("/variants", requestBody)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
+        PollingConditions uploaded = new PollingConditions(delay: 1, initialDelay: 0, timeout: 120)
+
+        when:
         HttpResponse response = httpClient.toBlocking().exchange(request)
 
         then:
-        PollingConditions uploaded = new PollingConditions(delay: 1, initialDelay: 0, timeout: 120)
         uploaded.eventually {
             HttpRequest transactionRequest = HttpRequest.GET(response.header(HttpHeaders.LOCATION))
             HttpResponse transactionResponse = httpClient.toBlocking().exchange(transactionRequest, TransactionStatus.class)
