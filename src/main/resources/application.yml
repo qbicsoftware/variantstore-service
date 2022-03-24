@@ -65,7 +65,7 @@ micronaut:
             auth-method: client-secret-jwt
 datasources:
   variantstore_postgres:
-    url: jdbc:postgresql://${db-host}/${db-name}
+    url: jdbc:postgresql://${db-host:""}/${db-name:""}
     username: ${db-user:""}
     password: ${db-pwd:""}
     driverClassName: org.postgresql.Driver
@@ -77,7 +77,7 @@ datasources:
     password: ${db-transaction-pwd:""}
     driverClassName: org.postgresql.Driver
   #variantstore_mariadb:
-  #  url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  url: jdbc:mariadb://${db-host:""}/${db-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
   #  username: ${db-user:""}
   #  password: ${db-pwd:""}
   #  driverClassName: org.mariadb.jdbc.Driver
