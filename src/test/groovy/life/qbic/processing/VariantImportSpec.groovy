@@ -63,7 +63,7 @@ class VariantImportSpec extends Specification {
         HttpResponse response = httpClient.toBlocking().exchange(request)
 
         then:
-        PollingConditions uploaded = new PollingConditions(delay: 3, initialDelay: 2, timeout: 60)
+        PollingConditions uploaded = new PollingConditions(delay: 0, initialDelay: 0, timeout: 60)
         uploaded.eventually {
             HttpRequest transactionRequest = HttpRequest.GET(response.header(HttpHeaders.LOCATION))
             HttpResponse transactionResponse = httpClient.toBlocking().exchange(transactionRequest, TransactionStatus.class)
@@ -71,7 +71,6 @@ class VariantImportSpec extends Specification {
             transactionStatus == Status.finished.toString()
         }
         response.status() == status
-        sleep(5)
 
         where:
         metadata || file || status
