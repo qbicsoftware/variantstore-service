@@ -70,8 +70,8 @@ class VariantImportSpec extends Specification {
             HttpResponse transactionResponse = httpClient.toBlocking().exchange(transactionRequest, TransactionStatus.class)
             String transactionStatus = transactionResponse.body().status
             transactionStatus == Status.finished.toString()
+            response.status() == status
         }
-        response.status() == status
 
         where:
         metadata || file || status
