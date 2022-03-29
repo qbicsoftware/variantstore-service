@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+- [#57](https://github.com/qbicsoftware/variantstore-service/pull/57) Add GitHub Actions to create and publish Docker image
+
 ### `Changed`
 
 ### `Fixed`
@@ -16,10 +18,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### `Added`
 
 ### `Changed`
+
 - Extend usage documentation and add examples
 - [#43](https://github.com/qbicsoftware/variantstore-service/pull/43) - Prevent the creation of duplicate gene entries in the database ([#40](https://github.com/qbicsoftware/variantstore-service/issues/40))
 
 ### `Fixed`
+
 - [#43](https://github.com/qbicsoftware/variantstore-service/pull/43) - Fix parsing of Ensembl version ([#42](https://github.com/qbicsoftware/variantstore-service/issues/42))
 - [#43](https://github.com/qbicsoftware/variantstore-service/pull/43) - Fix `EnsemblParser` bug caused by missing `Gene` constructor ([#41](https://github.com/qbicsoftware/variantstore-service/issues/41))
 
