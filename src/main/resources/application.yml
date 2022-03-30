@@ -69,10 +69,8 @@ datasources:
     username: ${db-user:""}
     password: ${db-pwd:""}
     driverClassName: org.postgresql.Driver
-    #  dialect: POSTGRES
-    #  schema-generate: none
   transactions:
-    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}
     username: ${db-transaction-user:""}
     password: ${db-transaction-pwd:""}
     driverClassName: org.postgresql.Driver
@@ -94,18 +92,26 @@ flyway:
       enabled: true
       baselineOnMigrate: true
       locations: classpath:db/postgresql
+      default-schema: variantstore
+      schemas: variantstore
     transactions:
       enabled: true
       baselineOnMigrate: true
       locations: classpath:db/transactions
+      default-schema: transactions
+      schemas: transactions
     variantstore_mariadb:
       enabled: false
       baselineOnMigrate: true
       locations: classpath:db/mariadb
+      default-schema: variantstore
+      schemas: variantstore
     transactions_mariadb:
       enabled: false
       baselineOnMigrate: true
       locations: classpath:db/transactions_mariadb
+      default-schema: transactions
+      schemas: transactions
 endpoints:
   health:
     enabled: true
