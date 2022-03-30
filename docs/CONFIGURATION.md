@@ -48,7 +48,7 @@ The main database [model](/models/) expected by the **Variantstore** looks like 
 \
 Additionally, a database with the following [table](/models/transaction-db.sql) is needed to track the import transactions in the Variantstore:
 
-![Variantstore transaction model diagram](images/transaction-model-diagram.png)
+![Variantstore transaction model diagram](images/transaction-model-diagram-postgresql.png)
 
  The `Variantstore` data source can be configured by setting the following environment variables: `DB_HOST` (database host address), `DB_NAME` (database name), `DB_USER` (database user) and `DB_PWD` (database password). In addition, `DB_TRANSACTION_HOST`, `DB_TRANSACTION_NAME`, `DB_TRANSACTION_USER`, and `DB_TRANSACTION_PW` have to be specified for the transaction database.
 
