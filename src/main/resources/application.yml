@@ -12,6 +12,9 @@ micronaut:
       ROOT: INFO
   router:
     static-resources:
+      webjars:
+        paths: classpath:META-INF/resources/webjars
+        mapping: /webjars/**
       swagger:
         paths: classpath:META-INF/swagger
         mapping: /swagger/**
@@ -21,6 +24,9 @@ micronaut:
       rapidoc:
         paths: classpath:META-INF/swagger/views/rapidoc
         mapping: /rapidoc/**
+      css:
+        paths: classpath:static/css
+        mapping: /css/**
   security:
     enabled: ${variantstore-security-enabled:true}
     intercept-url-map:
@@ -33,6 +39,14 @@ micronaut:
         access:
           - isAnonymous()
       - pattern: /rapidoc/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /webjars/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /css/**
         http-method: GET
         access:
           - isAnonymous()
