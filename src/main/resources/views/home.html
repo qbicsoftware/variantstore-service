@@ -1,0 +1,87 @@
+<!DOCTYPE HTML>
+<html lang="en" xmlns:th="http://www.thymeleaf.org" xmlns:color="http://www.w3.org/1999/xhtml">
+<head>
+    <title>Variantstore Status</title>
+
+    <link rel="shortcut icon" href="#" />
+
+    <link rel="stylesheet" th:href="@{https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.1.1/css/all.min.css}" >
+    <link rel="stylesheet" th:href="@{/webjars/bootstrap/5.1.3/css/bootstrap.min.css}"/>
+    <link rel="stylesheet" th:href="@{/css/main.css}"/>
+</head>
+<body>
+
+<nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
+        <a class="navbar-brand">
+            <!-- Logo Image/Icon -->
+            <i class="fas fa-store"> </i>
+            <!-- Logo Text -->
+            <span class="text-uppercase font-weight-bold">Variantstore</span>
+        </a>
+</nav>
+
+    <main role="main" class="container">
+
+        <div class="starter-template">
+            <h1>Current status</h1>
+            <div th:if="${status}" eq 'UP'>
+            <i class="fas fa-circle-check fa-xl" style="color:#28a745"> </i>
+            </div>
+            <div th:unless="${status}" eq 'DOWN'>
+            <i class="fas fa-circle-xmark fa-xl" style="color:#ff0000"> </i>
+            </div>
+        </div>
+
+        <table style="text-align: center; vertical-align: middle; width: 100%">
+            <thead>
+            <tr style="text-align: center; vertical-align: middle; width: 100%">
+            <th></th>
+                <th>status</th>
+                <th>details</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td style="text-align: left"> <i class="fas fa-gear"> </i> service</td>
+
+                <div th:if="${service}" eq 'UP'>
+                    <td> <i class="fas fa-circle-check" style="color:#28a745"> </i> </td>
+                </div>
+                <div th:unless="${service}" eq 'DOWN'>
+                    <td> <i class="fas fa-circle-xmark" style="color:#ff0000"> </i> </td>
+                </div>
+
+                <td th:text="${'name: ' + servicedetails}"></td>
+            </tr>
+            <tr>
+                <td style="text-align: left"><i class="fas fa-database"> </i> database</td>
+
+                <div th:if="${dbstatus}" eq 'UP'>
+                <td> <i class="fas fa-circle-check" style="color:#28a745"> </i> </td>
+                </div>
+                <div th:unless="${dbstatus}" eq 'DOWN'>
+                <td> <i class="fas fa-circle-xmark" style="color:#ff0000"> </i> </td>
+                </div>
+
+                <td th:text="${dbdetailsDb + ' ' + dbdetailsVersion + ':  ' + dbdetails}"></td>
+            </tr>
+            <tr >
+                <td style="text-align: left"><i class="fas fa-hard-drive"> </i> disk space</td>
+
+                <div th:if="${diskstatus}" eq 'UP'>
+                <td> <i class="fas fa-circle-check" style="color:#28a745"> </i> </td>
+                </div>
+                <div th:unless="${diskstatus}" eq 'DOWN'>
+                <td> <i class="fas fa-circle-xmark" style="color:#ff0000"> </i> </td>
+                </div>
+
+                <td th:text="${'total: ' + diskdetailsTotal + ' Mb  free: ' + diskdetailsFree + ' Mb  threshold: ' + diskdetailsThreshold + ' Mb'}"></td>
+            </tr>
+            </tbody>
+        </table>
+
+    </main>
+
+<script type="text/javascript" th:src="@{/webjars/bootstrap/5.1.3/js/bootstrap.min.js}"></script>
+</body>
+</html>

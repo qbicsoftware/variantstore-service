@@ -36,7 +36,7 @@ micronaut:
             enabled: false
 datasources:
     variantstore_postgres:
-        url: jdbc:tc:postgresql:13:///postgres?currentSchema=public
+        url: jdbc:tc:postgresql:13:///postgres?currentSchema=variantstore
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
     transactions:
         url: jdbc:tc:postgresql:13:///postgres?currentSchema=transactions

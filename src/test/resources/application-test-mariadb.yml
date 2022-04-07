@@ -36,10 +36,12 @@ micronaut:
             enabled: false
 datasources:
     variantstore_mariadb:
-        url: jdbc:tc:mariadb:///oncostore?user=root?password=?
+        url: jdbc:tc:mariadb:///test/variantstore?user=root?password=?
+        #url: jdbc:tc:mariadb:///oncostore?user=root?password=?
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
     transactions_mariadb:
-        url: jdbc:tc:mariadb:///oncostore/transactions?user=root?password=?
+        url: jdbc:tc:mariadb:///test/transactions?user=root?password=?
+        #url: jdbc:tc:mariadb:///oncostore/transactions?user=root?password=?
         driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
 database:
     specifier: variantstore-mariadb
