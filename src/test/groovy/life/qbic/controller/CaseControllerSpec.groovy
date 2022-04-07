@@ -81,9 +81,18 @@ class CaseControllerSpec extends Specification{
 
         where:
         chr | size
-        1   |   0
         4   |   2
         15  |   1
         "X" |   2
+    }
+
+    @Unroll
+    void "should return NOT_FOUND when no case available after filtering for chromosome"() {
+        when:
+        HttpResponse response = httpClient.toBlocking().exchange("/cases?chromosome=1", List)
+
+        then:
+        HttpClientResponseException t = thrown(HttpClientResponseException)
+        t.getStatus().code == 404
     }
 }

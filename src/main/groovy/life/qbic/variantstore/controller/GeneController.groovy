@@ -97,7 +97,6 @@ class GeneController {
         log.info("Resource request for genes with filtering options.")
         try {
             Set<Gene> genes = service.getGenesForSpecifiedProperties(args)
-            log.info(genes)
             return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("No genes found matching provided attributes.")
         }
         catch (Exception e) {
