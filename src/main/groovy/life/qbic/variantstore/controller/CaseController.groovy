@@ -94,7 +94,7 @@ class CaseController {
         log.info("Resource request for cases with filtering options.")
         try {
             List<Case> cases = service.getCasesForSpecifiedProperties(args)
-            return cases ? HttpResponse.ok(cases) : HttpResponse.ok([])
+            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound("No cases found matching provided attributes.")
         } catch (Exception e) {
             log.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
