@@ -29,6 +29,7 @@ micronaut:
         mapping: /css/**
   security:
     enabled: ${variantstore-security-enabled:true}
+    authentication: ${variantstore-authentication-mode:idtoken}
     intercept-url-map:
       - pattern: /swagger/**
         http-method: GET
@@ -79,12 +80,12 @@ micronaut:
             auth-method: client-secret-jwt
 datasources:
   variantstore_postgres:
-    url: jdbc:postgresql://${db-host:""}/${db-name:""}
+    url: jdbc:postgresql://${db-host:""}/${db-name:""}?currentSchema=variantstore
     username: ${db-user:""}
     password: ${db-pwd:""}
     driverClassName: org.postgresql.Driver
   transactions:
-    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}
+    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}?currentSchema=transactions
     username: ${db-transaction-user:""}
     password: ${db-transaction-pwd:""}
     driverClassName: org.postgresql.Driver
