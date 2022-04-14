@@ -3,9 +3,9 @@ micronaut:
     name: variantstore
   server:
     port: ${variantstore-port:8080}
-    maxRequestSize: 100
+    maxRequestSize: 300MB
     multipart:
-      maxFileSize: 100
+      maxFileSize: 300MB
     thread-selection: AUTO
   logger:
     levels:

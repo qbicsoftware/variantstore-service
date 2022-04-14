@@ -389,7 +389,8 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                         genotypesToRegister.add(genotype)
                     }
                     else {
-                        genotypesRegistered.add(genotype)
+                        searchResultGenotype.get().sampleName = genotype.sampleName
+                        genotypesRegistered.add(searchResultGenotype.get())
                     }
                }
 
