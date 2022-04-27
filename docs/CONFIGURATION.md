@@ -11,6 +11,8 @@ server:
     port: ${variantstore-port:8080}
 ```
 
+In addition, you can enable HTTPS support by setting `VARIANTSTORE_SSL_ENABLED` to `true` and enable the generation of a self-isgned certificate by Micronaut (`VARIANTSTORE_SSL_SELFSIGNED`).
+
 ## Security (Authentication and Authorization)
 
 Security (authentication and authorization) is enabled by default but you can deactivate it by setting the environment variable `VARIANTSTORE_SECURITY_ENABLED` to `false`. If security is enabled all protected endpoints (i.e. all endpoints except the `/beacon` endpoint) can only be accessed by authenticated users.
@@ -94,6 +96,10 @@ flyway:
   datasources:
   ...
 ```
+
+## Import
+
+The import of variants to the store happens in batches (default: 250.000). If you would like to change the default batch size, you can use the environment variable `MAX_NUMBER_VARIANTS_PER_BATCH`.
 
 ## Logging
 
