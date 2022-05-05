@@ -71,6 +71,14 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
      * {@inheritDoc}
      */
     @Override
+    Optional<Project> findProjectById(String identifier) {
+        return projectRepository.findByIdentifier(identifier)
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     List<Case> findCaseById(String identifier) {
         return caseRepository.findByIdentifier(identifier)
     }
@@ -108,6 +116,18 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             return geneRepository.searchByGeneId(identifier)
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch gene with identifier $identifier.", e.printStackTrace())
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    List<Project> findProjects(ListingArguments args) {
+        try {
+            return projectRepository.findAll()
+        } catch (Exception e) {
+            throw new VariantstoreStorageException("Could not fetch projects.", e.fillInStackTrace())
         }
     }
 

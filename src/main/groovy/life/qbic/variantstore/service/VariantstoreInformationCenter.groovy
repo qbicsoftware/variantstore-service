@@ -48,6 +48,14 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * {@inheritDoc}
      */
     @Override
+    Optional<Project> getProjectForProjectId(String projectId) {
+        return storage.findProjectById(projectId)
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     List<Case> getCaseForCaseId(String caseId) {
         return storage.findCaseById(caseId)
     }
@@ -87,6 +95,14 @@ class VariantstoreInformationCenter implements VariantstoreService{
     @Override
     List<Sample> getSampleForSampleId(String sampleId) {
         return storage.findSampleById(sampleId)
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    List<Project> getProjectsForSpecifiedProperties(@NonNull ListingArguments args) {
+        return storage.findProjects(args)
     }
 
     /**
