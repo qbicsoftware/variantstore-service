@@ -5,6 +5,7 @@ import life.qbic.variantstore.model.Case
 import life.qbic.variantstore.model.Consequence
 import life.qbic.variantstore.model.Ensembl
 import life.qbic.variantstore.model.Gene
+import life.qbic.variantstore.model.Project
 import life.qbic.variantstore.model.ReferenceGenome
 import life.qbic.variantstore.model.Sample
 import life.qbic.variantstore.model.SimpleVariantContext
@@ -38,6 +39,13 @@ interface VariantstoreStorage {
                                           String reference, String observed, String assemblyId)
 
     /**
+     * Find project in store by identifier.
+     * @param identifier the project identifier
+     * @return optional project
+     */
+    Optional<Project> findProjectById(String identifier)
+
+    /**
      * Find case in store by identifier.
      * @param identifier the case identifier
      * @return list of found cases
@@ -65,6 +73,13 @@ interface VariantstoreStorage {
      * @return set of found genes
      */
     Set<Gene> findGeneById(String identifier, @NonNull ListingArguments args)
+
+    /**
+     * Find projects for specified filtering options.
+     * @param args the provided filtering options
+     * @return list of found projects
+     */
+    List<Project> findProjects(@NonNull ListingArguments args)
 
     /**
      * Find cases for specified filtering options.

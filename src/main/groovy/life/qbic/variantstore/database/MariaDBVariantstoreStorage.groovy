@@ -223,6 +223,22 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
+    Optional<Project> findProjectById(String id) {
+        Sql sql = requestNewConnection()
+        try {
+            def result  = fetchProjectForId(id, sql)
+            return result ? Optional.of(result[0]) : Optional.empty()
+        } catch (Exception e) {
+            throw new VariantstoreStorageException("Could not fetch case with identifier $id.", e.fillInStackTrace())
+        } finally {
+            sql.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
     List<Case> findCaseById(String id) {
         //TODO should we check for a specific type of identifier?
         //if (id?.trim()) {
@@ -334,6 +350,22 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
             throw new VariantstoreStorageException("Could not fetch cases.", e.printStackTrace())
         } finally {
             sql.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    List<Project> findProjects(@NonNull ListingArguments args) {
+        Sql sql = requestNewConnection()
+        try {
+            return fetchProjects(sql)
+        }
+        catch (Exception e) {
+            throw new VariantstoreStorageException("Could not fetch projects.",  e.printStackTrace())
+        } finally {
+        sql.close()
         }
     }
 
@@ -1106,6 +1138,17 @@ genotype.mappingquality=?""",
         return ids as HashMap<Consequence, List<String>>
     }
 
+    /**
+     * Get project from the store by identifier
+     * @param id the project identifier
+     * @param sql the sql connection
+     * @return the found project (optional)
+     */
+    private List<Project> fetchProjectForId(String id, Sql sql) {
+        def result = sql.rows("""SELECT distinct project.id FROM project WHERE project.id=$id;""")
+        List<Project> projects = result.collect { convertRowResultToProject(it) }
+        return projects
+    }
 
     /**
      * Get case from the store by identifier
@@ -1171,6 +1214,17 @@ ensembl_has_gene.gene_id INNER JOIN ensembl ON ensembl_has_gene.ensembl_id = ens
 ensembl.version=$ensemblVersion;""")
         List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
+    }
+
+    /**
+     * Get all projects from the store
+     * @param sql the sql connection
+     * @return the found projects
+     */
+    private List<Project> fetchProjects(Sql sql) {
+        def result = sql.rows("SELECT * FROM project;")
+        List<Project> projects = result.collect { it -> convertRowResultToProject(it) }
+        return projects
     }
 
     /**
@@ -2116,6 +2170,17 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     Case convertRowResultToCase(GroovyRowResult row) {
         def entity = new Case(row.get("id") as String, row.get("project_id") as String)
         return entity
+    }
+
+    /**
+     * Convert database query result to project
+     * @param row the query result
+     * @return the project
+     */
+    Project convertRowResultToProject(GroovyRowResult row) {
+        def project = new Project()
+        project.setIdentifier(row.get("id") as String)
+        return project
     }
 
     /**

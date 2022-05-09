@@ -1,5 +1,6 @@
 package life.qbic.variantstore.service
 
+import io.micronaut.core.annotation.NonNull
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.repositories.TransactionStatusRepository
 import life.qbic.variantstore.util.ListingArguments
@@ -12,6 +13,13 @@ import jakarta.inject.Singleton
  */
 @Singleton
 interface VariantstoreService {
+
+    /**
+     * Retrieve project for specified project identifier.
+     * @param identifier the project identifier
+     * @return list of found project
+     */
+    Optional<Project> getProjectForProjectId(String identifier)
 
     /**
      * Retrieves cases for specified case identifier.
@@ -43,10 +51,17 @@ interface VariantstoreService {
     List<Sample> getSampleForSampleId(String identifier)
 
     /**
-     * Retrieves cases for specified filtering options.
+     * Retrieves projects for specified filtering options.
      * @param args the provided filtering options
-     * @return list of cases genes
+     * @return list of found projects
      */
+    List<Project> getProjectsForSpecifiedProperties(ListingArguments args)
+
+    /**
+    * Retrieves cases for specified filtering options.
+    * @param args the provided filtering options
+    * @return list of found cases
+    */
     List<Case> getCasesForSpecifiedProperties(ListingArguments args)
 
     /**
