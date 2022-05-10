@@ -26,6 +26,7 @@ import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.Inject
 import jakarta.inject.Named
+import org.reactivestreams.Publisher
 import java.util.concurrent.ExecutorService
 
 /**
@@ -172,7 +173,7 @@ class VariantController {
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
     @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
-    HttpResponse storeVariants(String metadata, Flowable<CompletedFileUpload> files) {
+    HttpResponse storeVariants(String metadata, Publisher<CompletedFileUpload> files) {
         try {
             log.info("Request for storing variant information.")
             def statusId = UUID.randomUUID().toString()
@@ -180,7 +181,9 @@ class VariantController {
             // build location for response
             def uri = UriBuilder.of("/variants/upload/status/${statusId}").build()
 
-            files.subscribeOn(Schedulers.from(ioExecutorService)).doOnError { throwable -> log.error("Upload of variants failed.") }
+            Flowable.fromPublisher(files)
+                    .subscribeOn(Schedulers.from(ioExecutorService))
+                    .doOnError { throwable -> log.error("Upload of variants failed.") }
                     .subscribe() { file ->
                         log.info("Processing file ${file.filename}")
 
@@ -194,6 +197,7 @@ class VariantController {
                         TransactionStatus transactionStatus = repository.save(newStatus)
                         service.storeVariantsInStore(metadata, file.inputStream, repository, transactionStatus)
                     }
+
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {
             log.error(exception)

@@ -34,8 +34,8 @@ CREATE TABLE annotationsoftware (
 --
 
 CREATE TABLE annotationsoftware_consequence (
-    annotationsoftware_id bigint NOT NULL,
-    consequence_id bigint NOT NULL
+    consequence_id bigint NOT NULL,
+    annotationsoftware_id bigint NOT NULL
 );
 
 --
@@ -367,7 +367,7 @@ CREATE UNIQUE INDEX as_unique ON annotationsoftware USING btree (name, version, 
 -- Name: ascons_unique; Type: INDEX; Schema: variantstore;
 --
 
-CREATE UNIQUE INDEX ascons_unique ON annotationsoftware_consequence USING btree (annotationsoftware_id, consequence_id);
+CREATE UNIQUE INDEX ascons_unique ON annotationsoftware_consequence USING btree (consequence_id, annotationsoftware_id);
 
 
 --
@@ -561,7 +561,7 @@ CREATE UNIQUE INDEX variantcaller_unique ON variantcaller USING btree (name, ver
 
 CREATE UNIQUE INDEX vcfinfo_unique ON vcfinfo USING btree (ancestralallele, allelecount, allelefrequency, numberalleles, basequality, cigar, dbsnp, hapmaptwo, hapmapthree, thousandgenomes, combineddepth, endpos, rms, mqzero, strandbias, numbersamples, somatic, validated);
 
--- CREATE UNIQUE INDEX variant_consequence_unique ON variant_consequence USING btree (variant_id, consequence_id);
+CREATE UNIQUE INDEX variant_consequence_unique ON variant_consequence USING btree (variant_id, consequence_id);
 
 
 --

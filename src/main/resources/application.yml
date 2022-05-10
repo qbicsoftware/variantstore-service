@@ -3,9 +3,12 @@ micronaut:
     name: variantstore
   server:
     port: ${variantstore-port:8080}
-    maxRequestSize: 100
+    ssl:
+      enabled: ${variantstore-ssl-enabled:false}
+      buildSelfSigned: ${variantstore-ss-selfsigned:false}
+    maxRequestSize: 500MB
     multipart:
-      maxFileSize: 100
+      maxFileSize: 500MB
     thread-selection: AUTO
   logger:
     levels:
@@ -101,6 +104,7 @@ datasources:
   #  driverClassName: org.mariadb.jdbc.Driver
 database:
   specifier: variantstore-postgres
+  max-variants-per-batch: ${max-number-variants-per-batch:250000}
 flyway:
   datasources:
     variantstore_postgres:

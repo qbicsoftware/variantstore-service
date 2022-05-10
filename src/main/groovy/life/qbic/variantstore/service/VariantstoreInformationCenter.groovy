@@ -1,6 +1,7 @@
 package life.qbic.variantstore.service
 
 import groovy.util.logging.Log4j2
+import io.micronaut.context.annotation.Value
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.parser.MetadataReader
@@ -28,12 +29,13 @@ class VariantstoreInformationCenter implements VariantstoreService{
      * The maximum allele length that is considered for further processing.
      * Variants with a larger allele length are filtered.
      */
-    static final Integer MAX_ALLELE_LENGTH = 255
+    static final int MAX_ALLELE_LENGTH = 255
     /**
      * The maximum number of variants that are processed and forwarded to the storage interface per batch.
      * This has effects on run time and memory consumption.
      */
-    static final Integer MAX_NUMBER_OF_VARIANTS_PER_BATCH = 250000
+    @Value('${max-variants-per-batch}')
+    static final int MAX_NUMBER_OF_VARIANTS_PER_BATCH
     /**
      * The Variantstore storage
      */
