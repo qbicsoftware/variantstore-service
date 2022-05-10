@@ -14,4 +14,6 @@
     <logger name="io.micronaut.flyway" level="trace"/>
     <!-- <logger name="io.micronaut.context.condition" level="trace"/> -->
     <!-- <logger name="io.micronaut.http.client" level="trace" /> -->
+    <!-- <logger name="io.netty.handler.logging" level="trace" /> -->
+    <!-- <logger name="io.micronaut.http.server.netty" level="trace" /> -->
 </configuration>
