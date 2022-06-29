@@ -11,16 +11,16 @@
     <parent>
         <groupId>io.micronaut</groupId>
         <artifactId>micronaut-parent</artifactId>
-        <version>3.4.2</version>
+        <version>3.5.2</version>
     </parent>
 
     <properties>
         <jdk.version>1.8</jdk.version>
         <swagger.version>2.1.0</swagger.version>
-        <micronaut.version>3.4.2</micronaut.version>
+        <micronaut.version>3.5.2</micronaut.version>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
-        <micronaut.data.version>3.3.0</micronaut.data.version>
+        <micronaut.data.version>3.4.3</micronaut.data.version>
         <groovyVersion>3.0.9</groovyVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
