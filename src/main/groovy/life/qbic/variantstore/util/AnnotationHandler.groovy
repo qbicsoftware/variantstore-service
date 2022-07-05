@@ -128,7 +128,7 @@ class AnnotationHandler {
         def parsedAnnotation = annotation.split('\\|', -1)
         def version = annotationSoftware.getVersion()
         def softwareName = annotationSoftware.getName().toUpperCase() as AnnotationTools
-        def cons = null
+        def cons
         Set<Gene> genes = []
 
         switch (softwareName) {
@@ -233,7 +233,7 @@ class AnnotationHandler {
                 cons.setGenes(genes)
                 break
             default:
-                throw new IllegalArgumentException("Unknown annotation software: $annotationSoftware.name");
+                throw new IllegalArgumentException("Unknown annotation software: $annotationSoftware.name")
         }
 
         return cons

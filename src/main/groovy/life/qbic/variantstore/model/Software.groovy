@@ -1,12 +1,14 @@
 package life.qbic.variantstore.model
 
 import io.swagger.v3.oas.annotations.media.Schema
+import lombok.AllArgsConstructor
 
 /**
  * A tool used to gather information in the context of variants
  *
  * @since: 1.0.0
  */
+@AllArgsConstructor
 interface Software {
 
     /**

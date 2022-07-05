@@ -110,7 +110,7 @@ class VariantController {
      */
     @TransactionalAdvice('${database.specifier}')
     @Get(uri = "{?args*}{?format,referenceGenome,withConsequences,annotationSoftware,withGenotypes,vcfVersion}", produces = [MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN])
-    @Operation(summary = "Request a set of variats",
+    @Operation(summary = "Request a set of variants",
             description = "The variants matching the supplied properties are returned.",
             tags = "Variant")
     @ApiResponse(responseCode = "200", description = "Returns a set of variants", content = @Content(mediaType = "application/json",
@@ -201,7 +201,7 @@ class VariantController {
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {
             log.error(exception)
-            return HttpResponse.badRequest("Upload of variants failed.");
+            return HttpResponse.badRequest("Upload of variants failed.")
         }
         finally {
             Schedulers.shutdown()

@@ -11,7 +11,7 @@ import life.qbic.variantstore.model.Variant
 class VariantFactory {
 
     private static Faker faker
-    private static final Long MIN_VALID_GENOMIC_POSITION = Long.valueOf("0");
+    private static final Long MIN_VALID_GENOMIC_POSITION = Long.valueOf("0")
     private static final Long MAX_VALID_GENOMIC_POSITION = Double.parseDouble("3.3e9").longValue()
 
     VariantFactory() {
@@ -26,7 +26,7 @@ class VariantFactory {
                 .databaseIdentifier(faker.lorem().characters(5, 10,
                         true, true))
                 .chromosome(faker.regexify("(?:chr)?[1-9]|1[0-9]|2[0-3]|X|Y"))
-                .startPosition(variantStart)
+                .startPosition(variantStart as BigInteger)
                 .endPosition(returnVariantEnd(variantStart))
                 .referenceAllele(faker.regexify("[CGAT]+"))
                 .observedAllele(faker.regexify("[CGAT]+"))

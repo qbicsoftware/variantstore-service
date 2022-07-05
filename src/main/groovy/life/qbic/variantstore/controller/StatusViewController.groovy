@@ -1,7 +1,6 @@
 package life.qbic.variantstore.controller
 
 import groovy.util.logging.Log4j2
-import io.micronaut.core.util.CollectionUtils
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get

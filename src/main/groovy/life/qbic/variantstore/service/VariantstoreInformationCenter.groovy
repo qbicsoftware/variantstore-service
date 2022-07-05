@@ -179,7 +179,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
         AnnotationHandler.AnnotationTools annotationTool = annotationSoftware.getName().toUpperCase()  as AnnotationHandler.AnnotationTools
         SimpleVCFReader reader = new SimpleVCFReader(inputStream, annotationTool.getTag())
 
-        SimpleVariantContext variant = null
+        SimpleVariantContext variant
         HashMap<String, Sample> sampleGenotypeMapping = new HashMap<String, Sample>()
         def idx = 0
 

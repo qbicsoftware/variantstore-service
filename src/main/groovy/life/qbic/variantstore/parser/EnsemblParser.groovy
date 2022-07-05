@@ -36,7 +36,7 @@ class EnsemblParser {
     Ensembl parseGff3(File file) {
         Gff3Codec codec = new Gff3Codec()
         AbstractFeatureReader<Gff3Feature, LineIterator> reader = AbstractFeatureReader.getFeatureReader(file
-                .absolutePath.toString(), null, codec, false);
+                .absolutePath.toString(), null, codec, false)
 
         // try to extract reference genome and Ensembl version
         def referenceMatch = (file.name =~ /(GRCh|hg)\d+/)
@@ -44,7 +44,7 @@ class EnsemblParser {
         String referenceGenome = ""
         Integer ensemblVersion = 0
         if (versionMatch.find()) {
-            def foundPattern = versionMatch[0][0].toString().split("\\.|v")
+            def foundPattern = versionMatch[0][0].toString().split("[.v]")
             referenceGenome = foundPattern.first()
             ensemblVersion = Integer.valueOf(foundPattern.last())
         }
@@ -53,7 +53,7 @@ class EnsemblParser {
             ensemblVersion = null
         }
 
-        def splittedLine = ""
+        def splitLine = ""
         def updateDate = ""
         def firstFound = false
         def secondFound = false
@@ -88,7 +88,7 @@ class EnsemblParser {
         while ((line = bufferedReader.readLine()) != null)
         {
             if (line.startsWith("#!genome-build ")) {
-                splittedLine = line.split(" ")[-1]
+                splitLine = line.split(" ")[-1]
             }
             else if (line.startsWith("#!genebuild-last-updated")) {
                 updateDate = line.split(" ")[-1]
@@ -99,7 +99,7 @@ class EnsemblParser {
         }
 
         // determine reference genome version from Ensembl file
-        def (referenceGenomeFromFile, referenceGenomeVersion) = splittedLine.split("v|\\.")
+        def (referenceGenomeFromFile, referenceGenomeVersion) = splitLine.split("[v.]")
 
         try {
             assert referenceGenome == referenceGenomeFromFile

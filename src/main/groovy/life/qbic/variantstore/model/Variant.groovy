@@ -125,7 +125,7 @@ class Variant implements SimpleVariantContext, Comparable {
         vcfInfo = new VcfInfo(context.getCommonInfo())
         databaseIdentifier = context.getID()
         List<Genotype> genotypes = []
-        consequences = annotationType ? context.getAttributeAsList(annotationType) : null
+        consequences = annotationType ? context.getAttributeAsList(annotationType) as Set<Consequence> : null
         context.getGenotypes().each { genotype -> genotypes.add(new Genotype(genotype))
         }
         this.genotypes = genotypes

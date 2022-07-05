@@ -11,7 +11,7 @@ import life.qbic.variantstore.model.Gene
 class GeneFactory {
 
     private static Faker faker
-    private static final Long MIN_VALID_GENOMIC_POSITION = Long.valueOf("0");
+    private static final Long MIN_VALID_GENOMIC_POSITION = Long.valueOf("0")
     private static final Long MAX_VALID_GENOMIC_POSITION = Double.parseDouble("3.3e9").longValue()
 
     GeneFactory() {

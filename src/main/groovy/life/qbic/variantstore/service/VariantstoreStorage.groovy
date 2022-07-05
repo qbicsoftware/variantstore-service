@@ -99,7 +99,7 @@ interface VariantstoreStorage {
      * Find variants for specified (filtering) options.
      * @param args the filtering options
      * @param referenceGenome the associated reference genome
-     * @param withConsequences true if connected consequenes should be returned
+     * @param withConsequences true if connected consequences should be returned
      * @param annotationSoftware the associated annotation software
      * @param withVcfInfo true if connected VCF INFO should be returned
      * @param withGenotypes true if connected genotype information should be returned

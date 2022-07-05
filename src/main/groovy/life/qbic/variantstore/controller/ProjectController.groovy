@@ -1,13 +1,11 @@
 package life.qbic.variantstore.controller
 
 import groovy.util.logging.Log4j2
-import io.micronaut.core.annotation.NonNull
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
-import io.micronaut.http.annotation.QueryValue
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.micronaut.transaction.annotation.TransactionalAdvice
@@ -16,15 +14,9 @@ import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
 import io.swagger.v3.oas.annotations.responses.ApiResponse
 import jakarta.inject.Inject
-import life.qbic.variantstore.model.BeaconAlleleResponse
 import life.qbic.variantstore.model.Project
-import life.qbic.variantstore.model.Sample
-import life.qbic.variantstore.model.Variant
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.ListingArguments
-
-import javax.validation.constraints.Pattern
-import javax.validation.constraints.PositiveOrZero
 
 /**
  * Controller for Beacon requests

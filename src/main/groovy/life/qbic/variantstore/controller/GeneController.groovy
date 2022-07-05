@@ -100,6 +100,7 @@ class GeneController {
             return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("No genes found matching provided attributes.")
         }
         catch (Exception e) {
+            log.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
@@ -117,15 +118,15 @@ class GeneController {
     HttpResponse storeGenes(CompletedFileUpload files) {
         try {
             log.info("Request for storing gene information.")
-            File tempFile = File.createTempFile(files.getFilename(), "temp");
-            Path path = Paths.get(tempFile.getAbsolutePath());
-            Files.write(path, files.getBytes());
+            File tempFile = File.createTempFile(files.getFilename(), "temp")
+            Path path = Paths.get(tempFile.getAbsolutePath())
+            Files.write(path, files.getBytes())
             EnsemblParser ensembl = new EnsemblParser(tempFile)
             service.storeGeneInformationInStore(ensembl.ensemblContext)
             return HttpResponse.ok("Upload of gene information successful.")
         } catch (IOException exception) {
             log.error(exception)
-            return HttpResponse.badRequest("Upload of gene information failed.");
+            return HttpResponse.badRequest("Upload of gene information failed.")
         }
     }
 }
