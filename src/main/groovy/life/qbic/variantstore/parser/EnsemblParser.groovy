@@ -65,15 +65,15 @@ class EnsemblParser {
             if(feature.type.contains("gene")) {
                 numberOfGenes++
                 String geneId = feature.ID.split(":")[-1]
-                def bioType = feature.getAttribute("biotype")
+                def bioType = (feature.getAttribute("biotype") != null) && !feature.getAttribute("biotype").empty ? feature.getAttribute("biotype").get(0) : ''
                 def chromosome = feature.contig
                 def geneStart = feature.start as BigInteger
                 def geneEnd = feature.end as BigInteger
                 def strand = feature.strand.toString()
                 def symbol = feature.name
-                def version = feature.getAttribute("version") != null ? feature.getAttribute("version").toInteger(): -1
-                def description = (feature.getAttribute("description") != null) ? feature.getAttribute("description") : ''
-                def synonym = (feature.getAttribute("description") != null) && feature.getAttribute("description").contains("HGNC") ? feature.getAttribute("description").split("\\[").last().split("HGNC:").last().replace("]", "") : ''
+                def version = feature.getAttribute("version") != null && !feature.getAttribute("version").empty? feature.getAttribute("version").get(0).toInteger(): -1
+                def description = (feature.getAttribute("description") != null) && !feature.getAttribute("description").empty ? feature.getAttribute("description").get(0) : ''
+                def synonym = !description.empty && description.contains("HGNC") ? description.split("\\[").last().split("HGNC:").last().replace("]", "") : ''
                 def name = description.split("\\[").first().trim()
                 def synonyms = [synonym]
                 def geneDescription = description.trim()
