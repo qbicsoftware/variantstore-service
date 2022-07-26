@@ -15,7 +15,7 @@
     </parent>
 
     <properties>
-        <jdk.version>1.8</jdk.version>
+        <jdk.version>11</jdk.version>
         <swagger.version>2.1.0</swagger.version>
         <micronaut.version>3.5.3</micronaut.version>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
