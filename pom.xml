@@ -20,7 +20,7 @@
         <micronaut.version>3.7.4</micronaut.version>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
-        <micronaut.data.version>3.4.3</micronaut.data.version>
+        <micronaut.data.version>3.8.1</micronaut.data.version>
         <groovyVersion>3.0.9</groovyVersion>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
