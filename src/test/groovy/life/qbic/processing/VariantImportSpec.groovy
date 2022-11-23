@@ -76,7 +76,5 @@ class VariantImportSpec extends Specification {
         where:
         metadata || file || status
         metadata1 || "src/test/resources/data/patient1_ann.vcf"  || HttpStatus.ACCEPTED
-        metadata2 || "src/test/resources/data/patient2_ann.vcf"  || HttpStatus.ACCEPTED
-        metadata3 || "src/test/resources/data/patient3_ann.vcf"  || HttpStatus.ACCEPTED
     }
 }
