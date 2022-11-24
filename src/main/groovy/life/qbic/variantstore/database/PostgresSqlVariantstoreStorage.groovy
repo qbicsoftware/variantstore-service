@@ -1,6 +1,5 @@
 package life.qbic.variantstore.database
 
-import groovy.util.logging.Log4j2
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import life.qbic.variantstore.model.*
@@ -22,6 +21,8 @@ import life.qbic.variantstore.repositories.VcfinfoRepository
 import life.qbic.variantstore.service.VariantstoreStorage
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * A VariantstoreStorage implementation.
@@ -29,12 +30,12 @@ import jakarta.inject.*
  *
  * @since: 1.1.0
  */
-@Log4j2
 @Singleton
 @Primary
 @Requires(property = "database.specifier", value = "variantstore-postgres")
 class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlVariantstoreStorage.class);
 
     /**
      * The repositories
@@ -311,7 +312,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         try {
 
             def numberOfVariants = variants.size()
-            log.info("Processing ${numberOfVariants} variants...")
+            LOGGER.info("Processing ${numberOfVariants} variants...")
 
             def project = metadata.getProject()
             def entity = metadata.getCase()
@@ -444,7 +445,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                 numberProcessed++
                 def ratio = Math.round(numberOfVariants / 10)
                 if (ratio > 0 && numberProcessed % ratio == 0) {
-                    log.info("${Math.round(numberProcessed / numberOfVariants * 100.0)}%")
+                    LOGGER.info("${Math.round(numberProcessed / numberOfVariants * 100.0)}%")
                 }
             }
 

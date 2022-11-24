@@ -1,6 +1,5 @@
 package life.qbic.variantstore.util
 
-import groovy.util.logging.Log4j2
 import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.model.Consequence
 import life.qbic.variantstore.model.Gene
@@ -14,7 +13,6 @@ import life.qbic.variantstore.model.SimpleVariantContext
  *
  * @since: 1.0.0
  */
-@Log4j2
 class AnnotationHandler {
 
     /**

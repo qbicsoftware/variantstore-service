@@ -1,6 +1,5 @@
 package life.qbic.variantstore.controller
 
-import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
@@ -20,6 +19,8 @@ import life.qbic.variantstore.model.Gene
 import life.qbic.variantstore.parser.EnsemblParser
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.ListingArguments
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 import java.nio.file.Files
 import java.nio.file.Path
@@ -32,10 +33,11 @@ import java.nio.file.Paths
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Controller("/genes")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class GeneController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GeneController.class);
 
     /**
      * The variantstore service
@@ -64,17 +66,17 @@ class GeneController {
     @ApiResponse(responseCode = "400", description = "Invalid gene identifier supplied")
     @ApiResponse(responseCode = "404", description = "Gene not found")
     HttpResponse getGene(@PathVariable(name="id") String identifier, ListingArguments args) {
-        log.info("Resource request for gene: $identifier")
+        LOGGER.info("Resource request for gene: $identifier")
         try {
             Set<Gene> genes = service.getGeneForGeneId(identifier, args)
             return genes ? HttpResponse.ok(genes[0]) : HttpResponse.notFound("Gene not found.").body("")
         }
         catch (IllegalArgumentException e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.badRequest("Invalid gene identifier supplied.")
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
@@ -94,13 +96,13 @@ class GeneController {
     @ApiResponse(responseCode = "404", description = "No genes found matching provided attributes")
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     HttpResponse getGenes(ListingArguments args) {
-        log.info("Resource request for genes with filtering options.")
+        LOGGER.info("Resource request for genes with filtering options.")
         try {
             Set<Gene> genes = service.getGenesForSpecifiedProperties(args)
             return genes ? HttpResponse.ok(genes) : HttpResponse.notFound("No genes found matching provided attributes.")
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
@@ -117,7 +119,7 @@ class GeneController {
     @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
     HttpResponse storeGenes(CompletedFileUpload files) {
         try {
-            log.info("Request for storing gene information.")
+            LOGGER.info("Request for storing gene information.")
             File tempFile = File.createTempFile(files.getFilename(), "temp")
             Path path = Paths.get(tempFile.getAbsolutePath())
             Files.write(path, files.getBytes())
@@ -125,7 +127,7 @@ class GeneController {
             service.storeGeneInformationInStore(ensembl.ensemblContext)
             return HttpResponse.ok("Upload of gene information successful.")
         } catch (IOException exception) {
-            log.error(exception)
+            LOGGER.error(exception)
             return HttpResponse.badRequest("Upload of gene information failed.")
         }
     }

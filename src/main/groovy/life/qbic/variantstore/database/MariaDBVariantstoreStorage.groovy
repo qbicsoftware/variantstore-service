@@ -4,7 +4,6 @@ import groovy.json.JsonSlurper
 import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-import groovy.util.logging.Log4j2
 import io.micronaut.context.annotation.Requires
 import io.micronaut.core.annotation.NonNull
 import io.micronaut.transaction.annotation.TransactionalAdvice
@@ -14,6 +13,9 @@ import life.qbic.variantstore.service.VariantstoreStorage
 import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import javax.sql.DataSource
 import javax.transaction.Transactional
 import java.sql.Connection
@@ -28,10 +30,11 @@ import java.sql.SQLException
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Singleton
 @Requires(property = "database.specifier", value = "variantstore-mariadb")
 class MariaDBVariantstoreStorage implements VariantstoreStorage {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MariaDBVariantstoreStorage.class);
 
     /**
      * The data source instance
@@ -923,7 +926,7 @@ genotype.mappingquality IS NULL""")
                             }
                         }
                         else {
-                            log.error("Incompatible sample/genotype information provided.")
+                            LOGGER.error("Incompatible sample/genotype information provided.")
                         }
                     }
 

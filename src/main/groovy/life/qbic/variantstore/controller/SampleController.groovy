@@ -1,6 +1,5 @@
 package life.qbic.variantstore.controller
 
-import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
@@ -17,6 +16,8 @@ import life.qbic.variantstore.model.Sample
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.Inject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Controller for samples requests
@@ -25,10 +26,11 @@ import jakarta.inject.Inject
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Controller("/samples")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class SampleController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SampleController.class);
 
     /**
      * The variantstore service
@@ -57,17 +59,17 @@ class SampleController {
     @ApiResponse(responseCode = "400", description = "Invalid sample identifier supplied")
     @ApiResponse(responseCode = "404", description = "Sample not found")
     HttpResponse getSample(@PathVariable(name="id") String identifier) {
-        log.info("Resource request for sample: $identifier")
+        LOGGER.info("Resource request for sample: $identifier")
         try {
             List<Sample> samples = service.getSampleForSampleId(identifier)
             return samples ? HttpResponse.ok(samples.get(0)) : HttpResponse.notFound("Sample not found.")
         }
         catch (IllegalArgumentException e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.badRequest("Invalid sample identifier supplied.")
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
@@ -87,13 +89,13 @@ class SampleController {
             schema = @Schema(implementation = Sample.class)))
     @ApiResponse(responseCode = "404", description = "No samples found matching provided attributes")
     HttpResponse getSamples(ListingArguments args){
-        log.info("Resource request for samples with filtering options.")
+        LOGGER.info("Resource request for samples with filtering options.")
         try {
             List<Sample> samples = service.getSamplesForSpecifiedProperties(args)
             return samples ? HttpResponse.ok(samples) : HttpResponse.notFound("No samples found matching provided attributes.")
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
