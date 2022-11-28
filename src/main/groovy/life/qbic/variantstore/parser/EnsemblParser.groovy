@@ -1,6 +1,5 @@
 package life.qbic.variantstore.parser
 
-import groovy.util.logging.Log4j2
 import htsjdk.tribble.AbstractFeatureReader
 import htsjdk.tribble.gff.Gff3Codec
 import htsjdk.tribble.gff.Gff3Feature
@@ -8,14 +7,17 @@ import htsjdk.tribble.readers.LineIterator
 import life.qbic.variantstore.model.Ensembl
 import life.qbic.variantstore.model.Gene
 import life.qbic.variantstore.model.ReferenceGenome
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * A parser to process Ensembl GFF files holding gene information
  *
  * @since: 1.0.0
  */
-@Log4j2
 class EnsemblParser {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnsemblParser.class);
 
     private final GENOME_REFERENCE_SOURCE_GRC = "Genome Reference Consortium"
 
@@ -107,7 +109,7 @@ class EnsemblParser {
             println "Given reference genomes do not match: " + e.getMessage()
         }
 
-        log.info("Read $numberOfGenes genes from provided Ensembl file.")
+        LOGGER.info("Read $numberOfGenes genes from provided Ensembl file.")
 
         // if the reference genome is specified in the file under #!genome-build we will use this information
         def refernceGenomeToDB = referenceGenomeFromFile ? referenceGenomeFromFile : referenceGenome

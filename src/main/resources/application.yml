@@ -10,9 +10,6 @@ micronaut:
     multipart:
       maxFileSize: 500MB
     thread-selection: AUTO
-  logger:
-    levels:
-      ROOT: INFO
   router:
     static-resources:
       webjars:

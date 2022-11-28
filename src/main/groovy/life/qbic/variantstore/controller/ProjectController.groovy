@@ -1,6 +1,5 @@
 package life.qbic.variantstore.controller
 
-import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
@@ -17,6 +16,8 @@ import jakarta.inject.Inject
 import life.qbic.variantstore.model.Project
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.ListingArguments
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Controller for Beacon requests
@@ -27,10 +28,11 @@ import life.qbic.variantstore.util.ListingArguments
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Controller("/projects")
 @Secured(SecurityRule.IS_ANONYMOUS)
 class ProjectController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ProjectController.class);
 
     /**
      * The variantstore service
@@ -57,16 +59,16 @@ class ProjectController {
     @ApiResponse(responseCode = "400", description = "Invalid project identifier supplied")
     @ApiResponse(responseCode = "404", description = "Project not found")
     HttpResponse getProject(@PathVariable(name = "id") String identifier) {
-        log.info("Resource request for project: $identifier")
+        LOGGER.info("Resource request for project: $identifier")
         try {
             Optional<Project> project = service.getProjectForProjectId(identifier)
             return project.present ? HttpResponse.ok(project.get()) : HttpResponse.notFound("No Project found for given "
                     + "identifier.").body("")
         } catch (IllegalArgumentException e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.badRequest("Invalid project identifier supplied.")
         } catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
@@ -86,13 +88,13 @@ class ProjectController {
             schema = @Schema(implementation = Project.class)))
     @ApiResponse(responseCode = "404", description = "No samples found matching provided attributes")
     HttpResponse getProjects(ListingArguments args){
-        log.info("Resource request for projects with filtering options.")
+        LOGGER.info("Resource request for projects with filtering options.")
         try {
             List<Project> projects = service.getProjectsForSpecifiedProperties(args)
             return projects ? HttpResponse.ok(projects) : HttpResponse.notFound("No projects found matching provided attributes.")
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }

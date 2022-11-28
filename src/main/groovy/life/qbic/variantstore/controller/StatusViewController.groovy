@@ -1,6 +1,5 @@
 package life.qbic.variantstore.controller
 
-import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
@@ -12,7 +11,6 @@ import io.micronaut.views.View
 import io.reactivex.rxjava3.core.Single
 import jakarta.inject.Inject
 
-@Log4j2
 @Controller("/status")
 @Secured(SecurityRule.IS_ANONYMOUS)
 class StatusViewController {
