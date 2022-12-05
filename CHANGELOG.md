@@ -7,6 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### `Added`
 
+- [#57](https://github.com/qbicsoftware/variantstore-service/pull/57) Add GitHub Actions to create and publish Docker image
 - [#50](https://github.com/qbicsoftware/variantstore-service/pull/50) Add Database interface for PostgreSQL ([#37](https://github.com/qbicsoftware/variantstore-service/issues/37), [#38](https://github.com/qbicsoftware/variantstore-service/issues/38))
 - [#50](https://github.com/qbicsoftware/variantstore-service/pull/50) Use [Micronaut Data](https://micronaut-projects.github.io/micronaut-data/latest/guide/)
 - [#50](https://github.com/qbicsoftware/variantstore-service/pull/50) Factory classes for entities

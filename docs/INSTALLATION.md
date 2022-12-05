@@ -38,3 +38,7 @@ To run a prebuilt Variantstore instance, download the [latest](https://github.co
 ```bash
 java -jar variantstore-{version}.jar
 ```
+
+## Docker
+
+Docker images are created for [Releases](https://github.com/qbicsoftware/variantstore-service/releases) and are available under [Packages](https://github.com/orgs/qbicsoftware/packages?repo_name=variantstore-service).
