@@ -7,14 +7,25 @@
             <pattern>%cyan(%d{HH:mm:ss.SSS}) %gray([%thread]) %highlight(%-5level) %magenta(%logger{36}) - %msg%n</pattern>
         </encoder>
     </appender>
+    <appender name="file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${env:SERVICES_LOG_PATH:-/tmp}/variantstore.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+        <!-- daily rollover -->
+            <fileNamePattern>"${env:SERVICES_LOG_PATH:-/tmp}/bim.%d{yyyy-MM-dd}.log</fileNamePattern>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+        </encoder>
+    </appender>
     <root level="info">
         <appender-ref ref="STDOUT" />
+        <appender-ref ref="file" />
     </root>
 
     <!-- <logger name="io.micronaut.data.query" level="trace" /> -->
     <logger name="io.micronaut.flyway" level="trace"/>
     <!-- <logger name="io.micronaut.context.condition" level="trace"/> -->
-    <logger name="io.micronaut.http.client" level="ERROR" />
+    <logger name="io.micronaut.http.client" level="trace" />
     <!-- <logger name="io.netty.handler.logging" level="trace" /> -->
     <!-- <logger name="io.micronaut.http.server.netty" level="trace" /> -->
 </configuration>
