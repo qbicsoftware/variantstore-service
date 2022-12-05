@@ -5,6 +5,7 @@ import life.qbic.variantstore.model.Case
 import life.qbic.variantstore.model.Consequence
 import life.qbic.variantstore.model.Ensembl
 import life.qbic.variantstore.model.Gene
+import life.qbic.variantstore.model.Project
 import life.qbic.variantstore.model.ReferenceGenome
 import life.qbic.variantstore.model.Sample
 import life.qbic.variantstore.model.SimpleVariantContext
@@ -38,6 +39,13 @@ interface VariantstoreStorage {
                                           String reference, String observed, String assemblyId)
 
     /**
+     * Find project in store by identifier.
+     * @param identifier the project identifier
+     * @return optional project
+     */
+    Optional<Project> findProjectById(String identifier)
+
+    /**
      * Find case in store by identifier.
      * @param identifier the case identifier
      * @return list of found cases
@@ -67,6 +75,13 @@ interface VariantstoreStorage {
     Set<Gene> findGeneById(String identifier, @NonNull ListingArguments args)
 
     /**
+     * Find projects for specified filtering options.
+     * @param args the provided filtering options
+     * @return list of found projects
+     */
+    List<Project> findProjects(@NonNull ListingArguments args)
+
+    /**
      * Find cases for specified filtering options.
      * @param args the provided filtering options
      * @return list of found cases
@@ -84,7 +99,7 @@ interface VariantstoreStorage {
      * Find variants for specified (filtering) options.
      * @param args the filtering options
      * @param referenceGenome the associated reference genome
-     * @param withConsequences true if connected consequenes should be returned
+     * @param withConsequences true if connected consequences should be returned
      * @param annotationSoftware the associated annotation software
      * @param withVcfInfo true if connected VCF INFO should be returned
      * @param withGenotypes true if connected genotype information should be returned

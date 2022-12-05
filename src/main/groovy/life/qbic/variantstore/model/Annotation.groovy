@@ -72,4 +72,13 @@ class Annotation implements Software{
     Set<Consequence> getConsequences() {
         return consequences
     }
+
+    void setConsequences(Set<Consequence> consequences) {
+        this.consequences = consequences
+    }
+
+    void addConsequence(Consequence consequence){
+        if(consequences==null) consequences = [] as Set<Consequence>
+        consequences.add(consequence)
+    }
 }

@@ -1,6 +1,6 @@
 package life.qbic.variantstore.service
 
-import groovy.util.logging.Log4j2
+import io.micronaut.context.annotation.Value
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.parser.MetadataReader
@@ -12,6 +12,8 @@ import life.qbic.variantstore.util.VariantExporter
 import jakarta.inject.*
 import io.micronaut.core.annotation.NonNull
 import life.qbic.variantstore.util.VcfConstants
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * A VariantstoreService implementation.
@@ -20,20 +22,22 @@ import life.qbic.variantstore.util.VcfConstants
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Singleton
 class VariantstoreInformationCenter implements VariantstoreService{
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantstoreInformationCenter.class);
 
     /**
      * The maximum allele length that is considered for further processing.
      * Variants with a larger allele length are filtered.
      */
-    static final Integer MAX_ALLELE_LENGTH = 255
+    static final int MAX_ALLELE_LENGTH = 255
     /**
      * The maximum number of variants that are processed and forwarded to the storage interface per batch.
      * This has effects on run time and memory consumption.
      */
-    static final Integer MAX_NUMBER_OF_VARIANTS_PER_BATCH = 250000
+    @Value('${max-variants-per-batch}')
+    static final int MAX_NUMBER_OF_VARIANTS_PER_BATCH
     /**
      * The Variantstore storage
      */
@@ -42,6 +46,14 @@ class VariantstoreInformationCenter implements VariantstoreService{
     @Inject
     VariantstoreInformationCenter(VariantstoreStorage storage) {
         this.storage = storage
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Optional<Project> getProjectForProjectId(String projectId) {
+        return storage.findProjectById(projectId)
     }
 
     /**
@@ -87,6 +99,14 @@ class VariantstoreInformationCenter implements VariantstoreService{
     @Override
     List<Sample> getSampleForSampleId(String sampleId) {
         return storage.findSampleById(sampleId)
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    List<Project> getProjectsForSpecifiedProperties(@NonNull ListingArguments args) {
+        return storage.findProjects(args)
     }
 
     /**
@@ -161,13 +181,13 @@ class VariantstoreInformationCenter implements VariantstoreService{
         AnnotationHandler.AnnotationTools annotationTool = annotationSoftware.getName().toUpperCase()  as AnnotationHandler.AnnotationTools
         SimpleVCFReader reader = new SimpleVCFReader(inputStream, annotationTool.getTag())
 
-        SimpleVariantContext variant = null
+        SimpleVariantContext variant
         HashMap<String, Sample> sampleGenotypeMapping = new HashMap<String, Sample>()
         def idx = 0
 
         ArrayList<SimpleVariantContext> variantsToInsert = null
 
-        log.info("Storing provided metadata and variants in the store")
+        LOGGER.info("Storing provided metadata and variants in the store")
         try {
             while (reader.iterator().hasNext()) {
                 variant = reader.iterator().next()
@@ -184,7 +204,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
                     def warning = new StringBuilder("Skipping variant").append(variant.startPosition).append(":")
                             .append(variant.referenceAllele).append(">").append(" because the reference or observed "
                             + "allele is exceeding the maximum length\"")
-                    log.warn(warning)
+                    LOGGER.warn(warning)
                 }  else {
                     if (variantsToInsert == null) variantsToInsert = new ArrayList<>(250000)
                     variantsToInsert.add(variant)
@@ -200,7 +220,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
             storage.storeVariantsInStoreWithMetadata(metadataContext, sampleGenotypeMapping, variantsToInsert)
             variantsToInsert.clear()
             repository.updateStatus(transactionStatus.getId(), Status.finished.toString())
-            log.info("...done.")
+            LOGGER.info("...done.")
         }
         catch (Exception e) {
             e.printStackTrace()
@@ -217,9 +237,9 @@ class VariantstoreInformationCenter implements VariantstoreService{
      */
     @Override
     void storeGeneInformationInStore(Ensembl ensembl) {
-        log.info("Storing provided gene information in store")
+        LOGGER.info("Storing provided gene information in store")
         storage.storeGenesWithMetadata(ensembl)
-        log.info("...done.")
+        LOGGER.info("...done.")
     }
 
     /**
@@ -238,7 +258,7 @@ class VariantstoreInformationCenter implements VariantstoreService{
         }
 
         if (genotypesIdentifiers.isEmpty()) {
-            log.info("No sample/genotype information provided in VCF, using information given in metadata file.")
+            LOGGER.info("No sample/genotype information provided in VCF, using information given in metadata file.")
             meta.samples.each { sample ->
                 sampleGenotypeMapping.put(sample.identifier, sample)
             }
@@ -254,13 +274,13 @@ class VariantstoreInformationCenter implements VariantstoreService{
                     if (searchIndex > -1) {
                         sampleGenotypeMapping[genotypesIdentifiers[searchIndex]] = sample
                     } else {
-                        log.info("Genotype identifier does not match any sample identifiers. Trying to map identifiers...")
+                        LOGGER.info("Genotype identifier does not match any sample identifiers. Trying to map identifiers...")
                         if (sample.cancerEntity && genotypesIdentifiers.findIndexOf { VcfConstants.TUMOR } > -1) {
                             sampleGenotypeMapping[VcfConstants.NORMAL] = sample
                         } else if (!sample.cancerEntity && genotypesIdentifiers.findIndexOf { VcfConstants.NORMAL } > -1) {
                             sampleGenotypeMapping[VcfConstants.TUMOR] = sample
                         } else {
-                            log.error("Could not map genotype information to provided sample information.")
+                            LOGGER.error("Could not map genotype information to provided sample information.")
                         }
                     }
                 }

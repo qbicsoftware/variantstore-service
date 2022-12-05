@@ -1,6 +1,5 @@
 package life.qbic.variantstore.controller
 
-import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
@@ -26,6 +25,9 @@ import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.Inject
 import jakarta.inject.Named
+import org.reactivestreams.Publisher
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory
 import java.util.concurrent.ExecutorService
 
 /**
@@ -35,10 +37,11 @@ import java.util.concurrent.ExecutorService
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Controller("/variants")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class VariantController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(VariantController.class);
 
     /**
      * The Variantstore service instance
@@ -82,16 +85,16 @@ class VariantController {
     @ApiResponse(responseCode = "400", description = "Invalid variant identifier supplied")
     @ApiResponse(responseCode = "404", description = "Variant not found")
     HttpResponse getVariant(@PathVariable(name = "id") String identifier) {
-        log.info("Resource request for variant: $identifier")
+        LOGGER.info("Resource request for variant: $identifier")
         try {
             Set<Variant> variants = service.getVariantForVariantId(identifier) as Set<Variant>
             return variants ? HttpResponse.ok(variants[0]) : HttpResponse.notFound("No Variant found for given "
                     + "identifier.").body("")
         } catch (IllegalArgumentException e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.badRequest("Invalid variant identifier supplied.")
         } catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
@@ -109,7 +112,7 @@ class VariantController {
      */
     @TransactionalAdvice('${database.specifier}')
     @Get(uri = "{?args*}{?format,referenceGenome,withConsequences,annotationSoftware,withGenotypes,vcfVersion}", produces = [MediaType.APPLICATION_JSON, MediaType.TEXT_PLAIN])
-    @Operation(summary = "Request a set of variats",
+    @Operation(summary = "Request a set of variants",
             description = "The variants matching the supplied properties are returned.",
             tags = "Variant")
     @ApiResponse(responseCode = "200", description = "Returns a set of variants", content = @Content(mediaType = "application/json",
@@ -124,7 +127,7 @@ class VariantController {
                                            @QueryValue(defaultValue = "false") @Nullable Boolean withVcfInfo,
                                            @QueryValue(defaultValue = "false") @Nullable Boolean withGenotypes,
                                            @QueryValue(defaultValue = "4.1") @Nullable String vcfVersion) {
-        log.info("Resource request for variants with filtering options.")
+        LOGGER.info("Resource request for variants with filtering options.")
         try {
             def variants
             if (format) {
@@ -155,7 +158,7 @@ class VariantController {
             return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "" + "attributes.") as HttpResponse<List<Variant>>
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.") as
                     HttpResponse<List<Variant>>
         }
@@ -172,17 +175,19 @@ class VariantController {
             description = "Upload annotated VCF file(s) and store the contained variants.",
             tags = "Variant")
     @Post(uri = "/", consumes = MediaType.MULTIPART_FORM_DATA)
-    HttpResponse storeVariants(String metadata, Flowable<CompletedFileUpload> files) {
+    HttpResponse storeVariants(String metadata, Publisher<CompletedFileUpload> files) {
         try {
-            log.info("Request for storing variant information.")
+            LOGGER.info("Request for storing variant information.")
             def statusId = UUID.randomUUID().toString()
 
             // build location for response
             def uri = UriBuilder.of("/variants/upload/status/${statusId}").build()
 
-            files.subscribeOn(Schedulers.from(ioExecutorService)).doOnError { throwable -> log.error("Upload of variants failed.") }
+            Flowable.fromPublisher(files)
+                    .subscribeOn(Schedulers.from(ioExecutorService))
+                    .doOnError { throwable -> LOGGER.error("Upload of variants failed.") }
                     .subscribe() { file ->
-                        log.info("Processing file ${file.filename}")
+                        LOGGER.info("Processing file ${file.filename}")
 
                         def newStatus = new TransactionStatus().tap {
                             identifier = statusId
@@ -194,10 +199,11 @@ class VariantController {
                         TransactionStatus transactionStatus = repository.save(newStatus)
                         service.storeVariantsInStore(metadata, file.inputStream, repository, transactionStatus)
                     }
+
             return HttpResponse.accepted(uri)
         } catch (IOException exception) {
-            log.error(exception)
-            return HttpResponse.badRequest("Upload of variants failed.");
+            LOGGER.error(exception)
+            return HttpResponse.badRequest("Upload of variants failed.")
         }
         finally {
             Schedulers.shutdown()
@@ -224,10 +230,10 @@ class VariantController {
             return searchResult.present ? HttpResponse.ok(searchResult.get()) : HttpResponse.notFound("No transaction found for given "
                     + "uuid.").body("")
         } catch (IllegalArgumentException e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.badRequest("Invalid upload identifier supplied.")
         } catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }

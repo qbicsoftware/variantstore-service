@@ -860,9 +860,12 @@ CREATE TABLE `project`
 LOCK TABLES `project` WRITE;
 /*!40000 ALTER TABLE `project`
     DISABLE KEYS */;
+INSERT INTO `project`
+VALUES ( 'PROJ');
 /*!40000 ALTER TABLE `project`
     ENABLE KEYS */;
 UNLOCK TABLES;
+
 
 --
 -- Table structure for table `referencegenome`

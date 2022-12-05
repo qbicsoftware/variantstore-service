@@ -31,16 +31,16 @@ class SimpleVCFReader implements VCFReader{
      */
     private final VCFFileReader reader
 
-    public SimpleVCFReader(VCFFileReader reader) {
+    SimpleVCFReader(VCFFileReader reader) {
         this.reader = reader
         this.variantIterator = new VariantIterator(reader.iterator())
     }
 
-    public SimpleVCFReader(InputStream inputStream, String annotationType) {
+    SimpleVCFReader(InputStream inputStream, String annotationType) {
         this.variantIterator = new VariantIterator((CloseableIterator<VariantContext>) new VCFIteratorBuilder().open(inputStream).iterator(), annotationType)
     }
 
-    public SimpleVCFReader(InputStream inputStream) {
+    SimpleVCFReader(InputStream inputStream) {
         this.variantIterator = new VariantIterator((CloseableIterator<VariantContext>) new VCFIteratorBuilder().open(inputStream).iterator())
     }
 

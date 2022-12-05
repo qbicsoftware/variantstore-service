@@ -75,8 +75,8 @@ class Variant implements SimpleVariantContext, Comparable {
             joinColumns = @JoinColumn(name = "variant_id"),
             inverseJoinColumns = @JoinColumn(name = "consequence_id")
     )
-    @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
-    private Set<Consequence> consequences
+    @Relation(value = Relation.Kind.MANY_TO_MANY)
+    Set<Consequence> consequences
     /**
      * The associated reference genomes of a given variant
      */
@@ -85,7 +85,7 @@ class Variant implements SimpleVariantContext, Comparable {
             inverseJoinColumns = @JoinColumn(name = "referencegenome_id")
     )
     @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
-    private Set<ReferenceGenome> referenceGenomes
+    Set<ReferenceGenome> referenceGenomes
     /**
      * The variant detection software that called a given variant
      */
@@ -94,7 +94,7 @@ class Variant implements SimpleVariantContext, Comparable {
             inverseJoinColumns = @JoinColumn(name = "variantcaller_id")
     )
     @Relation(value = Relation.Kind.MANY_TO_MANY, cascade = Relation.Cascade.UPDATE)
-    private Set<VariantCaller> variantCaller
+    Set<VariantCaller> variantCaller
     /**
      * The information given in a VCF file (INFO) for a given variant
      */
@@ -125,7 +125,7 @@ class Variant implements SimpleVariantContext, Comparable {
         vcfInfo = new VcfInfo(context.getCommonInfo())
         databaseIdentifier = context.getID()
         List<Genotype> genotypes = []
-        consequences = annotationType ? context.getAttributeAsList(annotationType) : null
+        consequences = annotationType ? context.getAttributeAsList(annotationType) as Set<Consequence> : null
         context.getGenotypes().each { genotype -> genotypes.add(new Genotype(genotype))
         }
         this.genotypes = genotypes

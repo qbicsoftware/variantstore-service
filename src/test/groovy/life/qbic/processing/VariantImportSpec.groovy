@@ -59,7 +59,7 @@ class VariantImportSpec extends Specification {
         HttpRequest request = HttpRequest.POST("/variants", requestBody)
                 .accept(MediaType.APPLICATION_JSON)
                 .contentType(MediaType.MULTIPART_FORM_DATA)
-        PollingConditions uploaded = new PollingConditions(delay: 1, initialDelay: 0.5, timeout: 120)
+        PollingConditions uploaded = new PollingConditions(delay: 2, initialDelay: 1, timeout: 180)
 
         when:
         HttpResponse response = httpClient.toBlocking().exchange(request)
@@ -76,7 +76,5 @@ class VariantImportSpec extends Specification {
         where:
         metadata || file || status
         metadata1 || "src/test/resources/data/patient1_ann.vcf"  || HttpStatus.ACCEPTED
-        metadata2 || "src/test/resources/data/patient2_ann.vcf"  || HttpStatus.ACCEPTED
-        metadata3 || "src/test/resources/data/patient3_ann.vcf"  || HttpStatus.ACCEPTED
     }
 }

@@ -11,11 +11,15 @@ server:
     port: ${variantstore-port:8080}
 ```
 
+In addition, you can enable HTTPS support by setting `VARIANTSTORE_SSL_ENABLED` to `true` and enable the generation of a self-isgned certificate by Micronaut (`VARIANTSTORE_SSL_SELFSIGNED`).
+
 ## Security (Authentication and Authorization)
 
 Security (authentication and authorization) is enabled by default but you can deactivate it by setting the environment variable `VARIANTSTORE_SECURITY_ENABLED` to `false`. If security is enabled all protected endpoints (i.e. all endpoints except the `/beacon` endpoint) can only be accessed by authenticated users.
 
-In addition to that, the Variantstore supports authentication with OAuth 2.0 servers. This includes support for the OpenID standard. At the moment we only tested/support the option to use Keycloak as provider.
+In addition to that, the Variantstore supports authentication with OAuth 2.0 servers. This includes support for the OpenID standard. Authentication using Keycloak as provider has been tested. However, other provider that support OpenID such as [Okta](https://developer.okta.com/), [AWS Cognito](https://aws.amazon.com/cognito), and [Google](https://developers.google.com/identity/protocols/OpenIDConnect) should work as well when configured properly.
+
+Authentication mode is set to `idtoken` by default. The mode can be changed by setting the environment variable `VARIANTSTORE_AUTHENTICATION_MODE`. Please refer to the official Micronaut [docs](https://micronaut-projects.github.io/micronaut-security/latest/guide/#authenticationStrategy) for valid values.
 
 In order to enable authentication with OAuth 2.0 servers, set `VARIANTSTORE_OAUTH2_ENABLED` to `true` and provide all necessary details using the following environment variables:
 
@@ -48,7 +52,7 @@ The main database [model](/models/) expected by the **Variantstore** looks like 
 \
 Additionally, a database with the following [table](/models/transaction-db.sql) is needed to track the import transactions in the Variantstore:
 
-![Variantstore transaction model diagram](images/transaction-model-diagram.png)
+![Variantstore transaction model diagram](images/transaction-model-diagram-postgresql.png)
 
  The `Variantstore` data source can be configured by setting the following environment variables: `DB_HOST` (database host address), `DB_NAME` (database name), `DB_USER` (database user) and `DB_PWD` (database password). In addition, `DB_TRANSACTION_HOST`, `DB_TRANSACTION_NAME`, `DB_TRANSACTION_USER`, and `DB_TRANSACTION_PW` have to be specified for the transaction database.
 
@@ -92,6 +96,10 @@ flyway:
   datasources:
   ...
 ```
+
+## Import
+
+The import of variants to the store happens in batches (default: 250.000). If you would like to change the default batch size, you can use the environment variable `MAX_NUMBER_VARIANTS_PER_BATCH`.
 
 ## Logging
 

@@ -1,6 +1,5 @@
 package life.qbic.variantstore.util
 
-import groovy.util.logging.Log4j2
 import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.model.Consequence
 import life.qbic.variantstore.model.Gene
@@ -14,7 +13,6 @@ import life.qbic.variantstore.model.SimpleVariantContext
  *
  * @since: 1.0.0
  */
-@Log4j2
 class AnnotationHandler {
 
     /**
@@ -128,7 +126,7 @@ class AnnotationHandler {
         def parsedAnnotation = annotation.split('\\|', -1)
         def version = annotationSoftware.getVersion()
         def softwareName = annotationSoftware.getName().toUpperCase() as AnnotationTools
-        def cons = null
+        def cons
         Set<Gene> genes = []
 
         switch (softwareName) {
@@ -233,7 +231,7 @@ class AnnotationHandler {
                 cons.setGenes(genes)
                 break
             default:
-                throw new IllegalArgumentException("Unknown annotation software: $annotationSoftware.name");
+                throw new IllegalArgumentException("Unknown annotation software: $annotationSoftware.name")
         }
 
         return cons

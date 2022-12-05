@@ -3,15 +3,18 @@ micronaut:
     name: variantstore
   server:
     port: ${variantstore-port:8080}
-    maxRequestSize: 100
+    ssl:
+      enabled: ${variantstore-ssl-enabled:false}
+      buildSelfSigned: ${variantstore-ss-selfsigned:false}
+    maxRequestSize: 500MB
     multipart:
-      maxFileSize: 100
+      maxFileSize: 500MB
     thread-selection: AUTO
-  logger:
-    levels:
-      ROOT: INFO
   router:
     static-resources:
+      webjars:
+        paths: classpath:META-INF/resources/webjars
+        mapping: /webjars/**
       swagger:
         paths: classpath:META-INF/swagger
         mapping: /swagger/**
@@ -21,8 +24,12 @@ micronaut:
       rapidoc:
         paths: classpath:META-INF/swagger/views/rapidoc
         mapping: /rapidoc/**
+      css:
+        paths: classpath:static/css
+        mapping: /css/**
   security:
     enabled: ${variantstore-security-enabled:true}
+    authentication: ${variantstore-authentication-mode:idtoken}
     intercept-url-map:
       - pattern: /swagger/**
         http-method: GET
@@ -33,6 +40,14 @@ micronaut:
         access:
           - isAnonymous()
       - pattern: /rapidoc/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /webjars/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /css/**
         http-method: GET
         access:
           - isAnonymous()
@@ -65,14 +80,12 @@ micronaut:
             auth-method: client-secret-jwt
 datasources:
   variantstore_postgres:
-    url: jdbc:postgresql://${db-host:""}/${db-name:""}
+    url: jdbc:postgresql://${db-host:""}/${db-name:""}?currentSchema=variantstore
     username: ${db-user:""}
     password: ${db-pwd:""}
     driverClassName: org.postgresql.Driver
-    #  dialect: POSTGRES
-    #  schema-generate: none
   transactions:
-    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}?currentSchema=transactions
     username: ${db-transaction-user:""}
     password: ${db-transaction-pwd:""}
     driverClassName: org.postgresql.Driver
@@ -88,24 +101,33 @@ datasources:
   #  driverClassName: org.mariadb.jdbc.Driver
 database:
   specifier: variantstore-postgres
+  max-variants-per-batch: ${max-number-variants-per-batch:250000}
 flyway:
   datasources:
     variantstore_postgres:
       enabled: true
       baselineOnMigrate: true
       locations: classpath:db/postgresql
+      default-schema: variantstore
+      schemas: variantstore
     transactions:
       enabled: true
       baselineOnMigrate: true
       locations: classpath:db/transactions
+      default-schema: transactions
+      schemas: transactions
     variantstore_mariadb:
       enabled: false
       baselineOnMigrate: true
       locations: classpath:db/mariadb
+      default-schema: variantstore
+      schemas: variantstore
     transactions_mariadb:
       enabled: false
       baselineOnMigrate: true
       locations: classpath:db/transactions_mariadb
+      default-schema: transactions
+      schemas: transactions
 endpoints:
   health:
     enabled: true

@@ -1,6 +1,5 @@
 package life.qbic.variantstore.database
 
-import groovy.util.logging.Log4j2
 import io.micronaut.context.annotation.Primary
 import io.micronaut.context.annotation.Requires
 import life.qbic.variantstore.model.*
@@ -22,6 +21,8 @@ import life.qbic.variantstore.repositories.VcfinfoRepository
 import life.qbic.variantstore.service.VariantstoreStorage
 import life.qbic.variantstore.util.ListingArguments
 import jakarta.inject.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * A VariantstoreStorage implementation.
@@ -29,12 +30,12 @@ import jakarta.inject.*
  *
  * @since: 1.1.0
  */
-@Log4j2
 @Singleton
 @Primary
 @Requires(property = "database.specifier", value = "variantstore-postgres")
 class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(PostgresSqlVariantstoreStorage.class);
 
     /**
      * The repositories
@@ -65,6 +66,14 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
         } catch (Exception e) {
             throw new VariantstoreStorageException("Beacon something? $e.", e.printStackTrace())
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Optional<Project> findProjectById(String identifier) {
+        return projectRepository.findByIdentifier(identifier)
     }
 
     /**
@@ -108,6 +117,18 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             return geneRepository.searchByGeneId(identifier)
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch gene with identifier $identifier.", e.printStackTrace())
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    List<Project> findProjects(ListingArguments args) {
+        try {
+            return projectRepository.findAll()
+        } catch (Exception e) {
+            throw new VariantstoreStorageException("Could not fetch projects.", e.fillInStackTrace())
         }
     }
 
@@ -290,6 +311,9 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             VariantstoreStorageException  {
         try {
 
+            def numberOfVariants = variants.size()
+            LOGGER.info("Processing ${numberOfVariants} variants...")
+
             def project = metadata.getProject()
             def entity = metadata.getCase()
             def annotationTool = metadata.getVariantAnnotation()
@@ -343,6 +367,7 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
             def variantGenotypeMap = new HashMap<Variant, Set<Genotype>>()
             def variantVcfInfoMap = new HashMap<Variant, VcfInfo>()
             def updateNeeded = false
+            def numberProcessed = 0
 
             variants.each {var ->
                 consequencesToRegister = new HashSet<Consequence>()
@@ -355,6 +380,8 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                 def newVariant = searchResult.present ? searchResult.get() : variantRepository.save(var as Variant)
 
                 var.consequences.each {Consequence consequence ->
+                    consequence.addAnnotationTool(newVA)
+
                     def searchResultConsequence = consequenceRepository.find(consequence.allele, consequence
                             .codingChange, consequence.transcriptId, consequence.transcriptVersion, consequence.type,
                             consequence.bioType, consequence.canonical, consequence.aaChange, consequence.cdnaPosition,
@@ -363,10 +390,9 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                     consequence.strand, consequence.geneSymbol, consequence.featureType, consequence.distance, consequence.warnings)
 
                     if (!searchResultConsequence.present) {
-                        consequencesToRegister.add(consequence)
+                    consequencesToRegister.add(consequence)
                     }
 
-                    consequence.addAnnotationTool(newVA)
                     consequence.genes.each {gene ->
                         def searchResultGene = geneRepository.findByGeneId(gene.geneId)
                         searchResultGene.present ? searchResultGene.get() : geneRepository.save(gene)
@@ -374,24 +400,29 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                 }
 
                 if (!consequencesToRegister.empty) {
-                    newVariant.consequences.addAll(consequencesToRegister)
-                }
-                else {
-                    newVariant.consequences = consequencesRegistered
+                    def registeredConsequences = consequenceRepository.saveAll(consequencesToRegister)
+                    registeredConsequences.each{
+                        consequenceRepository.update(it)
+                    }
                 }
 
                 var.genotypes.each {Genotype genotype ->
-                    def searchResultGenotype = genotypeRepository.find(genotype.genotype, genotype.readDepth, genotype.filter, genotype.likelihoods, genotype.genotypeLikelihoods, genotype.genotypeLikelihoodsHet,
-                            genotype.posteriorProbs, genotype.genotypeQuality, genotype.haplotypeQualities, genotype.phaseSet, genotype.phasingQuality,
-                            genotype.alternateAlleleCounts, genotype.mappingQuality)
+                    def searchResultGenotype = genotypeRepository.find(genotype.genotype, genotype.readDepth,
+                            genotype.filter, genotype.likelihoods, genotype.genotypeLikelihoods, genotype.genotypeLikelihoodsHet,
+                            genotype.posteriorProbs, genotype.genotypeQuality, genotype.haplotypeQualities, genotype.phaseSet,
+                            genotype.phasingQuality, genotype.alternateAlleleCounts, genotype.mappingQuality)
 
                     if (!searchResultGenotype.present) {
                         genotypesToRegister.add(genotype)
                     }
                     else {
-                        genotypesRegistered.add(genotype)
+                        searchResultGenotype.get().sampleName = genotype.sampleName
+                        genotypesRegistered.add(searchResultGenotype.get())
                     }
                }
+
+                newVariant.addVariantCaller(newVariantCaller)
+                newVariant.addReferenceGenome(newReferenceGenome)
 
                 def newGenotypes = genotypesToRegister.empty ? [] : genotypeRepository.saveAll(genotypesToRegister)
                 variantGenotypeMap[newVariant] = newGenotypes + genotypesRegistered as Set<Genotype>
@@ -406,17 +437,26 @@ class PostgresSqlVariantstoreStorage implements VariantstoreStorage {
                 def newVcfInfo = searchResultVcfInfo.present ? searchResultVcfInfo.get() : vcfinfoRepository.save(var.vcfInfo)
                 variantVcfInfoMap[newVariant] = newVcfInfo
 
-                newVariant.addVariantCaller(newVariantCaller)
-                newVariant.addReferenceGenome(newReferenceGenome)
-
                 updateNeeded = !(searchResult.present & searchResultVA.present & searchResultVC.present & searchResultRG.present &
                         searchResultVcfInfo.present & consequencesToRegister.empty & genotypesToRegister.empty)
 
                 if (updateNeeded) { newVariants.add(newVariant) }
+
+                numberProcessed++
+                def ratio = Math.round(numberOfVariants / 10)
+                if (ratio > 0 && numberProcessed % ratio == 0) {
+                    LOGGER.info("${Math.round(numberProcessed / numberOfVariants * 100.0)}%")
+                }
             }
 
+            // @Todo Wait for fix
+            // we cannot use updateAll here since there seems to be a Bug and it does not propagate the updates to
+            // all entities in the list
             if (!newVariants.empty) {
-                newVariants = variantRepository.updateAll(newVariants)
+                newVariants.each {
+                    variantRepository.update(it)
+                }
+                //variantRepository.updateAll(newVariants)
             }
 
             List<SampleVariant> sampleVariants = new ArrayList<SampleVariant>()

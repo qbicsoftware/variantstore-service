@@ -1,6 +1,6 @@
 package life.qbic.variantstore.factories
 
-import com.github.javafaker.Faker
+import net.datafaker.Faker
 import life.qbic.variantstore.model.VcfInfo
 
 /**

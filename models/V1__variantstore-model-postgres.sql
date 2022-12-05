@@ -5,12 +5,12 @@
 -- Dumped from database version 13.2
 -- Dumped by pg_dump version 13.2
 
-CREATE SCHEMA IF NOT EXISTS public;
+CREATE SCHEMA IF NOT EXISTS variantstore;
 
-SET SCHEMA 'public';
+SET SCHEMA 'variantstore';
 
 --
--- Name: project; Type: TABLE; Schema: public;
+-- Name: project; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE project (
@@ -19,7 +19,7 @@ CREATE TABLE project (
 );
 
 --
--- Name: annotationsoftware; Type: TABLE; Schema: public;
+-- Name: annotationsoftware; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE annotationsoftware (
@@ -30,16 +30,16 @@ CREATE TABLE annotationsoftware (
 );
 
 --
--- Name: annotationsoftware_consequence; Type: TABLE; Schema: public;
+-- Name: annotationsoftware_consequence; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE annotationsoftware_consequence (
-    annotationsoftware_id bigint NOT NULL,
-    consequence_id bigint NOT NULL
+    consequence_id bigint NOT NULL,
+    annotationsoftware_id bigint NOT NULL
 );
 
 --
--- Name: consequence; Type: TABLE; Schema: public;
+-- Name: consequence; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE consequence (
@@ -69,7 +69,7 @@ CREATE TABLE consequence (
 );
 
 --
--- Name: ensembl; Type: TABLE; Schema: public;
+-- Name: ensembl; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE ensembl (
@@ -80,7 +80,7 @@ CREATE TABLE ensembl (
 );
 
 --
--- Name: ensembl_gene; Type: TABLE; Schema: public;
+-- Name: ensembl_gene; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE ensembl_gene (
@@ -89,7 +89,7 @@ CREATE TABLE ensembl_gene (
 );
 
 --
--- Name: entity; Type: TABLE; Schema: public;
+-- Name: entity; Type: TABLE; Schema: variantstore;
 -- id character varying NOT NULL,
 
 CREATE TABLE entity (
@@ -99,7 +99,7 @@ CREATE TABLE entity (
 );
 
 --
--- Name: gene; Type: TABLE; Schema: public;
+-- Name: gene; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE gene (
@@ -118,7 +118,7 @@ CREATE TABLE gene (
 );
 
 --
--- Name: gene_consequence; Type: TABLE; Schema: public;
+-- Name: gene_consequence; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE gene_consequence (
@@ -127,7 +127,7 @@ CREATE TABLE gene_consequence (
 );
 
 --
--- Name: genotype; Type: TABLE; Schema: public;
+-- Name: genotype; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE genotype (
@@ -148,7 +148,7 @@ CREATE TABLE genotype (
 );
 
 --
--- Name: referencegenome; Type: TABLE; Schema: public;
+-- Name: referencegenome; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE referencegenome (
@@ -159,7 +159,7 @@ CREATE TABLE referencegenome (
 );
 
 --
--- Name: referencegenome_variant; Type: TABLE; Schema: public;
+-- Name: referencegenome_variant; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE referencegenome_variant (
@@ -168,7 +168,7 @@ CREATE TABLE referencegenome_variant (
 );
 
 --
--- Name: sample; Type: TABLE; Schema: public;
+-- Name: sample; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE sample (
@@ -179,7 +179,7 @@ CREATE TABLE sample (
 );
 
 --
--- Name: sample_variant; Type: TABLE; Schema: public;
+-- Name: sample_variant; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE sample_variant (
@@ -191,7 +191,7 @@ CREATE TABLE sample_variant (
 );
 
 --
--- Name: variant; Type: TABLE; Schema: public;
+-- Name: variant; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE variant (
@@ -207,7 +207,7 @@ CREATE TABLE variant (
 );
 
 --
--- Name: variant_consequence; Type: TABLE; Schema: public;
+-- Name: variant_consequence; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE variant_consequence (
@@ -216,7 +216,7 @@ CREATE TABLE variant_consequence (
 );
 
 --
--- Name: variantcaller; Type: TABLE; Schema: public;
+-- Name: variantcaller; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE variantcaller (
@@ -227,7 +227,7 @@ CREATE TABLE variantcaller (
 );
 
 --
--- Name: variantcaller_variant; Type: TABLE; Schema: public;
+-- Name: variantcaller_variant; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE variantcaller_variant (
@@ -236,7 +236,7 @@ CREATE TABLE variantcaller_variant (
 );
 
 --
--- Name: vcfinfo; Type: TABLE; Schema: public;
+-- Name: vcfinfo; Type: TABLE; Schema: variantstore;
 --
 
 CREATE TABLE vcfinfo (
@@ -262,14 +262,14 @@ CREATE TABLE vcfinfo (
 );
 
 --
--- Name: annotationsoftware annotationsoftware_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: annotationsoftware annotationsoftware_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY annotationsoftware
     ADD CONSTRAINT annotationsoftware_pkey PRIMARY KEY (id);
 
 --
--- Name: consequence consequence_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: consequence consequence_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY consequence
@@ -277,7 +277,7 @@ ALTER TABLE ONLY consequence
 
 
 --
--- Name: ensembl ensembl_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: ensembl ensembl_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY ensembl
@@ -285,7 +285,7 @@ ALTER TABLE ONLY ensembl
 
 
 --
--- Name: entity entity_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: entity entity_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY entity
@@ -293,7 +293,7 @@ ALTER TABLE ONLY entity
 
 
 --
--- Name: gene gene_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: gene gene_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY gene
@@ -301,7 +301,7 @@ ALTER TABLE ONLY gene
 
 
 --
--- Name: genotype genotype_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: genotype genotype_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY genotype
@@ -309,7 +309,7 @@ ALTER TABLE ONLY genotype
 
 
 --
--- Name: project project_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: project project_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY project
@@ -317,7 +317,7 @@ ALTER TABLE ONLY project
 
 
 --
--- Name: referencegenome referencegenome_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: referencegenome referencegenome_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY referencegenome
@@ -325,7 +325,7 @@ ALTER TABLE ONLY referencegenome
 
 
 --
--- Name: sample sample_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: sample sample_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY sample
@@ -333,7 +333,7 @@ ALTER TABLE ONLY sample
 
 
 --
--- Name: variant variant_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: variant variant_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY variant
@@ -341,7 +341,7 @@ ALTER TABLE ONLY variant
 
 
 --
--- Name: variantcaller variantcaller_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: variantcaller variantcaller_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY variantcaller
@@ -349,7 +349,7 @@ ALTER TABLE ONLY variantcaller
 
 
 --
--- Name: vcfinfo vcfinfo_pkey; Type: CONSTRAINT; Schema: public;
+-- Name: vcfinfo vcfinfo_pkey; Type: CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY vcfinfo
@@ -357,206 +357,206 @@ ALTER TABLE ONLY vcfinfo
 
 
 --
--- Name: as_unique; Type: INDEX; Schema: public;
+-- Name: as_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX as_unique ON annotationsoftware USING btree (name, version, doi);
 
 
 --
--- Name: ascons_unique; Type: INDEX; Schema: public;
+-- Name: ascons_unique; Type: INDEX; Schema: variantstore;
 --
 
-CREATE UNIQUE INDEX ascons_unique ON annotationsoftware_consequence USING btree (annotationsoftware_id, consequence_id);
+CREATE UNIQUE INDEX ascons_unique ON annotationsoftware_consequence USING btree (consequence_id, annotationsoftware_id);
 
 
 --
--- Name: cons_gene_unique; Type: INDEX; Schema: public;
+-- Name: cons_gene_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX cons_gene_unique ON gene_consequence USING btree (gene_id, consequence_id);
 
 
 --
--- Name: cons_unique; Type: INDEX; Schema: public;
+-- Name: cons_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX cons_unique ON consequence USING btree (allele, codingchange, transcriptid, transcriptversion, type, biotype, canonical, aachange, cdnaposition, cdsposition, proteinposition, proteinlength, cdnalength, cdslength, impact, exon, intron, strand, genesymbol, featuretype, distance);
 
 
 --
--- Name: ensembl_unique; Type: INDEX; Schema: public;
+-- Name: ensembl_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX ensembl_unique ON ensembl USING btree (version, date, referencegenome_id);
 
 --
--- Name: gene_unique; Type: INDEX; Schema: public;
+-- Name: gene_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX gene_unique ON gene USING btree (geneid);
 
 
 --
--- Name: genotype_unique; Type: INDEX; Schema: public;
+-- Name: genotype_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX genotype_unique ON genotype USING btree (genotype, readdepth, filter, likelihoods, genotypelikelihoods, genotypelikelihoodshet, posteriorprobs, genotypequality, haplotypequalities, phaseset, phasingquality, alternateallelecounts, mappingquality);
 
 
 --
--- Name: idx_chromosome; Type: INDEX; Schema: public;
+-- Name: idx_chromosome; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_chromosome ON variant USING btree (chr);
 
 
 --
--- Name: idx_constype; Type: INDEX; Schema: public;
+-- Name: idx_constype; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_constype ON consequence USING btree (type);
 
 
 --
--- Name: idx_ensembl_id; Type: INDEX; Schema: public;
+-- Name: idx_ensembl_id; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_ensembl_id ON ensembl_gene USING btree (ensembl_id);
 
 
 --
--- Name: idx_entity_id; Type: INDEX; Schema: public;
+-- Name: idx_entity_id; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_entity_id ON sample USING btree (entity_id);
 
 
 --
--- Name: idx_gene_id; Type: INDEX; Schema: public;
+-- Name: idx_gene_id; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_gene_id ON ensembl_gene USING btree (gene_id);
 
 
 --
--- Name: idx_geneid; Type: INDEX; Schema: public;
+-- Name: idx_geneid; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_geneid ON gene USING btree (geneid);
 
 
 --
--- Name: idx_genesymbol; Type: INDEX; Schema: public;
+-- Name: idx_genesymbol; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_genesymbol ON consequence USING btree (genesymbol);
 
 
 --
--- Name: idx_rg; Type: INDEX; Schema: public;
+-- Name: idx_rg; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_rg ON ensembl USING btree (referencegenome_id);
 
 
 --
--- Name: idx_rg_build; Type: INDEX; Schema: public;
+-- Name: idx_rg_build; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_rg_build ON referencegenome USING btree (build);
 
 
 --
--- Name: idx_sample_id; Type: INDEX; Schema: public;
+-- Name: idx_sample_id; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_sample_id ON sample USING btree (identifier);
 
 
 --
--- Name: idx_sample_variant; Type: INDEX; Schema: public;
+-- Name: idx_sample_variant; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_sample_variant ON sample_variant USING btree (sample_id, variant_id);
 
 
 --
--- Name: idx_start; Type: INDEX; Schema: public;
+-- Name: idx_start; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_start ON variant USING btree (start);
 
 
 --
--- Name: idx_variant_sample; Type: INDEX; Schema: public;
+-- Name: idx_variant_sample; Type: INDEX; Schema: variantstore;
 --
 
 CREATE INDEX idx_variant_sample ON sample_variant USING btree (variant_id, sample_id);
 
 
 --
--- Name: rg_unique; Type: INDEX; Schema: public;
+-- Name: rg_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX rg_unique ON referencegenome USING btree (source, build, version);
 
 
 --
--- Name: sample_unique; Type: INDEX; Schema: public;
+-- Name: sample_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX sample_unique ON sample USING btree (identifier, cancerentity, entity_id);
 
 --
--- Name: project_unique; Type: INDEX; Schema: public;
+-- Name: project_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX project_unique ON project USING btree (identifier);
 
 --
--- Name: entity_unique; Type: INDEX; Schema: public;
+-- Name: entity_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX entity_unique ON entity USING btree (identifier, project_id);
 
 --
--- Name: sample_variant_unique; Type: INDEX; Schema: public;
+-- Name: sample_variant_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX sample_variant_unique ON sample_variant USING btree (sample_id, variant_id, vcfinfo_id, genotype_id);
 
 
 --
--- Name: variant_rg_unique; Type: INDEX; Schema: public;
+-- Name: variant_rg_unique; Type: INDEX; Schema: variantstore;
 --
 
 -- CREATE UNIQUE INDEX variant_rg_unique ON referencegenome_variant USING btree (referencegenome_id, variant_id);
 
 
 --
--- Name: variant_unique; Type: INDEX; Schema: public;
+-- Name: variant_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX variant_unique ON variant USING btree (chr, start, "end", ref, obs, somatic, databaseidentifier);
 
 
 --
--- Name: variant_vc_unique; Type: INDEX; Schema: public;
+-- Name: variant_vc_unique; Type: INDEX; Schema: variantstore;
 --
 
 -- CREATE UNIQUE INDEX variant_vc_unique ON variantcaller_variant USING btree (variant_id, variantcaller_id);
 
 
 --
--- Name: variantcaller_unique; Type: INDEX; Schema: public;
+-- Name: variantcaller_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX variantcaller_unique ON variantcaller USING btree (name, version, doi);
 
 
 --
--- Name: vcfinfo_unique; Type: INDEX; Schema: public;
+-- Name: vcfinfo_unique; Type: INDEX; Schema: variantstore;
 --
 
 CREATE UNIQUE INDEX vcfinfo_unique ON vcfinfo USING btree (ancestralallele, allelecount, allelefrequency, numberalleles, basequality, cigar, dbsnp, hapmaptwo, hapmapthree, thousandgenomes, combineddepth, endpos, rms, mqzero, strandbias, numbersamples, somatic, validated);
@@ -565,7 +565,7 @@ CREATE UNIQUE INDEX vcfinfo_unique ON vcfinfo USING btree (ancestralallele, alle
 
 
 --
--- Name: annotationsoftware_consequence annotationsoftware_consequence_annotationsoftware_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: annotationsoftware_consequence annotationsoftware_consequence_annotationsoftware_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY annotationsoftware_consequence
@@ -573,7 +573,7 @@ ALTER TABLE ONLY annotationsoftware_consequence
 
 
 --
--- Name: annotationsoftware_consequence annotationsoftware_consequence_consequence_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: annotationsoftware_consequence annotationsoftware_consequence_consequence_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY annotationsoftware_consequence
@@ -581,7 +581,7 @@ ALTER TABLE ONLY annotationsoftware_consequence
 
 
 --
--- Name: ensembl_gene ensembl_gene_ensembl_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: ensembl_gene ensembl_gene_ensembl_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY ensembl_gene
@@ -589,7 +589,7 @@ ALTER TABLE ONLY ensembl_gene
 
 
 --
--- Name: ensembl_gene ensembl_gene_gene_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: ensembl_gene ensembl_gene_gene_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY ensembl_gene
@@ -597,7 +597,7 @@ ALTER TABLE ONLY ensembl_gene
 
 
 --
--- Name: ensembl ensembl_referencegenome_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: ensembl ensembl_referencegenome_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY ensembl
@@ -605,7 +605,7 @@ ALTER TABLE ONLY ensembl
 
 
 --
--- Name: entity entity_project_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: entity entity_project_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY entity
@@ -613,7 +613,7 @@ ALTER TABLE ONLY entity
 
 
 --
--- Name: gene_consequence gene_consequence_consequence_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: gene_consequence gene_consequence_consequence_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY gene_consequence
@@ -621,7 +621,7 @@ ALTER TABLE ONLY gene_consequence
 
 
 --
--- Name: gene_consequence gene_consequence_gene_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: gene_consequence gene_consequence_gene_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY gene_consequence
@@ -629,7 +629,7 @@ ALTER TABLE ONLY gene_consequence
 
 
 --
--- Name: referencegenome_variant referencegenome_variant_referencegenome_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: referencegenome_variant referencegenome_variant_referencegenome_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY referencegenome_variant
@@ -637,7 +637,7 @@ ALTER TABLE ONLY referencegenome_variant
 
 
 --
--- Name: referencegenome_variant referencegenome_variant_variant_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: referencegenome_variant referencegenome_variant_variant_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY referencegenome_variant
@@ -645,7 +645,7 @@ ALTER TABLE ONLY referencegenome_variant
 
 
 --
--- Name: sample sample_entity_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: sample sample_entity_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY sample
@@ -653,7 +653,7 @@ ALTER TABLE ONLY sample
 
 
 --
--- Name: sample_variant sample_variant_genotype_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: sample_variant sample_variant_genotype_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY sample_variant
@@ -661,7 +661,7 @@ ALTER TABLE ONLY sample_variant
 
 
 --
--- Name: sample_variant sample_variant_sample_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: sample_variant sample_variant_sample_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY sample_variant
@@ -669,7 +669,7 @@ ALTER TABLE ONLY sample_variant
 
 
 --
--- Name: sample_variant sample_variant_variant_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: sample_variant sample_variant_variant_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY sample_variant
@@ -677,7 +677,7 @@ ALTER TABLE ONLY sample_variant
 
 
 --
--- Name: sample_variant sample_variant_vcfinfo_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: sample_variant sample_variant_vcfinfo_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY sample_variant
@@ -685,14 +685,14 @@ ALTER TABLE ONLY sample_variant
 
 
 --
--- Name: variantcaller_variant variantcaller_variant_variant_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: variantcaller_variant variantcaller_variant_variant_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY variantcaller_variant
     ADD CONSTRAINT variantcaller_variant_variant_id_fkey FOREIGN KEY (variant_id) REFERENCES variant(id) NOT VALID;
 
 --
--- Name: variantcaller_variant variantcaller_variant_variantcaller_id_fkey; Type: FK CONSTRAINT; Schema: public;
+-- Name: variantcaller_variant variantcaller_variant_variantcaller_id_fkey; Type: FK CONSTRAINT; Schema: variantstore;
 --
 
 ALTER TABLE ONLY variantcaller_variant

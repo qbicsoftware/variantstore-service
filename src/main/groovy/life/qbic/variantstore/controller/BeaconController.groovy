@@ -1,6 +1,5 @@
 package life.qbic.variantstore.controller
 
-import groovy.util.logging.Log4j2
 import io.micronaut.core.annotation.NonNull
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
@@ -17,6 +16,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.variantstore.model.BeaconAlleleResponse
 import life.qbic.variantstore.service.VariantstoreService
 import jakarta.inject.Inject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.PositiveOrZero
 
@@ -29,10 +31,11 @@ import javax.validation.constraints.PositiveOrZero
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Controller("/beacon")
 @Secured(SecurityRule.IS_ANONYMOUS)
 class BeaconController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BeaconController.class);
 
     /**
      * The variantstore service
@@ -60,13 +63,13 @@ class BeaconController {
             tags = "Beacon")
     @ApiResponse(responseCode = "200", description = "Returns the answer to the specified question",
             content = @Content(schema = @Schema(implementation = BeaconAlleleResponse.class)))
-    HttpResponse<BeaconAlleleResponse> checkVariant(@NonNull @Pattern(regexp = '(?:chr)?[1-9]|1[0-9]|2[0-3]|X|Y')
+    HttpResponse<BeaconAlleleResponse> checkVariant(@NonNull @Pattern(regexp = '(?:chr)?[1-9]|1\\d|2[0-3]|X|Y')
                                                     @QueryValue String chromosome,
                                                     @NonNull @PositiveOrZero @QueryValue BigInteger startPosition,
                                                     @NonNull @Pattern(regexp = '[ACTG]+') @QueryValue String reference,
                                                     @NonNull @Pattern(regexp = '[ACTG]+') @QueryValue String observed,
                                                     @NonNull @QueryValue String assemblyId) {
-        log.info("Beacon request for specified variant.")
+        LOGGER.info("Beacon request for specified variant.")
         BeaconAlleleResponse response = service.getBeaconAlleleResponse(chromosome, startPosition, reference, observed, assemblyId)
         return HttpResponse.ok(response)
     }
