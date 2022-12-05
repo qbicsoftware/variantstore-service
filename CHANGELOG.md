@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - [#50](https://github.com/qbicsoftware/variantstore-service/pull/50) Use [Flyway](https://flywaydb.org) for database migration
 - [#50](https://github.com/qbicsoftware/variantstore-service/pull/50) Adapt configuration to work with MariaDB OR PostgreSQL
 - [#55](https://github.com/qbicsoftware/variantstore-service/pull/55), [#56](https://github.com/qbicsoftware/variantstore-service/pull/56) Extend documentation
+- [#64](https://github.com/qbicsoftware/variantstore-service/pull/64) Update dependencies, remove `log4j`
 
 ### `Fixed`
 
