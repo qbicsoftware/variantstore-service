@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory
 @OpenAPIDefinition(
         info = @Info(
                 title = "Variantstore",
-                version = "1.1.0",
+                version = "1.2.0-SNAPSHOT",
                 description = "Variantstore Restful API",
                 license = @License(name = "MIT License", url = "https://opensource.org/licenses/mit-license.php"),
                 contact = @Contact(url = "https://github.com/christopher-mohr", name = "Christopher Mohr",
