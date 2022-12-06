@@ -5,6 +5,7 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.hateoas.JsonError
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.micronaut.transaction.annotation.TransactionalAdvice
@@ -62,8 +63,9 @@ class ProjectController {
         LOGGER.info("Resource request for project: $identifier")
         try {
             Optional<Project> project = service.getProjectForProjectId(identifier)
+            JsonError error = new JsonError("Project $identifier not found.")
             return project.present ? HttpResponse.ok(project.get()) : HttpResponse.notFound("No Project found for given "
-                    + "identifier.").body("")
+                    + "identifier.").body(error)
         } catch (IllegalArgumentException e) {
             LOGGER.error(e)
             return HttpResponse.badRequest("Invalid project identifier supplied.")

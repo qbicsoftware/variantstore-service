@@ -3,6 +3,7 @@ package life.qbic.variantstore.controller
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.*
+import io.micronaut.http.hateoas.JsonError
 import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.http.uri.UriBuilder
 import io.micronaut.runtime.server.EmbeddedServer
@@ -88,8 +89,9 @@ class VariantController {
         LOGGER.info("Resource request for variant: $identifier")
         try {
             Set<Variant> variants = service.getVariantForVariantId(identifier) as Set<Variant>
+            JsonError error = new JsonError("No variant found for identifier $identifier.")
             return variants ? HttpResponse.ok(variants[0]) : HttpResponse.notFound("No Variant found for given "
-                    + "identifier.").body("")
+                    + "identifier.").body(error)
         } catch (IllegalArgumentException e) {
             LOGGER.error(e)
             return HttpResponse.badRequest("Invalid variant identifier supplied.")
@@ -138,24 +140,24 @@ class VariantController {
                         annotationSoftware, withVcfInfo, withGenotypes)
                 def time = new Date().format("yyyy-MM-dd_HH-mm")
 
+                JsonError error = new JsonError("No variants found matching provided attributes.")
+
                 if (format.toUpperCase() == IdValidator.VariantFormats.VCF.toString()) {
                     return variants ? HttpResponse.ok(service.getVcfContentForVariants(variants, withConsequences, withGenotypes,
                             referenceGenome, annotationSoftware, annotationSoftwareVersion, vcfVersion))
                             .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.vcf")
-                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
-                            "matching " + "provided attributes.") as HttpResponse<List<Variant>>
+                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound(error) as HttpResponse<List<Variant>>
                 } else {
                     return variants ? HttpResponse.ok(service.getFhirContentForVariants(variants, withConsequences,
                             referenceGenome))
                             .header("Content-Disposition", "attachment; filename=variantstore_export_${time}.json")
-                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound("No variants found " +
-                            "matching " + "provided attributes.") as HttpResponse<List<Variant>>
+                            .contentType(MediaType.TEXT_PLAIN_TYPE) : HttpResponse.notFound(error) as HttpResponse<List<Variant>>
                 }
             }
 
             variants = service.getVariantsForSpecifiedProperties(args, referenceGenome,
                     withConsequences, annotationSoftware, false, withGenotypes)
-            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound("No variants found matching provided " + "" + "" + "" + "attributes.") as HttpResponse<List<Variant>>
+            return variants ? HttpResponse.ok(variants) : HttpResponse.notFound(error) as HttpResponse<List<Variant>>
         }
         catch (Exception e) {
             LOGGER.error(e)

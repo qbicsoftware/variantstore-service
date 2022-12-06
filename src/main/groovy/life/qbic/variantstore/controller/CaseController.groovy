@@ -5,6 +5,7 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.hateoas.JsonError
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.micronaut.transaction.annotation.TransactionalAdvice
@@ -63,7 +64,9 @@ class CaseController {
         LOGGER.info("Resource request for case: $identifier")
         try {
             List<Case> cases = service.getCaseForCaseId(identifier)
-            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound("No case found for given identifier.")
+            JsonError error = new JsonError("No case found for given identifier $identifier.")
+
+            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound(error)
         }
 
         catch (IllegalArgumentException e) {
@@ -96,7 +99,8 @@ class CaseController {
         LOGGER.info("Resource request for cases with filtering options.")
         try {
             List<Case> cases = service.getCasesForSpecifiedProperties(args)
-            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound("No cases found matching provided attributes.")
+            JsonError error = new JsonError("No cases found for provided attributes.")
+            return cases ? HttpResponse.ok(cases) : HttpResponse.notFound(error)
         } catch (Exception e) {
             LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")

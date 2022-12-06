@@ -6,6 +6,7 @@ import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
 import io.micronaut.http.annotation.Post
+import io.micronaut.http.hateoas.JsonError
 import io.micronaut.http.multipart.CompletedFileUpload
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
@@ -69,7 +70,8 @@ class GeneController {
         LOGGER.info("Resource request for gene: $identifier")
         try {
             Set<Gene> genes = service.getGeneForGeneId(identifier, args)
-            return genes ? HttpResponse.ok(genes[0]) : HttpResponse.notFound("Gene not found.").body("")
+            JsonError error = new JsonError("No genes found.")
+            return genes ? HttpResponse.ok(genes[0]) : HttpResponse.notFound("Gene not found.").body(error)
         }
         catch (IllegalArgumentException e) {
             LOGGER.error(e)

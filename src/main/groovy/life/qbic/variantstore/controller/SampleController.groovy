@@ -5,6 +5,7 @@ import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.hateoas.JsonError
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
 import io.micronaut.transaction.annotation.TransactionalAdvice
@@ -62,7 +63,8 @@ class SampleController {
         LOGGER.info("Resource request for sample: $identifier")
         try {
             List<Sample> samples = service.getSampleForSampleId(identifier)
-            return samples ? HttpResponse.ok(samples.get(0)) : HttpResponse.notFound("Sample not found.")
+            JsonError error = new JsonError("No sample found with provided identifier $identifier.")
+            return samples ? HttpResponse.ok(samples.get(0)) : HttpResponse.notFound(error)
         }
         catch (IllegalArgumentException e) {
             LOGGER.error(e)
@@ -92,7 +94,8 @@ class SampleController {
         LOGGER.info("Resource request for samples with filtering options.")
         try {
             List<Sample> samples = service.getSamplesForSpecifiedProperties(args)
-            return samples ? HttpResponse.ok(samples) : HttpResponse.notFound("No samples found matching provided attributes.")
+            JsonError error = new JsonError("No samples found matching provided attributes.")
+            return samples ? HttpResponse.ok(samples) : HttpResponse.notFound(error)
         }
         catch (Exception e) {
             LOGGER.error(e)
