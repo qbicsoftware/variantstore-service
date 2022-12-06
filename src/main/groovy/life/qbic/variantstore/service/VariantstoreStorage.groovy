@@ -3,17 +3,20 @@ package life.qbic.variantstore.service
 import life.qbic.variantstore.database.VariantstoreStorageException
 import life.qbic.variantstore.model.Case
 import life.qbic.variantstore.model.Consequence
+import life.qbic.variantstore.model.Ensembl
 import life.qbic.variantstore.model.Gene
+import life.qbic.variantstore.model.Project
 import life.qbic.variantstore.model.ReferenceGenome
 import life.qbic.variantstore.model.Sample
 import life.qbic.variantstore.model.SimpleVariantContext
 import life.qbic.variantstore.model.Variant
 import life.qbic.variantstore.model.VariantCaller
 import life.qbic.variantstore.model.Annotation
+
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.util.ListingArguments
-import javax.inject.Singleton
-import javax.validation.constraints.NotNull
+import jakarta.inject.Singleton
+import io.micronaut.core.annotation.NonNull
 
 /**
  * The Variantstore storage interface.
@@ -30,10 +33,17 @@ interface VariantstoreStorage {
      * @param reference the reference allele
      * @param observed the observed allele
      * @param assemblyId the identifier (build) of the reference genome
-     * @return list of found variants
+     * @return set of found variants
      */
-    List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
+    Set<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
                                           String reference, String observed, String assemblyId)
+
+    /**
+     * Find project in store by identifier.
+     * @param identifier the project identifier
+     * @return optional project
+     */
+    Optional<Project> findProjectById(String identifier)
 
     /**
      * Find case in store by identifier.
@@ -52,65 +62,72 @@ interface VariantstoreStorage {
     /**
      * Find variant in store by identifier.
      * @param identifier the variant identifier
-     * @return list of found variants
+     * @return set of found variants
      */
-    List<Variant> findVariantById(String identifier)
+    Set<Variant> findVariantById(String identifier)
 
     /**
      * Find gene in store by identifier.
      * @param identifier the gene identifier
      * @param args further optional arguments to specify Ensembl version e.g.
-     * @return list of found genes
+     * @return set of found genes
      */
-    List<Gene> findGeneById(String identifier, @NotNull ListingArguments args)
+    Set<Gene> findGeneById(String identifier, @NonNull ListingArguments args)
+
+    /**
+     * Find projects for specified filtering options.
+     * @param args the provided filtering options
+     * @return list of found projects
+     */
+    List<Project> findProjects(@NonNull ListingArguments args)
 
     /**
      * Find cases for specified filtering options.
      * @param args the provided filtering options
      * @return list of found cases
      */
-    List<Case> findCases(@NotNull ListingArguments args)
+    List<Case> findCases(@NonNull ListingArguments args)
 
     /**
      * Find samples for specified filtering options.
      * @param args the provided filtering options
      * @return list of found samples
      */
-    List<Sample> findSamples(@NotNull ListingArguments args)
+    List<Sample> findSamples(@NonNull ListingArguments args)
 
     /**
      * Find variants for specified (filtering) options.
      * @param args the filtering options
      * @param referenceGenome the associated reference genome
-     * @param withConsequences true if connected consequenes should be returned
+     * @param withConsequences true if connected consequences should be returned
      * @param annotationSoftware the associated annotation software
      * @param withVcfInfo true if connected VCF INFO should be returned
      * @param withGenotypes true if connected genotype information should be returned
-     * @return list of found variants
+     * @return set of found variants
      */
-    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
-            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
+    Set<Variant> findVariants(@NonNull ListingArguments args, String referenceGenome, Boolean withConsequences,
+                               String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes)
 
     /**
      * Find annotation software used to annotate the given consequence.
      * @param consequence the provided consequence
-     * @return the found annotation software
+     * @return set of found annotation software
      */
-    Annotation findAnnotationSoftwareByConsequence(Consequence consequence)
+    Set<Annotation> findAnnotationSoftwareByConsequence(Consequence consequence)
 
     /**
-     * Find reference genome of given variant.
+     * Find reference genomes of given variant.
      * @param variant the provided variant
-     * @return the found reference genome
+     * @return set of found reference genomes
      */
-    ReferenceGenome findReferenceGenomeByVariant(Variant variant)
+    Set<ReferenceGenome> findReferenceGenomeByVariant(Variant variant)
 
     /**
      * Find genes for specified filtering options.
      * @param args the provided filtering options
-     * @return list of found genes
+     * @return set of found genes
      */
-    List<Gene> findGenes(@NotNull ListingArguments args)
+    Set<Gene> findGenes(@NonNull ListingArguments args)
 
     /**
      * Store case in the store.
@@ -148,14 +165,11 @@ interface VariantstoreStorage {
      * @param sampleIdentifiers the provided sample identifiers (mapped to genotypes)
      * @param variantContext the provided variants
      */
-    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map sampleIdentifiers, ArrayList<SimpleVariantContext> variantContext) throws VariantstoreStorageException
+    void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map<String, Sample> sampleIdentifiers, ArrayList<SimpleVariantContext> variantContext) throws VariantstoreStorageException
 
     /**
      * Store genes with provided metadata in the store.
-     * @param version the version of the provided information
-     * @param date the date of the provided information
-     * @param referenceGenome the reference genome
-     * @param genes the provided genes
+     * @param ensemblContext the ensemblContext
      */
-    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes) throws VariantstoreStorageException
+    void storeGenesWithMetadata(Ensembl ensemblContext) throws VariantstoreStorageException
 }

@@ -1,0 +1,88 @@
+##gff-version   3
+##sequence-region   15 1 101991189
+#!genome-build  GRCh38.p7
+#!genome-version GRCh38
+#!genome-date 2013-12
+#!genome-build-accession NCBI:GCA_000001405.22
+#!genebuild-last-updated 2016-06
+15	GRCh38	chromosome	1	101991189	.	.	.	ID=chromosome:15;Alias=CM000677.2,chr15,NC_000015.10
+###
+15	havana	gene	19878555	19887814	.	+	.	ID=gene:ENSG00000215567;Name=RP11-79C23.1;biotype=unprocessed_pseudogene;gene_id=ENSG00000215567;havana_gene=OTTHUMG00000163698;havana_version=1;logic_name=havana;version=5
+15	havana	pseudogene	19878555	19887814	.	+	.	ID=transcript:ENST00000524329;Parent=gene:ENSG00000215567;Name=RP11-79C23.1-001;biotype=unprocessed_pseudogene;havana_transcript=OTTHUMT00000374791;havana_version=1;tag=basic;transcript_id=ENST00000524329;transcript_support_level=NA;version=1
+15	havana	exon	19878555	19878668	.	+	.	Parent=transcript:ENST00000524329;Name=ENSE00002133693;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00002133693;rank=1;version=1
+15	havana	exon	19878831	19879004	.	+	.	Parent=transcript:ENST00000524329;Name=ENSE00003544224;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00003544224;rank=2;version=1
+15	havana	exon	19881201	19881307	.	+	.	Parent=transcript:ENST00000524329;Name=ENSE00003523105;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00003523105;rank=3;version=1
+15	havana	exon	19882277	19882439	.	+	.	Parent=transcript:ENST00000524329;Name=ENSE00002122474;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00002122474;rank=4;version=1
+15	havana	exon	19884979	19885043	.	+	.	Parent=transcript:ENST00000524329;Name=ENSE00003610421;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00003610421;rank=5;version=1
+15	havana	exon	19887724	19887814	.	+	.	Parent=transcript:ENST00000524329;Name=ENSE00002098314;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00002098314;rank=6;version=1
+###
+15	ensembl	snRNA_gene	19883614	19883716	.	+	.	ID=gene:ENSG00000201241;Name=RNU6-978P;biotype=snRNA;description=RNA%2C U6 small nuclear 978%2C pseudogene [Source:HGNC Symbol%3BAcc:HGNC:47941];gene_id=ENSG00000201241;logic_name=ncrna;version=1
+15	ensembl	snRNA	19883614	19883716	.	+	.	ID=transcript:ENST00000364371;Parent=gene:ENSG00000201241;Name=RNU6-978P-201;biotype=snRNA;tag=basic;transcript_id=ENST00000364371;transcript_support_level=NA;version=1
+15	ensembl	exon	19883614	19883716	.	+	.	Parent=transcript:ENST00000364371;Name=ENSE00001439134;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00001439134;rank=1;version=1
+###
+15	.	biological_region	19898785	19898891	1	-	.	external_name=rank %3D 1;logic_name=firstef
+15	.	biological_region	19898888	19899448	430	.	.	external_name=oe %3D 0.62;logic_name=cpg
+15	.	biological_region	19898950	19898952	0.999	-	.	logic_name=eponine
+15	.	biological_region	19898981	19898987	0.999	-	.	logic_name=eponine
+15	.	biological_region	19899029	19899031	0.999	-	.	logic_name=eponine
+15	.	biological_region	19899046	19899047	0.999	-	.	logic_name=eponine
+15	.	biological_region	19899111	19899113	0.999	-	.	logic_name=eponine
+15	.	biological_region	19899131	19899137	0.999	-	.	logic_name=eponine
+15	havana	gene	19899334	19899559	.	+	.	ID=gene:ENSG00000258463;Name=RP11-173D3.3;biotype=processed_pseudogene;gene_id=ENSG00000258463;havana_gene=OTTHUMG00000171715;havana_version=1;logic_name=havana;version=1
+15	havana	processed_pseudogene	19899334	19899559	.	+	.	ID=transcript:ENST00000553634;Parent=gene:ENSG00000258463;Name=RP11-173D3.3-001;biotype=processed_pseudogene;havana_transcript=OTTHUMT00000414850;havana_version=1;tag=basic;transcript_id=ENST00000553634;transcript_support_level=NA;version=1
+15	havana	exon	19899334	19899559	.	+	.	Parent=transcript:ENST00000553634;Name=ENSE00002481859;constitutive=1;ensembl_end_phase=-1;ensembl_phase=-1;exon_id=ENSE00002481859;rank=1;version=1
+###
+15	.	biological_region	19899358	19899555	1	+	.	external_name=rank %3D 1;logic_name=firstef
+15	.	biological_region	19943441	19944862	1.82e+03	.	.	external_name=oe %3D 0.78;logic_name=cpg
+15	.	biological_region	19943488	19943489	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943524	19943531	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943555	19943556	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943591	19943595	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943609	19944614	1	-	.	external_name=rank %3D 1;logic_name=firstef
+15	.	biological_region	19943613	19943619	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943639	19943641	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943649	19944614	1	-	.	external_name=rank %3D 2;logic_name=firstef
+15	.	biological_region	19943662	19943666	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943666	19943729	0.999	+	.	external_name=rank %3D 1;logic_name=firstef
+15	.	biological_region	19943727	19943733	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943768	19943770	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943785	19943788	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943800	19943804	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943821	19943829	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943839	19943843	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943858	19943866	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943893	19943902	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943917	19943923	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943958	19943964	0.999	-	.	logic_name=eponine
+15	.	biological_region	19943998	19944004	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944020	19944027	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944044	19944051	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944058	19944058	0.999	+	.	logic_name=eponine
+15	.	biological_region	19944070	19944078	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944093	19944101	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944111	19944119	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944147	19944154	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944164	19944171	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944180	19944186	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944213	19944214	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944229	19944233	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944252	19944259	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944277	19944280	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944288	19944614	1	-	.	external_name=rank %3D 3;logic_name=firstef
+15	.	biological_region	19944293	19944297	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944316	19944319	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944333	19944337	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944357	19944361	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944399	19944404	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944421	19944427	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944438	19944444	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944480	19944485	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944523	19944525	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944547	19944550	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944567	19944571	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944605	19944608	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944629	19944632	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944681	19944686	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944729	19944732	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944751	19944755	0.999	-	.	logic_name=eponine
+15	.	biological_region	19944806	19944809	0.999	-	.	logic_name=eponine

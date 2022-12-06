@@ -1,7 +1,20 @@
 package life.qbic.variantstore.model
 
 import groovy.transform.EqualsAndHashCode
+import groovy.transform.builder.Builder
 import htsjdk.variant.variantcontext.CommonInfo
+import io.micronaut.core.annotation.Creator
+import io.micronaut.core.annotation.Nullable
+import io.micronaut.data.annotation.GeneratedValue
+import io.micronaut.data.annotation.Id
+import io.micronaut.data.annotation.MappedEntity
+import io.micronaut.data.annotation.MappedProperty
+import io.micronaut.data.annotation.Relation
+import io.micronaut.data.annotation.TypeDef
+import io.micronaut.data.model.DataType
+import io.micronaut.data.model.naming.NamingStrategies
+import life.qbic.variantstore.util.FloatListStringConverter
+import life.qbic.variantstore.util.IntegerListStringConverter
 import life.qbic.variantstore.util.VcfConstants
 
 /**
@@ -9,97 +22,118 @@ import life.qbic.variantstore.util.VcfConstants
  *
  * @since: 1.0.0
  */
+@MappedEntity(namingStrategy = NamingStrategies.LowerCase.class)
 @EqualsAndHashCode
+@Builder
 class VcfInfo {
 
     // possible reserved sub-fields of the INFO column as defined in the VCF specification
     // http://samtools.github.io/hts-specs/ (VCF 4.1 and 4.2)
     //TODO deal with future releases?
     /**
+     * The database id
+     */
+    @GeneratedValue
+    @Id
+    private Long id
+    /**
      * The ancestral allele
      **/
-    final String ancestralAllele
+    String ancestralAllele
     /**
      * The allele count
      **/
-    final List<Integer> alleleCount
+    @TypeDef(type = DataType.INTEGER_ARRAY)
+    @MappedProperty(type = DataType.STRING, converter = IntegerListStringConverter.class)
+    List<Integer> alleleCount
     /**
      * The allele frequency
      **/
-    final List<Float> alleleFrequency
+    @TypeDef(type = DataType.FLOAT_ARRAY)
+    @MappedProperty(type = DataType.STRING, converter = FloatListStringConverter.class)
+    List<Float> alleleFrequency
     /**
      * The number of alleles
      **/
-    final Integer numberAlleles
+    Integer numberAlleles
     /**
      * The RMS base quality
      **/
-    final Integer baseQuality
+    Integer baseQuality
     /**
      * The cigar string describing how to align an alternate allele to the reference allele
      **/
-    final String cigar
+    String cigar
     /**
      * Membership in dbSNP ?
      **/
-    final Boolean dbSnp
+    boolean dbSnp
     /**
      * Membership in hapmap2 ?
      **/
-    final Boolean hapmapTwo
+    boolean hapmapTwo
     /**
      * Membership in hapmap3 ?
      **/
-    final Boolean hapmapThree
+    boolean hapmapThree
     /**
      * Membership in 1000 Genomes ?
      **/
-    final Boolean thousandGenomes
+    boolean thousandGenomes
     /**
      * The combined depth (DP) across samples
      **/
-    final Integer combinedDepth
+    Integer combinedDepth
     /**
      * The end position of the described variant
      **/
-    final Integer endPos
+    Integer endPos
     /**
      * The RMS mapping quality (MQ)
      **/
-    final Float rms
+    Float rms
     /**
      * The number of MAPQ==0 reads covering this record (MQ0)
      **/
-    final Integer mqZero
+    Integer mqZero
     /**
      * The strand bias at this position
      **/
-    final Integer strandBias
+    Integer strandBias
     /**
      * The number of samples with data
      **/
-    final Integer numberSamples
+    Integer numberSamples
     /**
      * Indicates that the record is a somatic mutation
      **/
-    final Boolean somatic
+    boolean somatic
     /**
      * Validated by follow-up experiment
      **/
-    final Boolean validated
+    boolean validated
+    /**
+     * The association between sample, variant, vcfinfo, and genotypes
+     */
+    @Relation(value = Relation.Kind.ONE_TO_MANY, mappedBy = "vcfinfo")
+    Set<SampleVariant> sampleVariants
+
+    @Creator
+    VcfInfo() {}
 
     VcfInfo(CommonInfo commonInfo) {
-        //TODO check if that isn`t AA (amino acid) annotation?
-        this.ancestralAllele = commonInfo.getAttributeAsString(VcfConstants.VcfInfoAbbreviations.ANCESTRALALLELE.tag, null)
-        this.alleleCount = commonInfo.getAttributeAsIntList(VcfConstants.VcfInfoAbbreviations.ALLELECOUNT.tag, -1)
-        this.alleleFrequency = commonInfo.getAttributeAsIntList(VcfConstants.VcfInfoAbbreviations.ALLELEFREQUENCY.tag, -1) as List<Float>
+        this.ancestralAllele = commonInfo.getAttributeAsString(VcfConstants.VcfInfoAbbreviations.ANCESTRALALLELE.tag,
+                "")
+        this.alleleCount = commonInfo.getAttributeAsList(VcfConstants.VcfInfoAbbreviations.ALLELECOUNT.tag) as List<Integer> ?: []
+        this.alleleFrequency = commonInfo.getAttributeAsList(VcfConstants.VcfInfoAbbreviations.ALLELEFREQUENCY.tag) as List<Float> ?: []
         this.numberAlleles = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.NUMBERALLELES.tag, -1)
-        this.baseQuality = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.BASEQUALITY.tag, -1)
-        this.cigar = commonInfo.getAttributeAsString(VcfConstants.VcfInfoAbbreviations.CIGAR.tag, null)
+        this.baseQuality = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.BASEQUALITY.tag, -1 )
+        this.cigar = commonInfo.getAttributeAsString(VcfConstants.VcfInfoAbbreviations.CIGAR.tag, '')
         this.dbSnp = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.DBSNP.tag, false)
         this.hapmapTwo = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.HAPMAPTWO.tag, false)
         this.hapmapThree = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.HAPMAPTHREE.tag, false)
-        this.thousandGenomes = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.THOUSANDGENOMES.tag, false)
+        this.thousandGenomes = commonInfo.getAttributeAsBoolean(VcfConstants.VcfInfoAbbreviations.THOUSANDGENOMES
+                .tag, false)
         this.combinedDepth = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.COMBINEDDEPTH.tag, -1)
         this.endPos = commonInfo.getAttributeAsInt(VcfConstants.VcfInfoAbbreviations.ENDPOS.tag, -1)
         this.rms = commonInfo.getAttributeAsDouble(VcfConstants.VcfInfoAbbreviations.RMS.tag, -1) as Float
@@ -111,9 +145,9 @@ class VcfInfo {
     }
 
     VcfInfo(String ancestralAllele, List<Integer> alleleCount, List<Float> alleleFrequency, Integer numberAlleles,
-            Integer baseQuality, String cigar, Boolean dbSnp, Boolean hapmapTwo, Boolean hapmapThree, Boolean
-                    thousandGenomes, Integer combinedDepth, Integer endPos, Float rms, Integer mqZero, Integer
-                    strandBias, Integer numberSamples, Boolean somatic, Boolean validated) {
+            Integer baseQuality, String cigar, boolean dbSnp, boolean hapmapTwo, boolean hapmapThree, boolean thousandGenomes,
+            Integer combinedDepth, Integer endPos, Float rms, Integer mqZero, Integer strandBias, Integer numberSamples,
+            boolean somatic, boolean validated) {
         this.ancestralAllele = ancestralAllele
         this.alleleCount = alleleCount
         this.alleleFrequency = alleleFrequency
@@ -132,6 +166,14 @@ class VcfInfo {
         this.numberSamples = numberSamples
         this.somatic = somatic
         this.validated = validated
+    }
+
+    Long getId() {
+        return id
+    }
+
+    void setId(Long id) {
+        this.id = id
     }
 
     String getAncestralAllele() {
@@ -158,19 +200,19 @@ class VcfInfo {
         return cigar
     }
 
-    Boolean getDbSnp() {
+    boolean isDbSnp() {
         return dbSnp
     }
 
-    Boolean getHapmapTwo() {
+    boolean isHapmapTwo() {
         return hapmapTwo
     }
 
-    Boolean getHapmapThree() {
+    boolean isHapmapThree() {
         return hapmapThree
     }
 
-    Boolean getThousandGenomes() {
+    boolean isThousandGenomes() {
         return thousandGenomes
     }
 
@@ -182,7 +224,7 @@ class VcfInfo {
         return endPos
     }
 
-    Integer getRms() {
+    Float getRms() {
         return rms
     }
 
@@ -198,14 +240,29 @@ class VcfInfo {
         return numberSamples
     }
 
-    Boolean getSomatic() {
+    boolean isSomatic() {
         return somatic
     }
 
-    Boolean getValidated() {
+    boolean isValidated() {
         return validated
     }
 
+    void setAncestralAllele(@Nullable String ancestralAllele) {
+        this.ancestralAllele = ancestralAllele
+    }
+
+    void setCigar(@Nullable String cigar) {
+        this.cigar = cigar
+    }
+
+    void setAlleleCount(List<Integer> alleleCount) {
+        this.alleleCount = alleleCount
+    }
+
+    void setAlleleFrequency(List<Float> alleleFrequency) {
+        this.alleleFrequency = alleleFrequency
+    }
     /**
      * Generate representation in INFO column format.
      *

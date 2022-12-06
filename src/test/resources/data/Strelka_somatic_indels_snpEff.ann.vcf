@@ -1,0 +1,11 @@
+##fileformat=VCFv4.1
+##fileDate=20200805
+##source=strelka
+##source_version=2.9.10
+##startTime=Wed Aug  5 13:39:56 2020
+##INFO=<ID=ANN,Number=.,Type=String,Description="Functional annotations: 'Allele | Annotation | Annotation_Impact | Gene_Name | Gene_ID | Feature_Type | Feature_ID | Transcript_BioType | Rank | HGVS.c | HGVS.p | cDNA.pos / cDNA.length | CDS.pos / CDS.length | AA.pos / AA.length | Distance | ERRORS / WARNINGS / INFO' ">
+##INFO=<ID=LOF,Number=.,Type=String,Description="Predicted loss of function effects for this variant. Format: 'Gene_Name | Gene_ID | Number_of_transcripts_in_gene | Percent_of_transcripts_affected'">
+##INFO=<ID=NMD,Number=.,Type=String,Description="Predicted nonsense mediated decay effects for this variant. Format: 'Gene_Name | Gene_ID | Number_of_transcripts_in_gene | Percent_of_transcripts_affected'">
+#CHROM	POS	ID	REF	ALT	QUAL	FILTER	INFO	FORMAT	NORMAL	TUMOR
+chr1	1935275	.	TG	T	.	PASS	SOMATIC;QSI=27;TQSI=2;NT=ref;QSI_NT=27;TQSI_NT=2;SGT=ref->het;MQ=47.56;MQ0=1;RU=G;RC=3;IC=1;IHP=4;SomaticEVS=8.53;ANN=T|intron_variant|MODIFIER|CFAP74|ENSG00000142609|transcript|ENST00000493964.5|protein_coding|25/37|c.3011+3582_3011+3583delCC||||||	DP:DP2:TAR:TIR:TOR:DP50:FDP50:SUBDP50:BCN50	24:24:23,27:0,0:1,1:22.99:0.10:0.00:0.00	13:13:7,12:3,3:3,3:10.63:0.97:0.00:0.00
+chr12	78416067	.	ATGCGTCAAATTCACGTGGCGTACT	A	.	PASS	SOMATIC;QSI=119;TQSI=1;NT=ref;QSI_NT=119;TQSI_NT=1;SGT=ref->het;MQ=60.00;MQ0=0;RU=ATGCGTCAAATTCACGTGGCGTACT;RC=1;IC=0;IHP=3;SomaticEVS=17.22;ANN=A|intron_variant|MODIFIER|RP11-754N21.1|ENSG00000258084|transcript|ENST00000548963.1|lincRNA|1/5|n.151-7126_151-7100delGTTTGCAAATTCACGTGGCGTACTTGC||||||INFO_REALIGN_3_PRIME	DP:DP2:TAR:TIR:TOR:DP50:FDP50:SUBDP50:BCN50	49:49:60,62:0,0:2,2:47.72:0.10:0.00:0.00	91:91:58,61:37,37:10,8:78.01:0.46:0.00:0.00

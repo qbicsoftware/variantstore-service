@@ -1,0 +1,63 @@
+micronaut:
+    application:
+        name: variantstore
+    server:
+        port: -1
+        thread-selection: AUTO
+    security:
+        enabled: false
+        intercept-url-map:
+            - pattern: /swagger/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+            - pattern: /swagger-ui/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+            - pattern: /rapidoc/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+        endpoints:
+            login:
+                enabled: true
+            logout:
+                enabled: true
+                get-allowed: true
+            oauth:
+                enabled: true
+        session:
+            enabled: true
+        token:
+            jwt:
+                enabled: true
+        oauth2:
+            enabled: false
+datasources:
+    variantstore_postgres:
+        url: jdbc:tc:postgresql:13:///postgres?currentSchema=variantstore
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    transactions:
+        url: jdbc:tc:postgresql:13:///postgres?currentSchema=transactions
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+database:
+    specifier: variantstore-postgres
+flyway:
+    datasources:
+        variantstore_postgres:
+            enabled: true
+            baselineOnMigrate: true
+            locations: classpath:db-test/postgresql
+        transactions:
+            enabled: true
+            baselineOnMigrate: true
+            locations: classpath:db-test/transactions
+        variantstore_mariadb:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db-test/mariadb
+        transactions_mariadb:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db-test/transactions_mariadb

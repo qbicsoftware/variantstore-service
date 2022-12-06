@@ -1,13 +1,14 @@
 package life.qbic.variantstore.controller
 
-import groovy.util.logging.Log4j2
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.MediaType
 import io.micronaut.http.annotation.Controller
 import io.micronaut.http.annotation.Get
 import io.micronaut.http.annotation.PathVariable
+import io.micronaut.http.hateoas.JsonError
 import io.micronaut.security.annotation.Secured
 import io.micronaut.security.rules.SecurityRule
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import io.swagger.v3.oas.annotations.Operation
 import io.swagger.v3.oas.annotations.media.Content
 import io.swagger.v3.oas.annotations.media.Schema
@@ -15,7 +16,9 @@ import io.swagger.v3.oas.annotations.responses.ApiResponse
 import life.qbic.variantstore.model.Sample
 import life.qbic.variantstore.service.VariantstoreService
 import life.qbic.variantstore.util.ListingArguments
-import javax.inject.Inject
+import jakarta.inject.Inject
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
 
 /**
  * Controller for samples requests
@@ -24,10 +27,11 @@ import javax.inject.Inject
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Controller("/samples")
 @Secured(SecurityRule.IS_AUTHENTICATED)
 class SampleController {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(SampleController.class);
 
     /**
      * The variantstore service
@@ -44,6 +48,7 @@ class SampleController {
      * @param identifier the sample identifier
      * @return the found sample or 404 Not Found
      */
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "/{id}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a sample",
             description = "The sample with the specified identifier is returned.",
@@ -55,17 +60,18 @@ class SampleController {
     @ApiResponse(responseCode = "400", description = "Invalid sample identifier supplied")
     @ApiResponse(responseCode = "404", description = "Sample not found")
     HttpResponse getSample(@PathVariable(name="id") String identifier) {
-        log.info("Resource request for sample: $identifier")
+        LOGGER.info("Resource request for sample: $identifier")
         try {
             List<Sample> samples = service.getSampleForSampleId(identifier)
-            return samples ? HttpResponse.ok(samples.get(0)) : HttpResponse.notFound("Sample not found.")
+            JsonError error = new JsonError("No sample found with provided identifier $identifier.")
+            return samples ? HttpResponse.ok(samples.get(0)) : HttpResponse.notFound(error)
         }
         catch (IllegalArgumentException e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.badRequest("Invalid sample identifier supplied.")
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }
@@ -75,6 +81,7 @@ class SampleController {
      * @param args the filter arguments
      * @return the found samples or 404 Not Found
      */
+    @TransactionalAdvice('${database.specifier}')
     @Get(uri = "{?args*}", produces = MediaType.APPLICATION_JSON)
     @Operation(summary = "Request a set of samples",
             description = "The samples matching the supplied properties are returned.",
@@ -84,13 +91,14 @@ class SampleController {
             schema = @Schema(implementation = Sample.class)))
     @ApiResponse(responseCode = "404", description = "No samples found matching provided attributes")
     HttpResponse getSamples(ListingArguments args){
-        log.info("Resource request for samples with filtering options.")
+        LOGGER.info("Resource request for samples with filtering options.")
         try {
             List<Sample> samples = service.getSamplesForSpecifiedProperties(args)
-            return samples ? HttpResponse.ok(samples) : HttpResponse.notFound("No samples found matching provided attributes.")
+            JsonError error = new JsonError("No samples found matching provided attributes.")
+            return samples ? HttpResponse.ok(samples) : HttpResponse.notFound(error)
         }
         catch (Exception e) {
-            log.error(e)
+            LOGGER.error(e)
             return HttpResponse.serverError("Unexpected error, resource could not be accessed.")
         }
     }

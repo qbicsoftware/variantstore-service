@@ -1,0 +1,65 @@
+micronaut:
+    application:
+        name: variantstore
+    server:
+        port: -1
+        thread-selection: AUTO
+    security:
+        enabled: false
+        intercept-url-map:
+            - pattern: /swagger/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+            - pattern: /swagger-ui/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+            - pattern: /rapidoc/*
+              http-method: GET
+              access:
+                  - isAnonymous()
+        endpoints:
+            login:
+                enabled: true
+            logout:
+                enabled: true
+                get-allowed: true
+            oauth:
+                enabled: true
+        session:
+            enabled: true
+        token:
+            jwt:
+                enabled: true
+        oauth2:
+            enabled: false
+datasources:
+    variantstore_mariadb:
+        url: jdbc:tc:mariadb:///test/variantstore?user=root?password=?
+        #url: jdbc:tc:mariadb:///oncostore?user=root?password=?
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+    transactions_mariadb:
+        url: jdbc:tc:mariadb:///test/transactions?user=root?password=?
+        #url: jdbc:tc:mariadb:///oncostore/transactions?user=root?password=?
+        driverClassName: org.testcontainers.jdbc.ContainerDatabaseDriver
+database:
+    specifier: variantstore-mariadb
+flyway:
+    datasources:
+        variantstore_postgres:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db/postgresql
+        transactions:
+            enabled: false
+            baselineOnMigrate: true
+            locations: classpath:db/transactions
+        variantstore_mariadb:
+            enabled: true
+            baselineOnMigrate: true
+            locations: classpath:db-test/mariadb
+        transactions_mariadb:
+            enabled: true
+            baselineOnMigrate: true
+            locations: classpath:db-test/transactions_mariadb

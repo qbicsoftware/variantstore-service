@@ -1,7 +1,7 @@
 package life.qbic.variantstore.util
 
-import io.micronaut.http.uri.UriBuilder;
-import javax.annotation.Nullable
+import io.micronaut.http.uri.UriBuilder
+import io.micronaut.core.annotation.Nullable
 import javax.validation.constraints.Pattern
 import javax.validation.constraints.Positive
 
@@ -29,11 +29,10 @@ class ListingArguments {
     private String cancerEntity
 
     @Nullable
-    @Pattern(regexp = '(Q[A-Z0-9]{4}[0-9]{3}[A-Z][A-Z0-9]$)|(Q[A-Z0-9]{4}ENTITY-[0-9]*$)')
+    @Pattern(regexp = '(Q[A-Z\\d]{4}\\d{3}[A-Z][A-Z\\d]$)|(Q[A-Z\\d]{4}ENTITY-\\d*$)')
     private String sampleId
 
     @Nullable
-    //TODO pattern?
     private String geneId
 
     @Nullable
@@ -50,127 +49,127 @@ class ListingArguments {
     @Pattern(regexp = "vcf|VCF")
     private String format
 
-    public ListingArguments() {
+    ListingArguments() {
 
     }
 
-    public Optional<String> getChromosome() {
+    Optional<String> getChromosome() {
         if (chromosome == null) {
             return Optional.empty()
         }
         return Optional.of(chromosome)
     }
 
-    public Optional<BigInteger> getStartPosition() {
+    Optional<BigInteger> getStartPosition() {
         if (startPosition == null) {
             return Optional.empty()
         }
         return Optional.of(startPosition)
     }
 
-    public Optional<BigInteger> getEndPosition() {
+    Optional<BigInteger> getEndPosition() {
         if (endPosition == null) {
             return Optional.empty()
         }
         return Optional.of(endPosition)
     }
 
-    public Optional<String> getCancerEntity() {
+    Optional<String> getCancerEntity() {
         if (cancerEntity == null) {
             return Optional.empty()
         }
         return Optional.of(cancerEntity)
     }
 
-    public Optional<String> getSampleId() {
+    Optional<String> getSampleId() {
         if (sampleId == null) {
             return Optional.empty()
         }
         return Optional.of(sampleId)
     }
 
-    public Optional<String> getGeneId() {
+    Optional<String> getGeneId() {
         if (geneId == null) {
             return Optional.empty()
         }
         return Optional.of(geneId)
     }
 
-    public Optional<String> getGene() {
+    Optional<String> getGene() {
         if (gene == null) {
             return Optional.empty()
         }
         return Optional.of(gene)
     }
 
-    public Optional<String> getConsequenceType() {
+    Optional<String> getConsequenceType() {
         if (consequenceType == null) {
             return Optional.empty()
         }
         return Optional.of(consequenceType)
     }
 
-    public Optional<Integer> getEnsemblVersion() {
+    Optional<Integer> getEnsemblVersion() {
         if (ensemblVersion == null) {
             return Optional.empty()
         }
         return Optional.of(ensemblVersion)
     }
 
-    public Optional<String> getFormat() {
+    Optional<String> getFormat() {
         if (format == null) {
             return Optional.empty()
         }
         return Optional.of(format)
     }
 
-    public void setChromosome(@Nullable String chromosome) {
+    void setChromosome(@Nullable String chromosome) {
         this.chromosome = chromosome
     }
 
-    public void setStartPosition(@Nullable BigInteger startPosition) {
+    void setStartPosition(@Nullable BigInteger startPosition) {
         this.startPosition = startPosition
     }
 
-    public void setEndPosition(@Nullable BigInteger endPosition) {
+    void setEndPosition(@Nullable BigInteger endPosition) {
         this.endPosition = endPosition
     }
 
-    public void setCancerEntity(@Nullable String cancerEntity) {
+    void setCancerEntity(@Nullable String cancerEntity) {
         this.cancerEntity = cancerEntity
     }
 
-    public void setSampleId(@Nullable String sampleId) {
+    void setSampleId(@Nullable String sampleId) {
         this.sampleId = sampleId
     }
 
-    public void setGeneId(@Nullable String geneId) {
+    void setGeneId(@Nullable String geneId) {
         this.geneId = geneId
     }
 
-    public void setGene(@Nullable String gene) {
+    void setGene(@Nullable String gene) {
         this.gene = gene
     }
 
-    public void setConsequenceType(@Nullable String consequenceType) {
+    void setConsequenceType(@Nullable String consequenceType) {
         this.consequenceType = consequenceType
     }
 
-    public void setEnsemblVersion(@Nullable Integer ensemblVersion) {
+    void setEnsemblVersion(@Nullable Integer ensemblVersion) {
         this.ensemblVersion = ensemblVersion
     }
 
-    public void setFormat(@Nullable String format) {
+    void setFormat(@Nullable String format) {
         this.format = format
     }
 
-    public static Builder builder() {
+    static Builder builder() {
         return new Builder()
     }
 
-    public URI of(UriBuilder uriBuilder) {
+    URI of(UriBuilder uriBuilder) {
         if (chromosome != null) {
-            uriBuilder.queryParam("chromosome", chromosome);
+            uriBuilder.queryParam("chromosome", chromosome)
         }
 
         if (startPosition != null) {
@@ -209,67 +208,67 @@ class ListingArguments {
             uriBuilder.queryParam("format", format)
         }
 
-        return uriBuilder.build();
+        return uriBuilder.build()
     }
 
-    public static final class Builder {
+    static final class Builder {
         private ListingArguments args = new ListingArguments()
 
         private Builder() {
 
         }
 
-        public Builder chromosome(String chromosome) {
+        Builder chromosome(String chromosome) {
             args.setChromosome(chromosome)
             return this
         }
 
-        public Builder startPosition(BigInteger startPosition) {
+        Builder startPosition(BigInteger startPosition) {
             args.setStartPosition(startPosition)
             return this
         }
 
-        public Builder endPosition(BigInteger endPosition) {
+        Builder endPosition(BigInteger endPosition) {
             args.setEndPosition(endPosition)
             return this
         }
 
-        public Builder cancerEntity(String cancerEntity) {
+        Builder cancerEntity(String cancerEntity) {
             args.setCancerEntity(cancerEntity)
             return this
         }
 
-        public Builder sampleId(String sampleId) {
+        Builder sampleId(String sampleId) {
             args.setSampleId(sampleId)
             return this
         }
 
-        public Builder geneId(String geneId) {
+        Builder geneId(String geneId) {
             args.setGeneId(geneId)
             return this
         }
 
-        public Builder gene(String gene) {
+        Builder gene(String gene) {
             args.setGene(gene)
             return this
         }
 
-        public Builder consequenceType(String consequenceType) {
+        Builder consequenceType(String consequenceType) {
             args.setConsequenceType(consequenceType)
             return this
         }
 
-        public Builder ensemblVersion(Integer ensemblVersion) {
+        Builder ensemblVersion(Integer ensemblVersion) {
             args.setEnsemblVersion(ensemblVersion)
             return this
         }
 
-        public Builder format(String format) {
+        Builder format(String format) {
             args.setFormat(format)
             return this
         }
 
-        public ListingArguments build() {
+        ListingArguments build() {
             return this.args
         }
     }

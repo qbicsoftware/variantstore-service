@@ -2,13 +2,13 @@ package life.qbic.variantstore.util
 
 import ca.uhn.fhir.context.FhirContext
 import life.qbic.variantstore.model.SimpleVariantContext
-import life.qbic.variantstore.model.Variant
 import org.hl7.fhir.r4.model.*
 import org.hl7.fhir.r4.model.codesystems.ObservationCategory
 import java.time.Instant
 
 /**
- * An exporter class to generate variant content in various formats, such as Variant Call Format and FHIR (experimental)
+ * An exporter class to generate variant content in various formats, such as Variant Call Format and FHIR.
+ * FHIR exporter experimental.
  *
  * @since: 1.0.0
  */
@@ -30,8 +30,9 @@ class VariantExporter {
      * @param variants the variants to export
      * @return variants in Variant Call Format representation
      */
-    static String exportVariantsToVCF(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean withGenotypes, String
-            referenceGenome, String annotationSoftware, String annotationSoftwareVersion, String version) {
+    static String exportVariantsToVCF(List<SimpleVariantContext> variants, Boolean withConsequences, Boolean withGenotypes,
+                                      String referenceGenome, String annotationSoftware, String annotationSoftwareVersion,
+                                      String version) {
         def vcfContent = new StringBuilder()
         def date = new Date().format('yyyyMMdd')
 
@@ -83,7 +84,7 @@ class VariantExporter {
      * @param variants the variants to export in FHIR
      * @return variants in FHIR representation
      */
-    static String exportVariantsToFHIR(List<Variant> variants, Boolean withConsequences, String referenceGenome) {
+    static String exportVariantsToFHIR(List<SimpleVariantContext> variants, Boolean withConsequences, String referenceGenome) {
         // @TODO get patient ID if needed
         def patientReference = new Reference(new Patient().setIdentifier([new Identifier().setValue("#patient")]))
 
@@ -151,8 +152,8 @@ class VariantExporter {
                     // @TODO how to get gene HGNC? For now lets us the available identifier
                     // @TODO should we collect all gene Ids ?
                     // the HGNC gene symbol as the display text and HGNC gene ID
-                    value = new CodeableConcept(new Coding("http://www.genenames.org/geneId", variant.consequences
-                            .get(0).geneId, variant.consequences.get(0).geneSymbol))
+                    value = new CodeableConcept(new Coding("http://www.genenames.org/geneId",
+                            variant.consequences.get(0).geneId, variant.consequences.get(0).geneSymbol))
                 })
             }
 
@@ -191,7 +192,7 @@ class VariantExporter {
             genomicSourceComponent.code = new CodeableConcept(new Coding("http://loinc.org", "48002-0", "Genomic " +
                     "source class"))
             // do we need any other type?
-            if (variant.isSomatic) {
+            if (variant.somatic) {
                 genomicSourceComponent.value = new CodeableConcept(new Coding("http://loinc.org", "LA6684-0",
                         "Somatic"))
             } else {

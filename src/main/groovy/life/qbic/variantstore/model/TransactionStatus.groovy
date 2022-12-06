@@ -15,21 +15,21 @@ import io.micronaut.data.model.naming.NamingStrategies
 class TransactionStatus{
 
     /**
-     * The name of a tool
+     * The database id
      */
     @Id
     @GeneratedValue
     Integer id
     /**
-     * The name of a tool
+     * The identifier
      */
-    String uuid
+    String identifier
     /**
-     * The name of a tool
+     * The file name
      */
     String fileName
     /**
-     * The name of a tool
+     * The file size
      */
     Float fileSize
     /**
@@ -44,8 +44,8 @@ class TransactionStatus{
         this.id = id
     }
 
-    void setUuid(String uuid) {
-        this.uuid = uuid
+    void setIdentifier(String uuid) {
+        this.identifier = uuid
     }
 
     void setFileName(String fileName) {
@@ -65,8 +65,8 @@ class TransactionStatus{
     }
 
     @JsonProperty("uuid")
-    String getUuid() {
-        return uuid
+    String getIdentifier() {
+        return identifier
     }
 
     @JsonProperty("fileName")
@@ -88,7 +88,7 @@ class TransactionStatus{
 /**
  * Possible status of a transaction
  *
- * @since: 1.11.0
+ * @since: 1.1.0
  */
 enum Status{
     started,

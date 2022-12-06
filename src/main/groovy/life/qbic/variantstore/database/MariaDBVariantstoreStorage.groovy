@@ -4,16 +4,20 @@ import groovy.json.JsonSlurper
 import groovy.sql.BatchingPreparedStatementWrapper
 import groovy.sql.GroovyRowResult
 import groovy.sql.Sql
-import groovy.util.logging.Log4j2
-import life.qbic.micronaututils.QBiCDataSource
+import io.micronaut.context.annotation.Requires
+import io.micronaut.core.annotation.NonNull
+import io.micronaut.transaction.annotation.TransactionalAdvice
 import life.qbic.variantstore.model.*
 import life.qbic.variantstore.parser.MetadataContext
 import life.qbic.variantstore.service.VariantstoreStorage
 import life.qbic.variantstore.util.IdValidator
 import life.qbic.variantstore.util.ListingArguments
-import javax.inject.Inject
-import javax.inject.Singleton
-import javax.validation.constraints.NotNull
+import jakarta.inject.*
+import org.slf4j.Logger
+import org.slf4j.LoggerFactory
+
+import javax.sql.DataSource
+import javax.transaction.Transactional
 import java.sql.Connection
 import java.sql.PreparedStatement
 import java.sql.ResultSet
@@ -22,19 +26,20 @@ import java.sql.SQLException
 
 /**
  * A VariantstoreStorage implementation.
- *genesymbol
  * This provides an interface to a MariaDB database storing variant information.
  *
  * @since: 1.0.0
  */
-@Log4j2
 @Singleton
+@Requires(property = "database.specifier", value = "variantstore-mariadb")
 class MariaDBVariantstoreStorage implements VariantstoreStorage {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(MariaDBVariantstoreStorage.class);
 
     /**
      * The data source instance
      */
-    QBiCDataSource dataSource
+    DataSource dataSource
 
     /**
      * Predefined queries for inserting db entries in junction tables.
@@ -147,8 +152,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
  = consequence.id INNER JOIN annotationsoftware ON annotationsoftware.id = annotationsoftware_has_consequence
  .annotationsoftware_id INNER JOIN  consequence_has_gene on consequence_has_gene.consequence_id = consequence.id 
  INNER JOIN 
- gene on gene.id=consequence_has_gene.gene_id INNER JOIN sample_has_variant ON variant.id = sample_has_variant
- .variant_id INNER JOIN sample ON 
+ gene on gene.id=consequence_has_gene.gene_id INNER JOIN sample ON 
  sample_has_variant.sample_id = sample.id;"""
     static final selectVariantsWithSampleAndConsequences = """SELECT variant.id as varid, variant.chr as varchr, 
 variant.start as 
@@ -184,11 +188,10 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
  annotationsoftware.id = annotationsoftware_has_consequence.annotationsoftware_id INNER JOIN genotype ON genotype
  .id=sample_has_variant.genotype_id INNER JOIN consequence_has_gene on consequence_has_gene.consequence_id = 
  consequence.id INNER JOIN 
- gene on gene.id=consequence_has_gene.gene_id INNER JOIN sample_has_variant ON variant.id = sample_has_variant
- .variant_id INNER JOIN sample ON sample_has_variant.sample_id = sample.id;"""
+ gene on gene.id=consequence_has_gene.gene_id;"""
 
     @Inject
-    MariaDBVariantstoreStorage(QBiCDataSource dataSource) {
+    MariaDBVariantstoreStorage(@Named("variantstore-mariadb") DataSource dataSource) {
         this.dataSource = dataSource
     }
 
@@ -206,7 +209,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
+    Set<Variant> findVariantsForBeaconResponse(String chromosome, BigInteger start,
                                                 String reference, String observed, String assemblyId) {
         Sql sql = requestNewConnection()
         try {
@@ -214,6 +217,22 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
             return variant
         } catch (Exception e) {
             throw new VariantstoreStorageException("Beacon something? $e.", e.printStackTrace())
+        } finally {
+            sql.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    Optional<Project> findProjectById(String id) {
+        Sql sql = requestNewConnection()
+        try {
+            def result  = fetchProjectForId(id, sql)
+            return result ? Optional.of(result[0]) : Optional.empty()
+        } catch (Exception e) {
+            throw new VariantstoreStorageException("Could not fetch case with identifier $id.", e.fillInStackTrace())
         } finally {
             sql.close()
         }
@@ -262,7 +281,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Variant> findVariantById(String id) {
+    Set<Variant> findVariantById(String id) {
         if (!IdValidator.isValidUUID(id)) {
             throw new IllegalArgumentException("Invalid variant identifier supplied.")
         }
@@ -281,7 +300,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Gene> findGeneById(String id, ListingArguments args) {
+    Set<Gene> findGeneById(String id, ListingArguments args) {
         Sql sql = requestNewConnection()
         try {
             if (args.getEnsemblVersion().isPresent()) {
@@ -304,7 +323,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Case> findCases(@NotNull ListingArguments args) {
+    List<Case> findCases(@NonNull ListingArguments args) {
         Sql sql = requestNewConnection()
         try {
             if (args.getGene().isPresent()) {
@@ -321,8 +340,8 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
 
             if (args.getChromosome().isPresent() && args.getStartPosition().isPresent() && args.getEndPosition()
                     .isPresent()) {
-                return fetchCasesByChromosomeAndPositionRange(args.getChromosome().get(), args.getStartPosition().get
-                        (), args.getEndPosition().get(), sql)
+                return fetchCasesByChromosomeAndPositionRange(args.getChromosome().get(), args.getStartPosition().get(),
+                        args.getEndPosition().get(), sql)
             }
 
             if (args.getChromosome().isPresent()) {
@@ -341,7 +360,23 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Sample> findSamples(@NotNull ListingArguments args) {
+    List<Project> findProjects(@NonNull ListingArguments args) {
+        Sql sql = requestNewConnection()
+        try {
+            return fetchProjects(sql)
+        }
+        catch (Exception e) {
+            throw new VariantstoreStorageException("Could not fetch projects.",  e.printStackTrace())
+        } finally {
+        sql.close()
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     */
+    @Override
+    List<Sample> findSamples(@NonNull ListingArguments args) {
         Sql sql = requestNewConnection()
         try {
             if (args.getCancerEntity().isPresent()) {
@@ -349,7 +384,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
             }
             return fetchSamples(sql)
         } catch (Exception e) {
-            throw new VariantstoreStorageException("Could not fetch samples.", e.fillInStackTrace())
+            throw new VariantstoreStorageException("Could not fetch samples.",  e.printStackTrace())
         } finally {
             sql.close()
         }
@@ -359,8 +394,8 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    List<Variant> findVariants(@NotNull ListingArguments args, String referenceGenome, Boolean
-            withConsequences, String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
+    Set<Variant> findVariants(@NonNull ListingArguments args, String referenceGenome, Boolean withConsequences,
+                               String annotationSoftware, Boolean withVcfInfo, Boolean withGenotypes) {
         Sql sql = requestNewConnection()
         try {
             if (args.getChromosome().isPresent() && args.getStartPosition().isPresent()) {
@@ -375,18 +410,15 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
             }
 
             if (args.getChromosome().isPresent()) {
-                return fetchVariantsByChromosome(args.getChromosome().get(), referenceGenome, withConsequences,
-                        annotationSoftware, withVcfInfo,
-                        withGenotypes, sql)
+                return fetchVariantsByChromosome(args.getChromosome().get(), referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes, sql)
             }
 
             if (args.getSampleId().isPresent() && args.getGeneId().isPresent()) {
-                return fetchVariantsBySampleAndGeneId(args.getSampleId().get(), args.getGeneId().get(), referenceGenome,
-                        withConsequences, annotationSoftware, withVcfInfo, withGenotypes, sql)
+                return fetchVariantsBySampleAndGeneId(args.getSampleId().get(), args.getGeneId().get(), referenceGenome, withConsequences, annotationSoftware, withVcfInfo, withGenotypes, sql)
             }
 
             if (args.getSampleId().isPresent()) {
-                return fetchVariantsBySample(args.getSampleId().get(), referenceGenome, withConsequences,
+                return  fetchVariantsBySample(args.getSampleId().get(), referenceGenome, withConsequences,
                         annotationSoftware, withVcfInfo, withGenotypes, sql)
             }
 
@@ -410,20 +442,24 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    ReferenceGenome findReferenceGenomeByVariant(Variant variant) {
+    Set<ReferenceGenome> findReferenceGenomeByVariant(Variant variant) {
         Sql sql = requestNewConnection()
         try {
             def result =
                     sql.firstRow("SELECT id FROM variant WHERE variant.chr=? and variant.start=? and variant.end=? and variant.ref=? and variant.obs=? and variant.issomatic=?",
                             [variant.chromosome, variant.startPosition, variant.endPosition, variant.referenceAllele, variant
-                                    .observedAllele, variant.isSomatic])
+                                    .observedAllele, variant.somatic])
 
-            def resultReference = sql.firstRow("SELECT * FROM referencegenome INNER JOIN variant_has_referencegenome WHERE variant_has_referencegenome.variant_id = ${result.id}")
-            def referenceGenomeSource = resultReference.get("source") as String
-            def referenceGenomeBuild = resultReference.get("build") as String
-            def referenceGenomeVersion = resultReference.get("version") as String
-            def referenceGenome = new ReferenceGenome(referenceGenomeSource, referenceGenomeBuild, referenceGenomeVersion)
-            return referenceGenome
+            def referenceGenomeSet = new HashSet<ReferenceGenome>()
+            def resultReference = sql.rows("SELECT * FROM referencegenome INNER JOIN variant_has_referencegenome WHERE variant_has_referencegenome.variant_id = ${result.id}")
+            resultReference.each {
+                def referenceGenomeSource = resultReference.get("source") as String
+                def referenceGenomeBuild = resultReference.get("build") as String
+                def referenceGenomeVersion = resultReference.get("version") as String
+                def referenceGenome = new ReferenceGenome(referenceGenomeSource, referenceGenomeBuild, referenceGenomeVersion)
+                referenceGenomeSet.add(referenceGenome)
+            }
+            return referenceGenomeSet
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch reference genome.", e.fillInStackTrace())
         } finally {
@@ -435,7 +471,7 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      * {@inheritDoc}
      */
     @Override
-    Annotation findAnnotationSoftwareByConsequence(Consequence consequence) {
+    Set<Annotation> findAnnotationSoftwareByConsequence(Consequence consequence) {
         Sql sql = requestNewConnection()
         try {
             def result = sql.firstRow("""SELECT id FROM consequence WHERE consequence.allele=? and consequence
@@ -444,9 +480,7 @@ consequence.biotype=? and consequence.canonical=? and consequence.aachange=? and
 consequence.cdsposition=? and consequence.proteinposition=? and consequence.proteinlength=? and consequence
 .cdnalength=? and consequence.cdslength=? and consequence.impact=? and consequence.exon=? and consequence.intron=? 
 and consequence.strand=? and consequence.genesymbol=? and consequence.featuretype=? and consequence.distance=? and 
-consequence.warnings=?""",
-
-                    [consequence.allele, consequence.codingChange, consequence.transcriptId, consequence
+consequence.warnings=?""", [consequence.allele, consequence.codingChange, consequence.transcriptId, consequence
                             .transcriptVersion, consequence.type,
                      consequence.bioType, consequence.canonical, consequence.aaChange, consequence.cdnaPosition,
                      consequence.cdsPosition, consequence
@@ -456,12 +490,16 @@ consequence.warnings=?""",
                              .geneSymbol, consequence.featureType,
                      consequence.distance, consequence.warnings])
 
-            def resultAnnotation = sql.firstRow("SELECT * FROM annotationsoftware INNER JOIN annotationsoftware_has_consequence WHERE annotationsoftware_has_consequence.consequence_id = ${result.id}")
-            def annotationSoftwareName = resultAnnotation.get("name") as String
-            def annotationSoftwareVersion = resultAnnotation.get("version") as String
-            def annotationSoftwareDoi = resultAnnotation.get("doi") as String
-            def annotationSoftware = new Annotation(annotationSoftwareName, annotationSoftwareVersion, annotationSoftwareDoi)
-            return annotationSoftware
+            def annotationSoftwareSet = new HashSet()
+            def resultAnnotation = sql.rows("SELECT * FROM annotationsoftware INNER JOIN annotationsoftware_has_consequence WHERE annotationsoftware_has_consequence.consequence_id = ${result.id}")
+            resultAnnotation.each {
+                def annotationSoftwareName = it.get("name") as String
+                def annotationSoftwareVersion = it.get("version") as String
+                def annotationSoftwareDoi = it.get("doi") as String
+                def annotationSoftware = new Annotation(annotationSoftwareName, annotationSoftwareVersion, annotationSoftwareDoi)
+                annotationSoftwareSet.add(annotationSoftware)
+            }
+            return annotationSoftwareSet
         } catch (Exception e) {
             throw new VariantstoreStorageException("Could not fetch annotation software.", e.fillInStackTrace())
         } finally {
@@ -473,7 +511,7 @@ consequence.warnings=?""",
      * {@inheritDoc}
      */
     @Override
-    List<Gene> findGenes(@NotNull ListingArguments args) {
+    Set<Gene> findGenes(@NonNull ListingArguments args) {
         Sql sql = requestNewConnection()
         try {
             if (args.getSampleId()) {
@@ -585,6 +623,8 @@ consequence.warnings=?""",
      * {@inheritDoc}
      */
     @Override
+    @TransactionalAdvice('variantstore-mariadb')
+    @Transactional
     void storeVariantsInStoreWithMetadata(MetadataContext metadata, Map sampleIdentifiers, ArrayList variants) throws
             VariantstoreStorageException {
         try {
@@ -670,21 +710,21 @@ consequence.warnings=?""",
      * {@inheritDoc}
      */
     @Override
-    void storeGenesWithMetadata(Integer version, String date, ReferenceGenome referenceGenome, List<Gene> genes)
+    void storeGenesWithMetadata(Ensembl ensemblContext)
             throws VariantstoreStorageException {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         try {
-            tryToStoreReferenceGenome(referenceGenome)
-            def rgId = tryToFindReferenceGenome(referenceGenome)
+            tryToStoreReferenceGenome(ensemblContext.referenceGenome)
+            def rgId = tryToFindReferenceGenome(ensemblContext.referenceGenome)
 
-            tryToStoreEnsemblDB(version, date, rgId)
-            def enId = tryToFindEnsemblDB(version, date, rgId)
+            tryToStoreEnsemblDB(ensemblContext.version, ensemblContext.date, rgId)
+            def enId = tryToFindEnsemblDB(ensemblContext.version, ensemblContext.date, rgId)
 
-            tryToStoreGeneObjects(genes)
+            tryToStoreGeneObjects(ensemblContext.genes)
 
             /* GET ids of genes */
-            def geneIdMap = tryToFindGenes(genes)
+            def geneIdMap = tryToFindGenes(ensemblContext.genes)
 
             /* INSERT genes and ensembl version in junction table */
             tryToStoreJunctionBatch(enId, geneIdMap.values().asList(), insertEnsemblGeneJunction)
@@ -711,7 +751,7 @@ consequence.warnings=?""",
 
         def varsToFind = new HashSet()
         def varsIdMap = [:]
-        def infoValues = []
+        List<VcfInfo> infoValues = []
         def propsToUse = ["ancestralAllele", "alleleCount", "alleleFrequency"]
         def props = VcfInfo.declaredFields.findAll { !it.synthetic && propsToUse.contains(it.name) }.collect { it }
 
@@ -800,7 +840,7 @@ consequence.warnings=?""",
                     sqlSelect.append(") and variant.obs in (")
                     sqlSelect.append(varsToFind.collect { "'$it.observedAllele'" }.join(','))
                     sqlSelect.append(") and variant.issomatic in (")
-                    sqlSelect.append(varsToFind.collect { "$it.isSomatic" }.join(','))
+                    sqlSelect.append(varsToFind.collect { "$it.somatic" }.join(','))
                     sqlSelect.append(")")
 
                     try {
@@ -837,7 +877,7 @@ consequence.warnings=?""",
             }
         }
         variants.each { var ->
-            ids[var] = varsIdMap["$var.chromosome$var.startPosition$var.endPosition$var.referenceAllele$var.observedAllele$var.isSomatic"]
+            ids[var] = varsIdMap["$var.chromosome$var.startPosition$var.endPosition$var.referenceAllele$var.observedAllele$var.somatic"]
             def newKey = new StringBuilder("")
             props.each { prop ->
                 newKey.append(var.vcfInfo.getProperty(prop.name))
@@ -886,7 +926,7 @@ genotype.mappingquality IS NULL""")
                             }
                         }
                         else {
-                            log.error("Incompatible sample/genotype information provided.")
+                            LOGGER.error("Incompatible sample/genotype information provided.")
                         }
                     }
 
@@ -1009,7 +1049,7 @@ genotype.mappingquality=?""",
      * @param genes a list of genes
      * @return map with database ids (gene: id)
      */
-    HashMap tryToFindGenes(List<Gene> genes) {
+    HashMap tryToFindGenes(Set<Gene> genes) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         def ids = [:]
@@ -1062,8 +1102,7 @@ genotype.mappingquality=?""",
      * @param consequenceToGeneIds a map with consequence: genes
      * @return map with database identifiers (consequence: gene ids)
      */
-    private HashMap<Consequence, List<String>> tryToFindGenesByConsequence(HashMap<Consequence, List<String>>
-                                                                                   consequenceToGeneIds) {
+    private HashMap<Consequence, List<String>> tryToFindGenesByConsequence(HashMap<Consequence, List<String>> consequenceToGeneIds) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         def ids = [:]
@@ -1102,6 +1141,17 @@ genotype.mappingquality=?""",
         return ids as HashMap<Consequence, List<String>>
     }
 
+    /**
+     * Get project from the store by identifier
+     * @param id the project identifier
+     * @param sql the sql connection
+     * @return the found project (optional)
+     */
+    private List<Project> fetchProjectForId(String id, Sql sql) {
+        def result = sql.rows("""SELECT distinct project.id FROM project WHERE project.id=$id;""")
+        List<Project> projects = result.collect { convertRowResultToProject(it) }
+        return projects
+    }
 
     /**
      * Get case from the store by identifier
@@ -1132,7 +1182,7 @@ genotype.mappingquality=?""",
      * @param sql the sql connection
      * @return the found variant
      */
-    private List<Variant> fetchVariantForId(String id, Sql sql) {
+    private Set<Variant> fetchVariantForId(String id, Sql sql) {
         def result = sql.rows("""SELECT variant.id as varid, variant.chr as varchr, variant.start as varstart, 
 variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.issomatic as varsomatic, variant.uuid as
  varuuid, variant.databaseidentifier as vardbid, consequence.*, gene.id as geneindex, gene.geneid as geneid FROM variant INNER JOIN variant_has_consequence 
@@ -1163,10 +1213,21 @@ variant.end as varend, variant.ref as varref, variant.obs as varobs, variant.iss
      */
     private List<Gene> fetchGeneForIdWithEnsemblVersion(String id, Integer ensemblVersion, Sql sql) {
         def result = sql.rows("""SELECT distinct * FROM gene INNER JOIN ensembl_has_gene ON gene.id = 
-Ensembl_has_gene.gene_id INNER JOIN ensembl ON ensembl_has_gene.ensembl_id = ensembl.id WHERE gene.geneid=$id and 
+ensembl_has_gene.gene_id INNER JOIN ensembl ON ensembl_has_gene.ensembl_id = ensembl.id WHERE gene.geneid=$id and 
 ensembl.version=$ensemblVersion;""")
         List<Gene> genes = result.collect { convertRowResultToGene(it) }
         return genes
+    }
+
+    /**
+     * Get all projects from the store
+     * @param sql the sql connection
+     * @return the found projects
+     */
+    private List<Project> fetchProjects(Sql sql) {
+        def result = sql.rows("SELECT * FROM project;")
+        List<Project> projects = result.collect { it -> convertRowResultToProject(it) }
+        return projects
     }
 
     /**
@@ -1187,7 +1248,7 @@ ensembl.version=$ensemblVersion;""")
      */
     private List<Sample> fetchSamples(Sql sql) {
         def result = sql.rows("SELECT * FROM sample;")
-        List<Sample> samples = result.collect { convertRowResultToSample(it) }
+        List<Sample> samples = result.collect { it -> convertRowResultToSample(it) }
         return samples
     }
 
@@ -1201,7 +1262,7 @@ ensembl.version=$ensemblVersion;""")
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariants(referenceGenome,withConsequences, annotationSoftware, withVcInfo, withGenotypes, Sql sql) {
+    private Set<Variant> fetchVariants(referenceGenome,withConsequences, annotationSoftware, withVcInfo, withGenotypes, Sql sql) {
         def result
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
@@ -1292,8 +1353,7 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
      * @param sql the sql connection
      * @return the found cases
      */
-    private List<Case> fetchCasesByChromosomeAndPositionRange(String chromosome, BigInteger startPosition, BigInteger
-            endPosition, Sql sql) {
+    private List<Case> fetchCasesByChromosomeAndPositionRange(String chromosome, BigInteger startPosition, BigInteger endPosition, Sql sql) {
         def result = sql.rows("""select distinct entity.id, project_id from entity INNER JOIN sample ON entity.id = 
 sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant.sample_id INNER JOIN
  variant ON variant.id = sample_has_variant.variant_id where variant.chr=$chromosome AND variant.start>=$startPosition AND variant.end<=$endPosition;""")
@@ -1325,9 +1385,10 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsByChromosomeAndStartPosition(String chromosome, BigInteger start, String
-            referenceGenome, Boolean withConsequences, String annotationSoftware, Boolean withVcInfo, Boolean
-            withGenotypes, Sql sql) {
+    private Set<Variant> fetchVariantsByChromosomeAndStartPosition(String chromosome, BigInteger start,
+                                                                    String referenceGenome, Boolean withConsequences,
+                                                                    String annotationSoftware, Boolean withVcInfo,
+                                                                    Boolean withGenotypes, Sql sql) {
         def result
 
         if (withConsequences & withGenotypes) {
@@ -1361,8 +1422,9 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsByChromosome(String chromosome, String referenceGenome, Boolean
-            withConsequences, String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes, Sql sql) {
+    private Set<Variant> fetchVariantsByChromosome(String chromosome, String referenceGenome, Boolean withConsequences,
+                                                    String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes,
+                                                    Sql sql) {
         def result
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
@@ -1394,8 +1456,8 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsByStartPosition(BigInteger start, String referenceGenome, Boolean
-            withConsequences, String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes, Sql sql) {
+    private Set<Variant> fetchVariantsByStartPosition(BigInteger start, String referenceGenome, Boolean withConsequences,
+                                                       String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes, Sql sql) {
         def result
 
         if (withConsequences & withGenotypes) {
@@ -1429,7 +1491,7 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsBySample(String sampleId, String referenceGenome, Boolean withConsequences,
+    private Set<Variant> fetchVariantsBySample(String sampleId, String referenceGenome, Boolean withConsequences,
                                                 String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes, Sql sql) {
         def result
         if (withConsequences & withGenotypes) {
@@ -1465,9 +1527,9 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId, String referenceGenome,
-                                                         Boolean withConsequences, String annotationSoftware, Boolean
-                                                                 withVcInfo, Boolean withGenotypes, Sql sql) {
+    private Set<Variant> fetchVariantsBySampleAndGeneId(String sampleId, String geneId, String referenceGenome,
+                                                         Boolean withConsequences, String annotationSoftware,
+                                                         Boolean withVcInfo, Boolean withGenotypes, Sql sql) {
         def result
         if (withConsequences & withGenotypes) {
             // we will fetch VcfInfo information as well since this case is always VCF output format
@@ -1500,7 +1562,7 @@ sample.entity_id INNER JOIN sample_has_variant ON sample.id = sample_has_variant
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsByGeneId(String geneId, String referenceGenome, Boolean withConsequences,
+    private Set<Variant> fetchVariantsByGeneId(String geneId, String referenceGenome, Boolean withConsequences,
                                                 String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes, Sql sql) {
         def result
 
@@ -1539,7 +1601,7 @@ annotationsoftware.name='${annotationSoftware}' AND geneid='${geneId}';"""))
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsByGeneName(String geneName, String referenceGenome, Boolean withConsequences,
+    private Set<Variant> fetchVariantsByGeneName(String geneName, String referenceGenome, Boolean withConsequences,
                                                 String annotationSoftware, Boolean withVcInfo, Boolean withGenotypes, Sql sql) {
         def result
 
@@ -1577,7 +1639,7 @@ annotationsoftware.name='${annotationSoftware}' AND consequence.genesymbol='${ge
      * @param sql the sql connections
      * @return the found variants
      */
-    private List<Variant> fetchVariantsForBeaconResponse(String chromosome, BigInteger start,
+    private Set<Variant> fetchVariantsForBeaconResponse(String chromosome, BigInteger start,
                                                          String reference, String observed, String assemblyId, Sql sql) {
 
         //TODO check if we might get unprecise results due to like
@@ -1659,8 +1721,8 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     void tryToStoreJunctionBatchForSamplesAndVariants(HashMap<Sample, Integer> samples,
                                                       HashMap<SimpleVariantContext, Integer> connectorMap,
                                                       HashMap<SimpleVariantContext, Integer> infoMap,
-                                                      HashMap<SimpleVariantContext, HashMap<String, Integer>>
-                                                              genotypeMap, String insertStatement) {
+                                                      HashMap<SimpleVariantContext, HashMap<String, Integer>> genotypeMap,
+                                                      String insertStatement) {
 
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
@@ -1681,7 +1743,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param variants a list of variants
      * @param list of consequences of the provded variants
      */
-    private List tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants) {
+    private List<Consequence> tryToStoreVariantsBatch(ArrayList<SimpleVariantContext> variants) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         def consequences = []
@@ -1700,8 +1762,8 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
                 pstmt.setInt(4, variant.getEndPosition().toInteger())
                 pstmt.setString(5, variant.getReferenceAllele())
                 pstmt.setString(6, variant.getObservedAllele())
-                pstmt.setBoolean(7, variant.getIsSomatic())
-                pstmt.setString(8,  variant.getDatabaseId())
+                pstmt.setBoolean(7, variant.isSomatic())
+                pstmt.setString(8,  variant.getDatabaseIdentifier())
                 pstmt.addBatch()
             }
             pstmt.executeBatch()
@@ -1724,7 +1786,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     private void tryToStoreVariantInfo(ArrayList variants) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
-        def props = VcfInfo.declaredFields.findAll { !it.synthetic }.collect { it }
+        def props = VcfInfo.declaredFields.findAll { !it.synthetic && it.name != "sampleVariants" && it.name != "id" }.collect { it }
         HashSet<String> vcfInfos = new HashSet<>()
         for (var in variants) {
             vcfInfos.add(var.vcfInfo)
@@ -1855,7 +1917,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      */
     private String tryToStoreCase(Case patient) {
         Sql sql = requestNewConnection()
-        sql.connection.autoCommit = false
+        //sql.connection.autoCommit = false
         sql.withTransaction {
             sql.executeInsert("INSERT INTO entity (id) values (?) ON DUPLICATE KEY UPDATE id=id;", [patient.identifier])
         }
@@ -2020,7 +2082,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param genes a list of gene objects
      * @return the list of genes
      */
-    private List<Gene> tryToStoreGeneObjects(List<Gene> genes) {
+    private Set<Gene> tryToStoreGeneObjects(Set<Gene> genes) {
         Sql sql = requestNewConnection()
         sql.connection.autoCommit = false
         sql.withBatch("insert INTO gene (symbol, name, biotype, chr, start, end, synonyms, geneid, description, strand, version) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?) ON DUPLICATE KEY UPDATE symbol=?, name=?, biotype=?, chr=?, start=?, end=?, synonyms=?, geneid=?, description=?, strand=?, version=?") {
@@ -2108,9 +2170,20 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param row the query result
      * @return the case
      */
-    private static Case convertRowResultToCase(GroovyRowResult row) {
+    Case convertRowResultToCase(GroovyRowResult row) {
         def entity = new Case(row.get("id") as String, row.get("project_id") as String)
         return entity
+    }
+
+    /**
+     * Convert database query result to project
+     * @param row the query result
+     * @return the project
+     */
+    Project convertRowResultToProject(GroovyRowResult row) {
+        def project = new Project()
+        project.setIdentifier(row.get("id") as String)
+        return project
     }
 
     /**
@@ -2118,9 +2191,8 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param row the query result
      * @return the sample
      */
-    private static Sample convertRowResultToSample(GroovyRowResult row) {
-        def sample = new Sample(row.get("identifier") as String, row.get("cancerentity") as String, row.get
-                ("entity_id") as String)
+    Sample convertRowResultToSample(GroovyRowResult row) {
+        def sample = new Sample(row.get("identifier") as String, row.get("cancerentity") as String, row.get("entity_id") as String)
         return sample
     }
 
@@ -2129,10 +2201,11 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param row the query result
      * @return the gene
      */
-    private static Gene convertRowResultToGene(GroovyRowResult row) {
-        def gene = new Gene(row.get("biotype") as String, row.get("chr") as String, row.get("symbol") as String, row.get("name") as String, row.get("start") as BigInteger, row.get("end") as BigInteger, row
-                .get("geneid") as String, row.get("description") as String, row.get("strand") as String, row.get
-                ("version") as Integer, [row.get("synonyms") as String])
+    Gene convertRowResultToGene(GroovyRowResult row) {
+        def gene = new Gene(row.get("biotype") as String, row.get("chr") as String, row.get("symbol") as String, row.get("name") as String,
+                row.get("start") as BigInteger, row.get("end") as BigInteger, row.get("geneid") as String,
+                row.get("description") as String, row.get("strand") as String, row.get ("version") as Integer,
+                [row.get("synonyms") as String])
         return gene
     }
 
@@ -2144,8 +2217,8 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param withGenotypes true, if genotypes should be included
      * @return the variant
      */
-    private static Variant convertRowResultToVariant(GroovyRowResult row, Boolean withConsequences, Boolean
-            withVcfInfo, Boolean withGenotypes) {
+    Variant convertRowResultToVariant(GroovyRowResult row, Boolean withConsequences, Boolean withVcfInfo,
+                                                     Boolean withGenotypes) {
         def variant = new Variant()
         variant.setIdentifier(row.get("varuuid") as String)
         variant.setChromosome(row.get("varchr") as String)
@@ -2153,11 +2226,11 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
         variant.setEndPosition(row.get("varend") as BigInteger)
         variant.setReferenceAllele(row.get("varref") as String)
         variant.setObservedAllele(row.get("varobs") as String)
-        variant.setIsSomatic(row.get("varsomatic") as Boolean)
+        variant.setSomatic(row.get("varsomatic") as Boolean)
         variant.setDatabaseIdentifier(row.get("vardbid") as String)
 
         if (withConsequences) {
-            variant.setConsequences([convertRowResultToConsequence(row)])
+            variant.setConsequences([convertRowResultToConsequence(row)] as Set<Consequence>)
         }
         if (withVcfInfo) {
             variant.setVcfInfo(convertRowResultToVcfInfo(row))
@@ -2173,7 +2246,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param row the query result
      * @return the consequence
      */
-    private static Consequence convertRowResultToConsequence(GroovyRowResult row) {
+    Consequence convertRowResultToConsequence(GroovyRowResult row) {
         def consequence = new Consequence(row.get("allele") as String, row.get("codingchange") as String, row.get("transcriptid") as String,
         row.get("transcriptversion") as Integer, row.get("type") as String, row.get("biotype") as String, row.get("canonical") as Boolean,
         row.get("aachange") as String, row.get("cdnaposition") as String, row.get("cdsposition") as String, row.get("proteinposition") as String,
@@ -2190,13 +2263,13 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param row the query result
      * @return the VCF info object
      */
-    private static VcfInfo convertRowResultToVcfInfo(GroovyRowResult row) {
+    VcfInfo convertRowResultToVcfInfo(GroovyRowResult row) {
         def aAllele = row.get("ancestralallele") as String
         def cigar =  row.get("cigar") as String
 
         def vcfInfo = new VcfInfo(aAllele != "" ? aAllele : null, new JsonSlurper().parseText(row.get("allelecount"))
-                as List<Integer>, new JsonSlurper().parseText(row.get("allelefrequency")) as List<Float>, row.get
-                ("numberalleles") as Integer, row.get("basequality") as Integer, cigar != "" ? cigar : null,
+                as List<Integer>, new JsonSlurper().parseText(row.get("allelefrequency")) as List<Float>,
+                row.get("numberalleles") as Integer, row.get("basequality") as Integer, cigar != "" ? cigar : null,
                 row.get("dbsnp") as Boolean, row.get("hapmaptwo") as Boolean, row.get("hapmapthree") as Boolean,
                 row.get("thousandgenomes") as Boolean, row.get("combineddepth") as Integer, row.get("endpos") as Integer,
                 row.get("rms") as Integer, row.get("mqzero") as Integer, row.get("strandbias") as Integer,
@@ -2210,7 +2283,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param row the query result
      * @return the genotype
      */
-    private static Genotype convertRowResultToGenotype(GroovyRowResult row) {
+    Genotype convertRowResultToGenotype(GroovyRowResult row) {
         def genotype = new Genotype(row.get("identifier") as String, row.get("genotype") as String, row.get("readdepth") as Integer,
                 row.get("filter") as String, row.get("likelihoods") as String, row.get("genotypelikelihoods") as String,
                 row.get("genotypelikelihoodshet") as String, row.get("posteriorprobs") as String,
@@ -2228,7 +2301,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param withGenotypes true, if genotype information should be included
      * @return the list of variants
      */
-    private static List<Variant> parseVariantQueryResult(List<GroovyRowResult> rows, Boolean withConsequence = true, withVcfInfo = false, Boolean withGenotypes = false) {
+    Set<Variant> parseVariantQueryResult(List<GroovyRowResult> rows, Boolean withConsequence = true, withVcfInfo = false, Boolean withGenotypes = false) {
         Map<String, List<Variant>> variantsIdMap = rows.collect { convertRowResultToVariant(it, withConsequence, withVcfInfo, withGenotypes) }
                 .groupBy { it.identifier }
         List<Variant> variants = []
@@ -2264,7 +2337,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
             value[0].consequences = joinedConsequences
             variants.add(value[0])
         }
-        return variants.flatten() as List<Variant>
+        return variants.flatten() as Set<Variant>
     }
 
     /**
@@ -2274,7 +2347,7 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
      * @param name a property name
      * @return the generated string
      */
-    private static String buildMultiSelectString(String field, List values, String name) {
+    String buildMultiSelectString(String field, List values, String name) {
         def formattedValues = []
         def classType = values[0][name]
          if (classType instanceof Boolean) {
@@ -2300,6 +2373,3 @@ gene.id = consequence_has_gene.gene_id INNER JOIN consequence on consequence_has
     }
 
 }
-
-
-

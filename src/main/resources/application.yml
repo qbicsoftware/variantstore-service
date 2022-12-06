@@ -3,14 +3,18 @@ micronaut:
     name: variantstore
   server:
     port: ${variantstore-port:8080}
-    maxRequestSize: 100MB
+    ssl:
+      enabled: ${variantstore-ssl-enabled:false}
+      buildSelfSigned: ${variantstore-ss-selfsigned:false}
+    maxRequestSize: 500MB
     multipart:
-      maxFileSize: 100MB
-  logger:
-    levels:
-      ROOT: INFO
+      maxFileSize: 500MB
+    thread-selection: AUTO
   router:
     static-resources:
+      webjars:
+        paths: classpath:META-INF/resources/webjars
+        mapping: /webjars/**
       swagger:
         paths: classpath:META-INF/swagger
         mapping: /swagger/**
@@ -20,8 +24,12 @@ micronaut:
       rapidoc:
         paths: classpath:META-INF/swagger/views/rapidoc
         mapping: /rapidoc/**
+      css:
+        paths: classpath:static/css
+        mapping: /css/**
   security:
     enabled: ${variantstore-security-enabled:true}
+    authentication: ${variantstore-authentication-mode:idtoken}
     intercept-url-map:
       - pattern: /swagger/**
         http-method: GET
@@ -32,6 +40,14 @@ micronaut:
         access:
           - isAnonymous()
       - pattern: /rapidoc/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /webjars/**
+        http-method: GET
+        access:
+          - isAnonymous()
+      - pattern: /css/**
         http-method: GET
         access:
           - isAnonymous()
@@ -63,16 +79,55 @@ micronaut:
             url: ${variantstore-oauth2-token-url}
             auth-method: client-secret-jwt
 datasources:
-  default:
-    url: jdbc:mariadb://${db-host}/${db-name}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-    username: ${db-user}
-    password: ${db-pwd}
-    driverClassName: org.mariadb.jdbc.Driver
+  variantstore_postgres:
+    url: jdbc:postgresql://${db-host:""}/${db-name:""}?currentSchema=variantstore
+    username: ${db-user:""}
+    password: ${db-pwd:""}
+    driverClassName: org.postgresql.Driver
   transactions:
-    url: jdbc:mariadb://${db-host}/transactions?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
-    username: ${db-user}
-    password: ${db-pwd}
-    driverClassName: org.mariadb.jdbc.Driver
+    url: jdbc:postgresql://${db-transaction-host:""}/${db-transaction-name:""}?currentSchema=transactions
+    username: ${db-transaction-user:""}
+    password: ${db-transaction-pwd:""}
+    driverClassName: org.postgresql.Driver
+  #variantstore_mariadb:
+  #  url: jdbc:mariadb://${db-host:""}/${db-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-user:""}
+  #  password: ${db-pwd:""}
+  #  driverClassName: org.mariadb.jdbc.Driver
+  #transactions_mariadb:
+  #  url: jdbc:mariadb://${db-transaction-host:""}/${db-transaction-name:""}?maxPoolSize=30&pool=true&useServerPrepStmts=false&rewriteBatchedStatements=true
+  #  username: ${db-transaction-user:""}
+  #  password: ${db-transaction-pwd:""}
+  #  driverClassName: org.mariadb.jdbc.Driver
+database:
+  specifier: variantstore-postgres
+  max-variants-per-batch: ${max-number-variants-per-batch:250000}
+flyway:
+  datasources:
+    variantstore_postgres:
+      enabled: true
+      baselineOnMigrate: true
+      locations: classpath:db/postgresql
+      default-schema: variantstore
+      schemas: variantstore
+    transactions:
+      enabled: true
+      baselineOnMigrate: true
+      locations: classpath:db/transactions
+      default-schema: transactions
+      schemas: transactions
+    variantstore_mariadb:
+      enabled: false
+      baselineOnMigrate: true
+      locations: classpath:db/mariadb
+      default-schema: variantstore
+      schemas: variantstore
+    transactions_mariadb:
+      enabled: false
+      baselineOnMigrate: true
+      locations: classpath:db/transactions_mariadb
+      default-schema: transactions
+      schemas: transactions
 endpoints:
   health:
     enabled: true
@@ -87,5 +142,6 @@ endpoints:
   info:
     enabled: true
     sensitive: false
-userroles:
-  config: ${userrole-config:src/main/resources/test.yml}
+  flyway:
+    enabled: true
+    sensitive: false

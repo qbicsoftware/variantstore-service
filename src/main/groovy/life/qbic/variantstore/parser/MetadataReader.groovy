@@ -3,6 +3,7 @@ package life.qbic.variantstore.parser
 import groovy.json.JsonSlurper
 import life.qbic.variantstore.model.Annotation
 import life.qbic.variantstore.model.Case
+import life.qbic.variantstore.model.Project
 import life.qbic.variantstore.model.ReferenceGenome
 import life.qbic.variantstore.model.VariantCaller
 import life.qbic.variantstore.model.Sample
@@ -25,13 +26,22 @@ class MetadataReader {
     MetadataReader(File file) {
         def slurper = new JsonSlurper()
         def jsonContent = slurper.parse(file)
-        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent))
+
+        Case entity = parseCase(jsonContent)
+        List<Sample> samples = parseSample(jsonContent)
+        Project project = parseProject(jsonContent)
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), entity, samples, project)
     }
 
     MetadataReader(String content) {
         def slurper = new JsonSlurper()
         def jsonContent = slurper.parseText(content)
-        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), parseCase(jsonContent), parseSample(jsonContent))
+
+        Case entity = parseCase(jsonContent)
+        List<Sample> samples = parseSample(jsonContent)
+        Project project = parseProject(jsonContent)
+
+        this.metadataContext = new MetadataContext(parseIsSomatic(jsonContent), parseCallingSoftware(jsonContent), parseAnnotationSoftware(jsonContent), parseReferenceGenome(jsonContent), entity, samples, project)
     }
 
     MetadataContext getMetadataContext() {
@@ -48,9 +58,9 @@ class MetadataReader {
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on annotation software.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the annotation software
      */
     static Annotation parseAnnotationSoftware(jsonContent) {
         def name = jsonContent.variant_annotation.name as String
@@ -71,34 +81,48 @@ class MetadataReader {
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on reference genome.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the reference genome
      */
     static ReferenceGenome parseReferenceGenome(jsonContent) {
         return new ReferenceGenome(jsonContent.reference_genome.source, jsonContent.reference_genome.build, jsonContent.reference_genome.version)
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on associated case.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the associated case
      */
     static Case parseCase(jsonContent) {
-        return new Case(jsonContent.case.identifier)
+        Case newCase = new Case()
+        newCase.setIdentifier(jsonContent.case.identifier)
+        return newCase
     }
 
     /**
-     * Parse information whether provided variants are somatic.
+     * Parse information on associated samples.
      * @param jsonContent the metadata content
-     * @return true if variants are somatic
+     * @return the associated samples
      */
     static List<Sample> parseSample(jsonContent) {
         def samples = []
         jsonContent.samples.each { sample ->
             def cancerEntity = sample.cancerEntity ?: ''
-            samples.add(new Sample(sample.identifier, cancerEntity, jsonContent.case.identifier))
+            def newSample = new Sample(sample.identifier, cancerEntity)
+            samples.add(newSample)
         }
         return samples
+    }
+
+    /**
+     * Parse information on associated project.
+     * @param jsonContent the metadata content
+     * @return the associated project
+     */
+    static Project parseProject(jsonContent) {
+        Project project = new Project()
+        project.setIdentifier(jsonContent.project.identifier)
+        return project
     }
 }

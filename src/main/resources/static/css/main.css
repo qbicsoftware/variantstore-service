@@ -1,0 +1,18 @@
+body {
+  padding-top: 5rem;
+}
+
+td{
+    text-align:center;
+    align-items:center;
+    justify-content:center;
+}
+
+.starter-template {
+  padding: 3rem 1.5rem;
+  text-align: center;
+}
+
+h2{
+	color:#FF0000;
+}

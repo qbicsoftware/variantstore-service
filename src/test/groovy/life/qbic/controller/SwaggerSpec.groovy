@@ -5,16 +5,17 @@ import io.micronaut.context.annotation.Property
 import io.micronaut.http.HttpRequest
 import io.micronaut.http.HttpResponse
 import io.micronaut.http.HttpStatus
-import io.micronaut.http.client.RxHttpClient
 import io.micronaut.http.client.annotation.Client
 import io.micronaut.runtime.server.EmbeddedServer
-import io.micronaut.test.annotation.MicronautTest
+import io.micronaut.rxjava3.http.client.Rx3HttpClient
+import io.micronaut.test.extensions.spock.annotation.MicronautTest
+import jakarta.inject.Inject
+import spock.lang.Specification
 
-import javax.inject.Inject
 
 @MicronautTest(transactional = false)
 @Property(name= "micronaut.server.port", value = "-1")
-class SwaggerSpec extends TestContainerSpecification{
+class SwaggerSpec extends Specification{
 
     @Inject
     ApplicationContext applicationContext
@@ -24,11 +25,11 @@ class SwaggerSpec extends TestContainerSpecification{
 
     @Inject
     @Client('/')
-    RxHttpClient httpClient
+    Rx3HttpClient httpClient
 
     def "swagger YAML is exposed"() {
         when:
-        HttpResponse response = httpClient.toBlocking().exchange(HttpRequest.GET("/swagger/variantstore-1.0.1.yml"))
+        HttpResponse response = httpClient.toBlocking().exchange(HttpRequest.GET("/swagger/variantstore-1.1.0.yml"))
 
         then:
         response.status() == HttpStatus.OK
