@@ -4,7 +4,7 @@ The following describes the minimal steps that have to be taken in order to inst
 
 ## Requirements
 
-Variantstore runs on Java 8. Support for Java 9+ is experimental. Building Variantstore requires Maven, however note that a maven wrapper is provided under the folder [.mvn](/.mvn).
+Variantstore runs on Java 11. Building Variantstore requires Maven, however note that a maven wrapper is provided under the folder [.mvn](/.mvn).
 
 ### Database
 
