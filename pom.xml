@@ -17,7 +17,7 @@
     <properties>
         <jdk.version>11</jdk.version>
         <swagger.version>2.1.0</swagger.version>
-        <micronaut.version>3.7.4</micronaut.version>
+        <micronaut.version>3.8.3</micronaut.version>
         <micronaut.runtime>netty</micronaut.runtime>
         <maven.compiler.target>${jdk.version}</maven.compiler.target>
         <maven.compiler.source>${jdk.version}</maven.compiler.source>
